@@ -1,0 +1,8 @@
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -DDEADWOOD_R -Isrc/ -I../src/
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
+
+SOURCES = \
+    RcppDeadwood.cpp \
+    RcppExports.cpp
+
+OBJECTS = $(SOURCES:.cpp=.o)
