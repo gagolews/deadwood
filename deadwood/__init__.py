@@ -5,7 +5,7 @@ deadwood Python Package
 
 # ############################################################################ #
 #                                                                              #
-#   Copyleft (C) 2025-2026, Marek Gagolewski <https://www.gagolewski.com>      #
+#   Copyleft (C) 2025-2026, Marek Gagolewski <https://www.gagolewski.com/>     #
 #                                                                              #
 #                                                                              #
 #   This program is free software: you can redistribute it and/or modify       #
@@ -23,5 +23,5 @@ deadwood Python Package
 # version string, e.g., "1.0.0.9001" or "1.1.1"
 __version__ = "0.9.0"
 
-from . import internal
-from .deadwood import Deadwood
+from .core import *
+#from .deadwood import Deadwood

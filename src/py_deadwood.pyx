@@ -7,7 +7,7 @@
 
 
 """
-Internal functions and classes
+Core functions and classes
 """
 
 # ############################################################################ #
@@ -31,12 +31,11 @@ Internal functions and classes
 cimport libc.math
 from libcpp cimport bool
 
-import numpy as np
+#import numpy as np
 cimport numpy as np
 np.import_array()
 
-import warnings
-
+#import warnings
 
 
 ctypedef fused T:
@@ -50,3 +49,57 @@ ctypedef fused T:
 ctypedef fused floatT:
     float
     double
+
+
+cdef extern from "../src/c_kneedle.h":
+
+    Py_ssize_t Ckneedle_increasing[floatT](
+        const floatT* x, Py_ssize_t n, bool convex, floatT dt
+    )
+
+
+cpdef Py_ssize_t kneedle_increasing(
+        floatT[::1] x, bool convex=True, floatT dt=0.01
+    ):
+    """
+    deadwood.kneedle_increasing(x, convex=True, dt=0.01)
+
+    Finds the most significant knee/elbow using the Kneedle algorithm
+    with exponential smoothing.
+
+
+    Parameters
+    ----------
+
+    x : ndarray
+        data vector (increasing)
+    convex : bool
+        whether the data in `x` are convex-ish (elbow detection)
+        or not (knee lookup)
+    dt : float
+        controls the smoothing parameter :math:`\\alpha = 1-\\exp(-dt)`
+        of the exponential moving average,
+        :math:`y_i = \\alpha x_i + (1-\\alpha) y_{i-1}`,
+        :math:`y_1 = x_1`.
+
+
+    Returns
+    -------
+
+    index : integer
+        the index of the knee/elbow point; 0 if not found
+
+
+    References
+    ----------
+
+    .. [1]
+        V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
+        in a haystack: Detecting knee points in system behavior*,
+        In: *31st Intl. Conf. Distributed Computing Systems Workshops*,
+        2011, pp. 166-171, DOI: 10.1109/ICDCSW.2011.20
+
+    """
+    cdef Py_ssize_t n = x.shape[0]
+    return Ckneedle_increasing(&x[0], n, convex, dt)
+

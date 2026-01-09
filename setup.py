@@ -33,7 +33,7 @@ import re
 
 
 cython_modules = {
-    "deadwood.internal": [
+    "deadwood.core": [
         os.path.join("src", "py_deadwood.pyx"),
     ],
 }
