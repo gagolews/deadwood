@@ -75,9 +75,11 @@ cpdef Py_ssize_t kneedle_increasing(
 
     x : ndarray
         data vector (increasing)
+
     convex : bool
         whether the data in `x` are convex-ish (elbow detection)
         or not (knee lookup)
+
     dt : float
         controls the smoothing parameter :math:`\\alpha = 1-\\exp(-dt)`
         of the exponential moving average,
@@ -193,6 +195,7 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
 
     ind : c_contiguous array of `m` indexes
         `m` indexes to translate (between `0` and `n-1`)
+
     skip : Boolean array of length `n`
         `skip[i]` indicates whether an index `i` was skipped or not
 
@@ -230,6 +233,7 @@ cpdef np.ndarray[Py_ssize_t] graph_vertex_degrees(
     graph_i : ndarray, shape (m,2)
         a two-column matrix with elements between `0` and `n-1` such that
         `{graph_i[i,0], graph_i[i,1]}` represents the `i`-th undirected edge
+
     n : int
         the number of vertices in the graph, typically ``max(graph_i)+1``
 
@@ -265,6 +269,7 @@ cpdef tuple graph_vertex_incidences(Py_ssize_t[:,::1] graph_i, Py_ssize_t n):
     graph_i : ndarray, shape (m,2)
         a two-column matrix with elements between `0` and `n-1` such that
         `{graph_i[i,0], graph_i[i,1]}` represents the `i`-th undirected edge
+
     n : int
         the number of vertices in the graph, typically ``max(graph_i)+1``
 
@@ -293,9 +298,9 @@ cpdef tuple graph_vertex_incidences(Py_ssize_t[:,::1] graph_i, Py_ssize_t n):
 cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
         Py_ssize_t[:,::1] mst_i,
         Py_ssize_t[::1] labels,
-        # TODO: mst_cumdeg
-        # TODO: mst_inc
-        bool[::1] mst_skip=None
+        mst_skip=None,
+        mst_cumdeg=None,
+        mst_inc=None
     ):
     """
     deadwood.mst_label_imputer(mst_i, labels, mst_skip=None)
@@ -310,12 +315,17 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
 
     mst_i : c_contiguous array of shape (n-1, 2)
         `n-1` undirected edges of the spanning tree/forest
+
     labels : c_contiguous array of shape (n,)
         `labels[i]` gives the cluster ID (in {-1, 0, 1, ..., k-1} for some `k`)
         of the `i`-th object;  class -1 represents the missing values
         to be imputed
+
     mst_skip : c_contiguous array of length n-1 or None
         `mst_skip[i] == True` marks the `i`-th edge as non-existent (ignorable)
+
+    mst_cumdeg, mst_inc : c_contiguous arrays or None
+        see ``deadwood.graph_vertex_incidences``
 
 
     Returns
@@ -338,21 +348,49 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
     else:
         mst_skip_obj = mst_skip  # may raise an Exception
         if mst_skip_obj.shape[0] != m:
-            raise ValueError("mst_skip should be of size either 0 or n-1")
+            raise ValueError("mst_skip should be either of size n-1 or None")
         mst_skip_ptr = &mst_skip_obj[0]
+
+
+    if (mst_cumdeg is None) != (mst_inc is None):
+        raise ValueError("mst_cumdeg and mst_inc should both be None or not")
+
+    cdef Py_ssize_t[::1] mst_cumdeg_obj
+    cdef Py_ssize_t* mst_cumdeg_ptr = NULL
+    if mst_cumdeg is None:
+        pass
+    else:
+        mst_cumdeg_obj = mst_cumdeg  # may raise an Exception
+        if mst_cumdeg_obj.shape[0] != n+1:
+            raise ValueError("mst_cumdeg should either of size n+1 or None")
+        mst_cumdeg_ptr = &mst_cumdeg_obj[0]
+
+    cdef Py_ssize_t[::1] mst_inc_obj
+    cdef Py_ssize_t* mst_inc_ptr = NULL
+    if mst_inc is None:
+        pass
+    else:
+        mst_inc_obj = mst_inc  # may raise an Exception
+        if mst_inc_obj.shape[0] != 2*m:
+            raise ValueError("mst_inc should either of size 2*(n-1) or None")
+        mst_inc_ptr = &mst_inc_obj[0]
+
 
     cdef np.ndarray[Py_ssize_t] ret = np.array(labels, dtype=np.intp)
 
-    Cmst_label_imputer(&mst_i[0,0], m, n, &ret[0], NULL, NULL, mst_skip_ptr)
+    Cmst_label_imputer(
+        &mst_i[0,0], m, n, &ret[0],
+        mst_cumdeg_ptr, mst_inc_ptr, mst_skip_ptr
+    )
 
     return ret
 
 
 cpdef tuple mst_cluster_sizes(
         Py_ssize_t[:,::1] mst_i,
-        # TODO: mst_cumdeg
-        # TODO: mst_inc
-        mst_skip=None
+        mst_skip=None,
+        mst_cumdeg=None,
+        mst_inc=None
     ):
     """
     deadwood.mst_cluster_sizes(mst_i, mst_skip=None)
@@ -365,6 +403,10 @@ cpdef tuple mst_cluster_sizes(
 
     mst_i : c_contiguous array of shape (n-1, 2)
         `n-1` undirected edges of the spanning tree
+
+    mst_cumdeg, mst_inc : c_contiguous arrays or None
+        see ``deadwood.graph_vertex_incidences``
+
     mst_skip : c_contiguous array of length n-1 or None
         `mst_skip[i] == True` marks the `i`-th edge as non-existent (ignorable)
 
@@ -375,6 +417,7 @@ cpdef tuple mst_cluster_sizes(
     labels : ndarray, shape (n,)
         an integer vector with `labels[i]` denoting the cluster
         ID (in {0, ..., k-1}) of the `i`-th vertex
+
     sizes : ndarray, shape (k,)
         an integer vector with `sizes[i]` denoting the size of the `i`-th cluster
     """
@@ -392,16 +435,42 @@ cpdef tuple mst_cluster_sizes(
     else:
         mst_skip_obj = mst_skip  # may raise an Exception
         if mst_skip_obj.shape[0] != m:
-            raise ValueError("mst_skip should be of size either 0 or n-1")
+            raise ValueError("mst_skip should be either of size n-1 or None")
         mst_skip_ptr = &mst_skip_obj[0]
 
         k += Csum_bool(mst_skip_ptr, m)
+
+
+    if (mst_cumdeg is None) != (mst_inc is None):
+        raise ValueError("mst_cumdeg and mst_inc should both be None or not")
+
+    cdef Py_ssize_t[::1] mst_cumdeg_obj
+    cdef Py_ssize_t* mst_cumdeg_ptr = NULL
+    if mst_cumdeg is None:
+        pass
+    else:
+        mst_cumdeg_obj = mst_cumdeg  # may raise an Exception
+        if mst_cumdeg_obj.shape[0] != n+1:
+            raise ValueError("mst_cumdeg should either of size n+1 or None")
+        mst_cumdeg_ptr = &mst_cumdeg_obj[0]
+
+    cdef Py_ssize_t[::1] mst_inc_obj
+    cdef Py_ssize_t* mst_inc_ptr = NULL
+    if mst_inc is None:
+        pass
+    else:
+        mst_inc_obj = mst_inc  # may raise an Exception
+        if mst_inc_obj.shape[0] != 2*m:
+            raise ValueError("mst_inc should either of size 2*(n-1) or None")
+        mst_inc_ptr = &mst_inc_obj[0]
+
 
     cdef np.ndarray[Py_ssize_t] labels = np.empty(n, dtype=np.intp)
     cdef np.ndarray[Py_ssize_t] sizes = np.zeros(k, dtype=np.intp)
 
     Cmst_cluster_sizes(
-        &mst_i[0,0], m, n, &labels[0], k, &sizes[0], NULL, NULL, mst_skip_ptr
+        &mst_i[0,0], m, n, &labels[0], k, &sizes[0],
+        mst_cumdeg_ptr, mst_inc_ptr, mst_skip_ptr
     )
 
     return labels, sizes
