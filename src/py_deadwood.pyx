@@ -231,7 +231,7 @@ cpdef np.ndarray[Py_ssize_t] graph_vertex_degrees(
         a two-column matrix with elements between `0` and `n-1` such that
         `{graph_i[i,0], graph_i[i,1]}` represents the `i`-th undirected edge
     n : int
-        the number of vertices in the graph
+        the number of vertices in the graph, typically ``max(graph_i)+1``
 
 
     Returns
@@ -266,7 +266,7 @@ cpdef tuple graph_vertex_incidences(Py_ssize_t[:,::1] graph_i, Py_ssize_t n):
         a two-column matrix with elements between `0` and `n-1` such that
         `{graph_i[i,0], graph_i[i,1]}` represents the `i`-th undirected edge
     n : int
-        the number of vertices in the graph
+        the number of vertices in the graph, typically ``max(graph_i)+1``
 
 
     Returns
@@ -295,10 +295,10 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
         Py_ssize_t[::1] labels,
         # TODO: mst_cumdeg
         # TODO: mst_inc
-        bool[::1] mst_skip
+        bool[::1] mst_skip=None
     ):
     """
-    deadwood.mst_label_imputer(mst_i, labels, mst_skip)
+    deadwood.mst_label_imputer(mst_i, labels, mst_skip=None)
 
     Imputes all missing labels down below a given tree's branches.
     All nodes in branches with class ID of -1 will be assigned
@@ -308,14 +308,14 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
     Parameters
     ----------
 
-    mst_i : c_contiguous array of shape (m, 2)
-        `m` undirected edges of the spanning tree/forest
+    mst_i : c_contiguous array of shape (n-1, 2)
+        `n-1` undirected edges of the spanning tree/forest
     labels : c_contiguous array of shape (n,)
-        `labels[i]` gives the cluster ID (in {-1, 0, 1, ..., k-1} for some `k`) of
-        the `i`-th object;  class -1 represents the missing values to be imputed
-    mst_skip : c_contiguous array, length m or 0
-        `mst_skip[i] == True` marks the `i`-th edge as non-existent
-        (ignorable)
+        `labels[i]` gives the cluster ID (in {-1, 0, 1, ..., k-1} for some `k`)
+        of the `i`-th object;  class -1 represents the missing values
+        to be imputed
+    mst_skip : c_contiguous array of length n-1 or None
+        `mst_skip[i] == True` marks the `i`-th edge as non-existent (ignorable)
 
 
     Returns
@@ -323,20 +323,23 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
 
     ret : ndarray, shape (n,)
         an integer vector with `ret[i]` denoting the cluster
-        ID (in {0, ..., k-1}) of the `i`-th node
+        ID (in {0, ..., k-1}) of the `i`-th vertex
     """
     cdef Py_ssize_t n = labels.shape[0]
     cdef Py_ssize_t m = mst_i.shape[0]
 
     if mst_i.shape[1] != 2: raise ValueError("mst_i must have two columns")
+    if m != n-1: raise ValueError("mst_i must have n-1 rows")
 
+    cdef bool[::1] mst_skip_obj
     cdef bool* mst_skip_ptr = NULL
-    if mst_skip.shape[0] == 0:
+    if mst_skip is None:
         pass
-    elif mst_skip.shape[0] == m:
-        mst_skip_ptr = &mst_skip[0]
     else:
-        raise ValueError("mst_skip should be of size either 0 or m")
+        mst_skip_obj = mst_skip  # may raise an Exception
+        if mst_skip_obj.shape[0] != m:
+            raise ValueError("mst_skip should be of size either 0 or n-1")
+        mst_skip_ptr = &mst_skip_obj[0]
 
     cdef np.ndarray[Py_ssize_t] ret = np.array(labels, dtype=np.intp)
 
@@ -349,10 +352,10 @@ cpdef tuple mst_cluster_sizes(
         Py_ssize_t[:,::1] mst_i,
         # TODO: mst_cumdeg
         # TODO: mst_inc
-        bool[::1] mst_skip
+        mst_skip=None
     ):
     """
-    deadwood.mst_cluster_sizes(mst_i, mst_skip)
+    deadwood.mst_cluster_sizes(mst_i, mst_skip=None)
 
     Labels connected components in a spanning forest and returns their sizes.
 
@@ -361,9 +364,9 @@ cpdef tuple mst_cluster_sizes(
     ----------
 
     mst_i : c_contiguous array of shape (n-1, 2)
-        n-1 undirected edges of the spanning tree
-    mst_skip : c_contiguous array, length n-1 or 0
-        mst_skip[i] == True marks the i-th edge as non-existent (ignorable)
+        `n-1` undirected edges of the spanning tree
+    mst_skip : c_contiguous array of length n-1 or None
+        `mst_skip[i] == True` marks the `i`-th edge as non-existent (ignorable)
 
 
     Returns
@@ -371,7 +374,7 @@ cpdef tuple mst_cluster_sizes(
 
     labels : ndarray, shape (n,)
         an integer vector with `labels[i]` denoting the cluster
-        ID (in {0, ..., k-1}) of the `i`-th node
+        ID (in {0, ..., k-1}) of the `i`-th vertex
     sizes : ndarray, shape (k,)
         an integer vector with `sizes[i]` denoting the size of the `i`-th cluster
     """
@@ -380,19 +383,22 @@ cpdef tuple mst_cluster_sizes(
 
     if mst_i.shape[1] != 2: raise ValueError("mst_i must have two columns")
 
-    cdef Py_ssize_t k = 1
+    cdef Py_ssize_t k = 1  # the number of clusters  (mst_skip affects it)
+
+    cdef bool[::1] mst_skip_obj
     cdef bool* mst_skip_ptr = NULL
-    if mst_skip.shape[0] == 0:
+    if mst_skip is None:
         pass
-    elif mst_skip.shape[0] == m:
-        mst_skip_ptr = &mst_skip[0]
-        k += Csum_bool(mst_skip_ptr, m)
     else:
-        raise ValueError("mst_skip should be of size either 0 or n-1")
+        mst_skip_obj = mst_skip  # may raise an Exception
+        if mst_skip_obj.shape[0] != m:
+            raise ValueError("mst_skip should be of size either 0 or n-1")
+        mst_skip_ptr = &mst_skip_obj[0]
+
+        k += Csum_bool(mst_skip_ptr, m)
 
     cdef np.ndarray[Py_ssize_t] labels = np.empty(n, dtype=np.intp)
     cdef np.ndarray[Py_ssize_t] sizes = np.zeros(k, dtype=np.intp)
-
 
     Cmst_cluster_sizes(
         &mst_i[0,0], m, n, &labels[0], k, &sizes[0], NULL, NULL, mst_skip_ptr
@@ -412,7 +418,7 @@ cpdef tuple mst_cluster_sizes(
 #         TODO: mst_inc
 #     ):
 #     """
-#     genieclust.internal.trim_branches(mst_d, mst_i, min_d, max_size)
+#     deadwood.trim_branches(mst_d, mst_i, min_d, max_size)
 #
 #     [DEPRECATED]
 #
