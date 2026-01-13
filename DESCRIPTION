@@ -2,7 +2,7 @@ Package: deadwood
 Type: Package
 Title: Deadwood: Outlier Detection via Minimum Spanning Trees
 Version: 0.9.0
-Date: 2026-01-08
+Date: 2026-01-13
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),

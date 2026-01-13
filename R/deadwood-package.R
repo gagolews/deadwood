@@ -26,5 +26,7 @@
 #'
 #' @useDynLib deadwood, .registration=TRUE
 #' @importFrom Rcpp evalCpp
+#' @importFrom quitefastmst knn_euclid
+#' @importFrom quitefastmst mst_euclid
 #' @keywords internal
 "_PACKAGE"

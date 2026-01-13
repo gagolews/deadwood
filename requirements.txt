@@ -1,4 +1,4 @@
 Cython
 numpy
-quitefastmst
 scikit-learn
+quitefastmst

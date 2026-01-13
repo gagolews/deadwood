@@ -36,6 +36,9 @@ cython_modules = {
     "deadwood.core": [
         os.path.join("src", "py_deadwood.pyx"),
     ],
+    "deadwood.oldmst": [
+        os.path.join("src", "py_oldmst.pyx")
+    ],
 }
 
 
@@ -131,9 +134,10 @@ setuptools.setup(
     maintainer="Marek Gagolewski",
     license="GNU Affero General Public License v3",
     install_requires=[
-        "numpy",
+        "numpy>=2.0.0",
         "Cython",  # not: cython
-        "genieclust",
+        "scikit-learn",
+        "quitefastmst>=0.9.1",
     ],
     python_requires=">=3.9",
     download_url="https://github.com/gagolews/deadwood",
