@@ -29,7 +29,7 @@ import warnings
 import quitefastmst
 from . import core
 
-from sklearn.base import BaseEstimator, ClusterMixin
+from sklearn.base import BaseEstimator
 
 ###############################################################################
 ###############################################################################
@@ -38,24 +38,19 @@ from sklearn.base import BaseEstimator, ClusterMixin
 
 
 
-class MSTClusterMixin(BaseEstimator, ClusterMixin):
+class MSTBase(BaseEstimator):
     """
-    The base class for :any:`genieclust.Genie`,
-    :any:`genieclust.GIc`, and other MST-based clustering algorithms [2]_.
+    The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
+    :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
+    spanning tree-based clustering and outlier detection algorithms [2]_.
 
 
     Parameters
     ----------
 
-    n_clusters : int
-        The number of clusters to detect.
-
-        If *M > 0* and `postprocess` is not ``"all"``, setting
-        *n_clusters = 1* turns the algorithm to an outlier detector.
-
     M : int
         Smoothing factor for the mutual reachability distance [1]_.
-        *M = 0* and *M = 1* indicate the original distance as given by
+        *M = 0* and *M = 1* select the original distance as given by
         the `metric` parameter.
 
     metric : str
@@ -73,12 +68,12 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
 
         Determining minimum spanning trees with respect to the Euclidean
         distance (the default) is much faster than with other metrics
-        thanks to the `quitefastmst <https://quitefastmst.gagolewski.com/>`__
+        thanks to the `quitefastmst <https://quitefastmst.gagolewski.com/>`_
         package.
 
-    quitefastmst_params : dict
+    quitefastmst_params : dict or None
         Additional parameters to be passed to ``quitefastmst.mst_euclid``
-        if ``metric`` is ``"l2"``
+        if ``metric`` is ``"l2"``.
 
     verbose : bool
         Whether to print diagnostic messages and progress information
@@ -88,8 +83,13 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
     Notes
     -----
 
+    A minimum spanning tree (MST) of the graph representing
+    the points whose edge weights correspond to the distances between
+    the observations is a computationally convenient and somewhat informative
+    representation a dataset.
+
     If the Euclidean distance is selected, then ``quitefastmst.mst_euclid`` is
-    used to compute the MST; it is quite fast in low-dimensional spaces.
+    called to compute the MST.  It is efficient in low-dimensional spaces.
     Otherwise, an implementation of the Jarník (Prim/Dijkstra)-like
     :math:`O(n^2)`-time algorithm is called.
 
@@ -99,15 +99,14 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
     chosen "raw" distance, :math:`d(i,j)`. It holds
     :math:`d_M(i,j)=\\max\\{d(i,j), c_M(i), c_M(j)\\}`, where the "core"
     distance :math:`c_M(i)` is given by :math:`d(i,k)` with :math:`k` being
-    :math:`i`'s :math:`M`-th nearest neighbour
-    (not including self, unlike in [1]_).
-    This pulls outliers away from their neighbours.
+    :math:`i`'s :math:`M`-th nearest neighbour (not including self,
+    unlike in [1]_).  This pulls outliers away from their neighbours.
 
     If ``quitefastmst`` is used, then possible ties between mutually
     reachability distances are resolved in such a way that connecting
     to a neighbour of the smallest core distance is preferred.
     This leads to MSTs with more leaves and hubs.  Moreover, the leaves are
-    then reconnected in such a way that they become incident with vertices
+    then reconnected so that they become incident with vertices
     that have them amongst their *M* nearest neighbours (if this is possible
     without violating the minimality condition); see [3]_ for discussion.
 
@@ -122,25 +121,21 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
     ----------
 
     labels_ : ndarray
-        Detected cluster labels.
+        Detected cluster labels or outlier flags.
 
-        Normally an integer vector such that ``labels_[i]`` gives
-        the cluster ID (between 0 and `n_clusters_` - 1) of the `i`-th object.
-        Outliers may be labelled ``-1`` (depends on the underlying algorithm).
+        For clustering, ``labels_[i]`` gives the cluster ID
+        (between 0 and `n_clusters_` - 1) of the `i`-th object.
 
-    n_clusters_ : int
-        The actual number of clusters detected by the algorithm.
+        For outlier detection, ``1`` denotes an inlier.
 
-        It can be different from the requested one if there are too many
-        noise points in the dataset.
+        Outliers are labelled ``-1``.
 
     n_samples_ : int
         The number of points in the dataset.
 
     n_features_ : int
         The number of features in the dataset.
-
-        If the information is not available, it will be set to ``-1``.
+        If the information is not available, it will be set to ``None``.
 
 
 
@@ -160,231 +155,179 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
         DOI:10.1007/s00357-024-09483-1.
 
     .. [3]
-       Gagolewski M., TODO, 2025
+        Gagolewski M., *quitefastmst*, in preparation, 2026.
 
     """
 
     def __init__(
             self,
             *,
-            n_clusters=2,
             M=0,
             metric="l2",
-            quitefastmst_params=dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
+            quitefastmst_params=None,
             verbose=False
         ):
         # # # # # # # # # # # #
         super().__init__()
-        self.n_clusters          = n_clusters
-        self.n_features          = None  # can be overwritten by GIc
+
         self.M                   = M
         self.metric              = metric
         self.quitefastmst_params = quitefastmst_params
         self.verbose             = verbose
 
+        self.labels_             = None
         self.n_samples_          = None
         self.n_features_         = None
-        self.n_clusters_         = 0  # should not be confused with self.n_clusters
-        self.labels_             = None
-        self.children_           = None
-        self.distances_          = None
-        self.counts_             = None
 
-        self._is_noise           = None  # TODO
-        self._tree_cutlist       = None  # TODO
         self._tree_w             = None
-        self._tree_e             = None
+        self._tree_i             = None
         self._nn_w               = None
-        self._nn_e               = None
+        self._nn_i               = None
         self._d_core             = None
-        self._links_             = None
-        self._iters_             = None
 
-        self._last_state         = None
+        self._last_mst_params    = None  # cache for the MST
 
 
-    def _check_params(self, cur_state=None):
-        if cur_state is None:
-            cur_state = dict()
+    def _check_params(self):
+        self.verbose = bool(self.verbose)
 
-        cur_state["M"] = int(self.M)
-        if cur_state["M"] < 0:
-            raise ValueError("`M` must be >= 0.")
+        self.M = int(self.M)
+        if self.M < 0: raise ValueError("M must be >= 0.")
 
-        # cur_state["exact"]             = True  # bool(self.exact)
-
-        cur_state["verbose"]           = bool(self.verbose)
-
-        cur_state["n_clusters"] = int(self.n_clusters)
-        if cur_state["n_clusters"] < 0:
-            raise ValueError("n_clusters must be >= 0")
-
-        # cur_state["preprocess"] = str(self.preprocess).lower()  # see _postprocess_outputs
-
-        cur_state["metric"] = str(self.metric).lower()
-        if cur_state["metric"] in ["euclidean", "lp:p=2"]:
-            cur_state["metric"] = "l2"
-        elif cur_state["metric"] in ["euclidean_sparse"]:
-            cur_state["metric"] = "l2_sparse"
-        elif cur_state["metric"] in ["manhattan", "cityblock", "lp:p=1"]:
-            cur_state["metric"] = "l1"
-        elif cur_state["metric"] in ["manhattan_sparse", "cityblock_sparse"]:
-            cur_state["metric"] = "l1_sparse"
-        elif cur_state["metric"] in ["chebyshev", "maximum", "lp:p=inf"]:
-            cur_state["metric"] = "linf"
-        elif cur_state["metric"] in ["chebyshev_sparse", "maximum_sparse"]:
-            cur_state["metric"] = "linf_sparse"
-        elif cur_state["metric"] in ["cosine"]:
-            cur_state["metric"] = "cosinesimil"
-        elif cur_state["metric"] in ["cosine_sparse"]:
-            cur_state["metric"] = "cosinesimil_sparse"
-        elif cur_state["metric"] in ["cosine_sparse_fast"]:
-            cur_state["metric"] = "cosinesimil_sparse_fast"
-
-        if type(self.quitefastmst_params) is not dict:
-            raise ValueError("`quitefastmst_params` must be a dict")
-        cur_state["quitefastmst_params"] = self.quitefastmst_params
+        self.metric = str(self.metric).lower()
+        if self.metric in ["euclidean", "lp:p=2"]:
+            self.metric = "l2"
+        elif self.metric in ["cosine"]:
+            self.metric = "cosinesimil"
+        elif self.metric in ["manhattan", "cityblock", "lp:p=1"]:
+            self.metric = "l1"
+        elif self.metric in ["chebyshev", "maximum", "lp:p=inf"]:
+            self.metric = "linf"
+        elif self.metric in ["euclidean_sparse"]:
+            self.metric = "l2_sparse"
+        elif self.metric in ["manhattan_sparse", "cityblock_sparse"]:
+            self.metric = "l1_sparse"
+        elif self.metric in ["chebyshev_sparse", "maximum_sparse"]:
+            self.metric = "linf_sparse"
+        elif self.metric in ["cosine_sparse"]:
+            self.metric = "cosinesimil_sparse"
+        elif self.metric in ["cosine_sparse_fast"]:
+            self.metric = "cosinesimil_sparse_fast"
 
         _metric_exact_options = (
             "l2", "l1", "cosinesimil", "precomputed")
-        if cur_state["metric"] not in _metric_exact_options:
-            raise ValueError("`metric` should be one of %s" % repr(_metric_exact_options))
+        if self.metric not in _metric_exact_options:
+            raise ValueError("metric should be one of %s" % repr(_metric_exact_options))
 
-        # this is more like an inherent dimensionality for GIc
-        cur_state["n_features"] = self.n_features   # users can set this manually
-        if cur_state["n_features"] is not None:      # only GIc needs this
-            cur_state["n_features"] = max(1.0, float(cur_state["n_features"]))
-        else:
-            cur_state["n_features"] = -1
-
-        return cur_state
+        if self.quitefastmst_params is None:
+            self.quitefastmst_params = dict()
+        elif type(self.quitefastmst_params) is not dict:
+            raise ValueError("quitefastmst_params must be a dict")
 
 
-    def _get_mst_exact(self, X, cur_state):
+    def _get_mst(self, X):
+        id_X = id(X)
 
-        if cur_state["metric"] == "precomputed":
-            X = X.reshape(X.shape[0], -1)
-            if X.shape[1] not in [1, X.shape[0]]:
-                raise ValueError(
-                    "`X` must be distance vector or a square-form distance "
-                    "matrix; see `scipy.spatial.distance.pdist` or "
-                    "`scipy.spatial.distance.squareform`.")
+        if self._last_mst_params is not None and \
+           self._last_mst_params["id(X)"] == id_X and \
+           self._last_mst_params["metric"] == self.metric and \
+           self._last_mst_params["quitefastmst_params"] == self.quitefastmst_params and \
+           self._last_mst_params["M"] == self.M:
+               # the parameters did not change;
+               # and so the tree does not have to be recomputed
+               return
+
+        if self.metric == "precomputed":
+            X = X.reshape(X.shape[0], -1)  # ensure it's a matrix
+            n_features = None  # unknown
             if X.shape[1] == 1:
                 # from a very advanced and sophisticated quadratic equation:
                 n_samples = int(round((math.sqrt(1.0+8.0*X.shape[0])+1.0)/2.0))
                 assert n_samples*(n_samples-1)//2 == X.shape[0]
-            else:
+            elif X.shape[1] == X.shape[0]:
                 n_samples  = X.shape[0]
-        else:
-            # if cur_state["cast_float32"]:
-            #     if scipy.sparse.isspmatrix(X):
-            #         raise ValueError("Sparse matrices are (currently) only "
-            #                          "supported when `exact` is False")
-            #     X = np.asarray(X, dtype=np.float32, order="C")
-            if X.ndim != 2: raise ValueError("`X` must be a matrix")
-            n_samples  = X.shape[0]
-            if cur_state["n_features"] < 0:
-                cur_state["n_features"] = X.shape[1]
-
-        if cur_state["M"] >= X.shape[0]:
-            raise ValueError("`M` is too large")
-
-        tree_w = None
-        tree_e = None
-        nn_w   = None
-        nn_e   = None
-        d_core = None
-
-        if self._last_state is not None and \
-                cur_state["X"]        == self._last_state["X"] and \
-                cur_state["metric"]   == self._last_state["metric"] and \
-                cur_state["quitefastmst_params"] == self._last_state["quitefastmst_params"] and \
-                cur_state["M"]        == self._last_state["M"]:
-            # reuse last MST & M-NNs
-            tree_w = self._tree_w
-            tree_e = self._tree_e
-            nn_w   = self._nn_w
-            nn_e   = self._nn_e
-            d_core = self._d_core
-        else:
-            if cur_state["metric"] == "l2":
-                _res = quitefastmst.mst_euclid(
-                    X,
-                    M=cur_state["M"],
-                    **cur_state["quitefastmst_params"],
-                    verbose=cur_state["verbose"]
-                )
-
-                if cur_state["M"] == 0:
-                    tree_w, tree_e = _res
-                    #d_core = None
-                else:
-                    tree_w, tree_e, nn_w, nn_e = _res
-                    #d_core = internal.get_d_core(nn_w, nn_e, cur_state["M"])
-                    d_core = nn_w[:, cur_state["M"]-1].copy()  # make it contiguous
             else:
-                from . import oldmst
-                if cur_state["M"] >= 1:  # else d_core   = None
-                    # Genie+HDBSCAN --- determine d_core
-                    nn_w, nn_e = oldmst.knn_from_distance(
-                        X,  # if not c_contiguous, raises an error
-                        k=cur_state["M"],
-                        metric=cur_state["metric"],  # supports "precomputed"
-                        verbose=cur_state["verbose"]
-                    )
-                    #d_core = internal.get_d_core(nn_w, nn_e, cur_state["M"])
-                    d_core = nn_w[:, cur_state["M"]-1]
+                raise ValueError(
+                    "X must be distance vector or a square-form distance "
+                    "matrix; see scipy.spatial.distance.pdist or "
+                    "scipy.spatial.distance.squareform.")
+        else:
+            if X.ndim != 2: raise ValueError("X must be a matrix")
+            n_samples  = X.shape[0]
+            n_features = X.shape[1]
 
-                # Use Prim's algorithm to determine the MST
-                # w.r.t. the distances computed on the fly
-                tree_w, tree_e = oldmst.mst_from_distance(
-                    X,  # if not c_contiguous, raises an error
-                    metric=cur_state["metric"],
-                    d_core=d_core,
-                    verbose=cur_state["verbose"]
-                )
-
-        assert tree_w.shape[0] == n_samples-1
-        assert tree_e.shape[0] == n_samples-1
-        assert tree_e.shape[1] == 2
-        if cur_state["M"] >= 2:
-            assert nn_w.shape[0] == n_samples
-            assert nn_w.shape[1] == cur_state["M"]
-            assert nn_e.shape[0] == n_samples
-            assert nn_e.shape[1] == cur_state["M"]
-            assert d_core.shape[0] == n_samples
+        if self.M >= n_samples: raise ValueError("M is too large")
 
         self.n_samples_    = n_samples
+        self.n_features_   = n_features
+
+        tree_w = None
+        tree_i = None
+        nn_w   = None
+        nn_i   = None
+        d_core = None
+
+        if self.metric == "l2":  # use quitefastmst
+            _res = quitefastmst.mst_euclid(
+                X,
+                M=self.M,
+                **self.quitefastmst_params,
+                verbose=self.verbose
+            )
+
+            if self.M == 0:
+                tree_w, tree_i = _res
+            else:
+                tree_w, tree_i, nn_w, nn_i = _res
+                #d_core = internal.get_d_core(nn_w, nn_i, self.M)
+                d_core = nn_w[:, self.M-1].copy()  # make it contiguous
+        else:
+            from . import oldmst
+            if self.M >= 1:  # else d_core   = None
+                # determine d_core
+                nn_w, nn_i = oldmst.knn_from_distance(
+                    X,  # if not c_contiguous, raises an error
+                    k=self.M,
+                    metric=self.metric,  # supports "precomputed"
+                    verbose=self.verbose
+                )
+                #d_core = internal.get_d_core(nn_w, nn_i, self.M)
+                d_core = nn_w[:, self.M-1].copy()  # make it contiguous
+
+            # Use Prim's algorithm to determine the MST
+            # w.r.t. the distances computed on the fly
+            tree_w, tree_i = oldmst.mst_from_distance(
+                X,  # if not c_contiguous, raises an error
+                metric=self.metric,
+                d_core=d_core,
+                verbose=self.verbose
+            )
+
+        assert tree_w.shape[0] == n_samples-1
+        assert tree_i.shape[0] == n_samples-1
+        assert tree_i.shape[1] == 2
+        if self.M >= 1:
+            assert nn_w.shape[0]   == n_samples
+            assert nn_w.shape[1]   == self.M
+            assert nn_i.shape[0]   == n_samples
+            assert nn_i.shape[1]   == self.M
+            assert d_core.shape[0] == n_samples
+
+
+        self._last_mst_params = dict()
+        self._last_mst_params["id(X)"] = id_X
+        self._last_mst_params["metric"] = self.metric
+        self._last_mst_params["quitefastmst_params"] = self.quitefastmst_params
+        self._last_mst_params["M"] = self.M
+
         self._tree_w       = tree_w
-        self._tree_e       = tree_e
+        self._tree_i       = tree_i
         self._nn_w         = nn_w
-        self._nn_e         = nn_e
+        self._nn_i         = nn_i
         self._d_core       = d_core
 
-        self._is_noise     = None  # TODO
-        self._tree_cutlist = None  # TODO
 
-        return cur_state
-
-
-    def _get_mst(self, X, cur_state):
-        cur_state["X"] = id(X)
-
-        if cur_state["verbose"]:
-            print("[deadwood] Preprocessing data.", file=sys.stderr)
-
-        # if cur_state["exact"]:
-        cur_state = self._get_mst_exact(X, cur_state)
-        # else: cur_state = self._get_mst_approx(X, cur_state)
-
-        # this might be an "intrinsic" dimensionality:
-        self.n_features_  = cur_state["n_features"]
-        self._last_state  = cur_state  # will be modified in-place further on
-
-        return cur_state
-
-
-    def fit_predict(self, X, y=None):
+    def fit_predict(self, X, y=None, **kwargs):
         """
         Perform cluster analysis of a dataset and return the predicted labels.
 
@@ -398,6 +341,9 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
 
         y : None
             Ignored.
+
+        **kwargs : dict
+            Arguments to be passed to ``fit``.
 
 
         Returns
@@ -433,13 +379,123 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
         ensure the solution is unique (note that this generally applies
         to other distance-based clustering algorithms as well).
 
-        For the clustering result, refer to the `labels_` and `n_clusters_`
-        attributes.
+        For the clustering result, refer to the `labels_` attribute.
         """
-        self.fit(X)
+        if y is not None:  # it is not a transductive classifier
+            raise ValueError("y should be None")
+
+        self.fit(X, **kwargs)
         return self.labels_
 
 
+
+class MSTClusterer(MSTBase):
+    """
+    The base class for :any:`deadwood.Deadwood` and other
+    spanning tree-based outlier detection algorithms [2]_.
+
+
+    Parameters
+    ----------
+
+    n_clusters : int
+        The number of clusters to detect.
+
+
+    Attributes
+    ----------
+
+    labels_ : ndarray
+        Detected cluster labels.
+
+        ``labels_[i]`` gives the cluster ID (between 0 and `n_clusters_` - 1)
+        of the `i`-th input point.
+
+        Eventual outliers are labelled ``-1``.
+
+    n_clusters_ : int
+        The actual number of clusters detected by the algorithm.
+
+        It can be different from the requested one if there are too many
+        noise points in the dataset.
+
+    """
+    def __init__(
+            self,
+            n_clusters=2,
+            *,
+            M=0,
+            metric="l2",
+            quitefastmst_params=None,
+            verbose=False
+        ):
+        super().__init__(
+            M=M,
+            metric=metric,
+            quitefastmst_params=quitefastmst_params,
+            verbose=verbose
+        )
+
+        self.n_clusters  = n_clusters  # requested number of clusters
+
+        self.n_clusters_ = None  # actual number of clusters detected
+
+
+    def _check_params(self):
+        super()._check_params()
+
+        self.n_clusters = int(self.n_clusters)
+        if self.n_clusters < 0: raise ValueError("n_clusters must be >= 0")
+
+
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "clusterer"
+        if tags.transformer_tags is not None:
+            tags.transformer_tags.preserves_dtype = []
+        return tags
+
+
+
+class MSTOutlierDetector(MSTBase):
+    """
+    The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
+    :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
+    spanning tree-based clustering and outlier detection algorithms [2]_.
+
+
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    labels_ : ndarray
+        ``labels_[i]`` gives the inlier (1) or outlier (-1) status
+        of the `i`-th input point.
+    """
+    def __init__(
+            self,
+            *,
+            M=0,
+            metric="l2",
+            quitefastmst_params=None,
+            verbose=False
+        ):
+        super().__init__(
+            M=M,
+            metric=metric,
+            quitefastmst_params=quitefastmst_params,
+            verbose=verbose
+        )
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "outlier_detector"
+        if tags.transformer_tags is not None:
+            tags.transformer_tags.preserves_dtype = []
+        return tags
 
 
 # ###############################################################################
@@ -537,7 +593,7 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
 #             raise ValueError("`postprocess` should be one of %s" % repr(_postprocess_options))
 #
 #         if cur_state["preprocess"] == "auto":
-#             if cur_state["M"] > 0:
+#             if self.M > 0:
 #                 cur_state["preprocess"] = "leaves"
 #             else:
 #                 cur_state["preprocess"] = "none"
@@ -549,7 +605,7 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
 #         """
 #         (internal) Updates `self.labels_`
 #         """
-#         if cur_state["verbose"]:
+#         if self.verbose:
 #             print("[deadwood] Postprocessing outputs.", file=sys.stderr)
 #
 #         self.labels_     = res["labels"]
@@ -584,17 +640,17 @@ class MSTClusterMixin(BaseEstimator, ClusterMixin):
 #                 # do nothing
 #                 pass
 #             elif cur_state["postprocess"] == "midliers":
-#                 assert self._nn_e is not None
-#                 assert self._nn_e.shape[1] >= cur_state["M"]
+#                 assert self._nn_i is not None
+#                 assert self._nn_i.shape[1] >= self.M
 #                 for i in range(start_partition, self.labels_.shape[0]):
 #                     self.labels_[i, :] = internal.merge_midliers(
-#                         self._tree_e, self.labels_[i, :],
-#                         self._nn_e, cur_state["M"]
+#                         self._tree_i, self.labels_[i, :],
+#                         self._nn_i, self.M
 #                     )
 #             elif cur_state["postprocess"] == "all":
 #                 for i in range(start_partition, self.labels_.shape[0]):
 #                     self.labels_[i, :] = internal.merge_all(
-#                         self._tree_e, self.labels_[i, :]
+#                         self._tree_i, self.labels_[i, :]
 #                     )
 #             # elif cur_state["postprocess"] == "none":
 #             #     pass
