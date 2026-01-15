@@ -138,25 +138,23 @@ class MSTBase(BaseEstimator):
         If the information is not available, it will be set to ``None``.
 
 
-
     References
     ----------
 
     .. [1]
-        Campello R.J.G.B., Moulavi D., Sander J.,
+        R.J.G.B. Campello, D. Moulavi, J. Sander,
         Density-based clustering based on hierarchical density estimates,
         *Lecture Notes in Computer Science* 7819, 2013, 160-172,
-        DOI:10.1007/978-3-642-37456-2_14.
+        https://doi.org/10.1007/978-3-642-37456-2_14
 
     .. [2]
-        Gagolewski M., Cena A., Bartoszuk M., Brzozowski L.,
+        M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
         Clustering with minimum spanning trees: How good can it be?,
         *Journal of Classification* 42, 2025, 90-112,
-        DOI:10.1007/s00357-024-09483-1.
+        https://doi.org/10.1007/s00357-024-09483-1
 
     .. [3]
-        Gagolewski M., *quitefastmst*, in preparation, 2026.
-
+        M. Gagolewski, *quitefastmst*, in preparation, 2026, TODO
     """
 
     def __init__(
@@ -175,17 +173,20 @@ class MSTBase(BaseEstimator):
         self.quitefastmst_params = quitefastmst_params
         self.verbose             = verbose
 
+        # sklearn convention: trailing underscore = available after fit()
         self.labels_             = None
         self.n_samples_          = None
         self.n_features_         = None
 
-        self._tree_w             = None
-        self._tree_i             = None
-        self._nn_w               = None
-        self._nn_i               = None
-        self._d_core             = None
+        # "protected" slots
+        self._tree_w_            = None
+        self._tree_i_            = None
+        self._nn_w_              = None
+        self._nn_i_              = None
+        self._d_core_            = None
 
-        self._last_mst_params    = None  # cache for the MST
+        # private slots
+        self.__mst_last_params_ = None  # cache for the MST
 
 
     def _check_params(self):
@@ -214,10 +215,9 @@ class MSTBase(BaseEstimator):
         elif self.metric in ["cosine_sparse_fast"]:
             self.metric = "cosinesimil_sparse_fast"
 
-        _metric_exact_options = (
-            "l2", "l1", "cosinesimil", "precomputed")
-        if self.metric not in _metric_exact_options:
-            raise ValueError("metric should be one of %s" % repr(_metric_exact_options))
+        _metrics = ("l2", "l1", "cosinesimil", "precomputed")
+        if self.metric not in _metrics:
+            raise ValueError("metric should be one of %s" % repr(_metrics))
 
         if self.quitefastmst_params is None:
             self.quitefastmst_params = dict()
@@ -226,20 +226,31 @@ class MSTBase(BaseEstimator):
 
 
     def _get_mst(self, X):
+        # call _check_params() first!
+
         id_X = id(X)
 
-        if self._last_mst_params is not None and \
-           self._last_mst_params["id(X)"] == id_X and \
-           self._last_mst_params["metric"] == self.metric and \
-           self._last_mst_params["quitefastmst_params"] == self.quitefastmst_params and \
-           self._last_mst_params["M"] == self.M:
+        if self.__mst_last_params_ is not None and \
+           self.__mst_last_params_["id(X)"] == id_X and \
+           self.__mst_last_params_["metric"] == self.metric and \
+           self.__mst_last_params_["quitefastmst_params"] == self.quitefastmst_params and \
+           self.__mst_last_params_["M"] == self.M:
                # the parameters did not change;
                # and so the tree does not have to be recomputed
                return
 
+        tree_w     = None
+        tree_i     = None
+        nn_w       = None
+        nn_i       = None
+        d_core     = None
+        n_features = None
+        n_samples  = None
+
+        X = np.asarray(X, dtype=float, order="C")
+
         if self.metric == "precomputed":
             X = X.reshape(X.shape[0], -1)  # ensure it's a matrix
-            n_features = None  # unknown
             if X.shape[1] == 1:
                 # from a very advanced and sophisticated quadratic equation:
                 n_samples = int(round((math.sqrt(1.0+8.0*X.shape[0])+1.0)/2.0))
@@ -258,15 +269,6 @@ class MSTBase(BaseEstimator):
 
         if self.M >= n_samples: raise ValueError("M is too large")
 
-        self.n_samples_    = n_samples
-        self.n_features_   = n_features
-
-        tree_w = None
-        tree_i = None
-        nn_w   = None
-        nn_i   = None
-        d_core = None
-
         if self.metric == "l2":  # use quitefastmst
             _res = quitefastmst.mst_euclid(
                 X,
@@ -279,7 +281,7 @@ class MSTBase(BaseEstimator):
                 tree_w, tree_i = _res
             else:
                 tree_w, tree_i, nn_w, nn_i = _res
-                #d_core = internal.get_d_core(nn_w, nn_i, self.M)
+                #d_core = internal.get_d_core_(nn_w, nn_i, self.M)
                 d_core = nn_w[:, self.M-1].copy()  # make it contiguous
         else:
             from . import oldmst
@@ -291,7 +293,7 @@ class MSTBase(BaseEstimator):
                     metric=self.metric,  # supports "precomputed"
                     verbose=self.verbose
                 )
-                #d_core = internal.get_d_core(nn_w, nn_i, self.M)
+                #d_core = internal.get_d_core_(nn_w, nn_i, self.M)
                 d_core = nn_w[:, self.M-1].copy()  # make it contiguous
 
             # Use Prim's algorithm to determine the MST
@@ -314,17 +316,19 @@ class MSTBase(BaseEstimator):
             assert d_core.shape[0] == n_samples
 
 
-        self._last_mst_params = dict()
-        self._last_mst_params["id(X)"] = id_X
-        self._last_mst_params["metric"] = self.metric
-        self._last_mst_params["quitefastmst_params"] = self.quitefastmst_params
-        self._last_mst_params["M"] = self.M
+        self.__mst_last_params_ = dict()
+        self.__mst_last_params_["id(X)"] = id_X
+        self.__mst_last_params_["metric"] = self.metric
+        self.__mst_last_params_["quitefastmst_params"] = self.quitefastmst_params
+        self.__mst_last_params_["M"] = self.M
 
-        self._tree_w       = tree_w
-        self._tree_i       = tree_i
-        self._nn_w         = nn_w
-        self._nn_i         = nn_i
-        self._d_core       = d_core
+        self.n_samples_     = n_samples
+        self.n_features_    = n_features
+        self._tree_w_       = tree_w
+        self._tree_i_       = tree_i
+        self._nn_w_         = nn_w
+        self._nn_i_         = nn_i
+        self._d_core_       = d_core
 
 
     def fit_predict(self, X, y=None, **kwargs):
@@ -336,8 +340,8 @@ class MSTBase(BaseEstimator):
         ----------
 
         X : object
-            Typically a matrix with ``n_samples`` rows and ``n_features``
-            columns; see below for more details and options.
+            Typically a matrix or a data frame with ``n_samples`` rows
+            and ``n_features`` columns; see below for more details and options.
 
         y : None
             Ignored.
@@ -368,10 +372,9 @@ class MSTBase(BaseEstimator):
         (dense ``numpy.ndarray``, or an object coercible to)
         with ``n_samples`` rows and ``n_features`` columns.
 
-        In the latter case, it might be a good idea to standardise
-        or at least somehow preprocess the coordinates of the input data
-        points by calling, for instance,
-        ``X = (X-X.mean(axis=0))/X.std(axis=None, ddof=1)``
+        In the latter case, it might be a good idea to standardise or at least
+        somehow preprocess the coordinates of the input data points by calling,
+        for instance, ``X = (X-X.mean(axis=0))/X.std(axis=None, ddof=1)``
         so that the dataset is centred at 0 and has total variance of 1.
         This way the method becomes translation and scale invariant.
         What's more, if data are recorded with small precision (say, up
@@ -640,17 +643,17 @@ class MSTOutlierDetector(MSTBase):
 #                 # do nothing
 #                 pass
 #             elif cur_state["postprocess"] == "midliers":
-#                 assert self._nn_i is not None
-#                 assert self._nn_i.shape[1] >= self.M
+#                 assert self._nn_i_ is not None
+#                 assert self._nn_i_.shape[1] >= self.M
 #                 for i in range(start_partition, self.labels_.shape[0]):
 #                     self.labels_[i, :] = internal.merge_midliers(
-#                         self._tree_i, self.labels_[i, :],
-#                         self._nn_i, self.M
+#                         self._tree_i_, self.labels_[i, :],
+#                         self._nn_i_, self.M
 #                     )
 #             elif cur_state["postprocess"] == "all":
 #                 for i in range(start_partition, self.labels_.shape[0]):
 #                     self.labels_[i, :] = internal.merge_all(
-#                         self._tree_i, self.labels_[i, :]
+#                         self._tree_i_, self.labels_[i, :]
 #                     )
 #             # elif cur_state["postprocess"] == "none":
 #             #     pass

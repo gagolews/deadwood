@@ -236,7 +236,7 @@ cpdef tuple mst_from_complete(
     ----------
 
     .. [1]
-        V. Jarník, O jistém problému minimálním,
+        V. Jarník, O jistém problému minimálním (z dopisu panu O. Borůvkovi),
         Práce Moravské Přírodovědecké Společnosti 6 (1930) 57–63.
 
     .. [2]
@@ -320,20 +320,20 @@ cpdef tuple mst_from_distance(
     ----------
 
     .. [1]
-        Jarník V., O jistém problému minimálním,
-        Práce Moravské Přírodovědecké Společnosti 6 (1930) 57–63.
+        V. Jarník, O jistém problému minimálním (z dopisu panu O. Borůvkovi),
+        Práce Moravské Přírodovědecké Společnosti 6, 1930, 57–63
 
     .. [2]
-        Olson C.F., Parallel algorithms for hierarchical clustering,
-        Parallel Computing 21(8) (1995) 1313–1325.
+        C.F. Olson, Parallel algorithms for hierarchical clustering,
+        Parallel Computing 21(8), 1995, 1313–1325
 
     .. [3]
-        Prim R., Shortest connection networks and some generalizations,
-        The Bell System Technical Journal 36(6) (1957) 1389–1401.
+        R. Prim, Shortest connection networks and some generalizations,
+        The Bell System Technical Journal 36(6), 1957, 1389–1401
 
-    .. [4] Campello R.J.G.B., Moulavi D., Sander J.,
+    .. [4] R.J.G.B. Campello, D. Moulavi, J. Sander,
         Density-based clustering based on hierarchical density estimates,
-        Lecture Notes in Computer Science 7819 (2013) 160-172.
+        Lecture Notes in Computer Science 7819, 2013, 160-172
 
 
     Parameters

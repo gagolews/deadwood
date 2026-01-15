@@ -334,11 +334,12 @@ struct CDistanceCosine : public CDistance<T>  {
             __buf[w] = 0.0;
 
             for (Py_ssize_t u=0; u<d; ++u) {
-                __buf[w] -= X[d*i+u]*X[d*w+u];
+                __buf[w] += X[d*i+u]*X[d*w+u];
             }
             __buf[w] /= __norm[i];
             __buf[w] /= __norm[w];
-            __buf[w] += 1.0;
+            //__buf[w] = sqrt(2.0*(1.0-__buf[w]));
+            __buf[w] = 1.0-__buf[w];
         }
         return __buf;
     }
@@ -474,14 +475,14 @@ struct CMstTriple
  *  References:
  *  ----------
  *
- *  V. Jarník, O jistem problemu minimalnim,
- *  Prace Moravske Prirodovedecke Spolecnosti 6 (1930) 57-63.
+ *  V. Jarník, O jistem problemu minimalnim (z dopisu panu O. Borůvkovi),
+ *  Prace Moravske Prirodovedecke Spolecnosti 6, 1930, 57-63
  *
  *  C.F. Olson, Parallel algorithms for hierarchical clustering,
- *  Parallel Computing 21(8) (1995) 1313-1325.
+ *  Parallel Computing 21(8), 1995, 1313-1325
  *
  *  R. Prim, Shortest connection networks and some generalisations,
- *  The Bell System Technical Journal 36(6) (1957) 1389-1401.
+ *  The Bell System Technical Journal 36(6), 1957, 1389-1401
  *
  *
  * @param D a CDistance object such that a call to

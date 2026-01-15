@@ -36,8 +36,8 @@
 #' to determine the MST.  It is quite fast in spaces of low intrinsic
 #' dimensionality, even for 10M points.
 #'
-#' Otherwise, a much slower generic implementation of the Jarník (Prim/Dijkstra)-like
-#' method, which requires \eqn{O(n^2)} time, is used.
+#' Otherwise, a much slower generic implementation of the Jarník
+#' (Prim/Dijkstra)-like method, which requires \eqn{O(n^2)} time, is used.
 #' The algorithm is parallelised; the number of threads is determined
 #' by the \code{OMP_NUM_THREADS} environment variable. As a rule of thumb,
 #' datasets up to 100k points should be processed relatively quickly.
@@ -64,32 +64,32 @@
 #' \code{\link[quitefastmst]{mst_euclid}}
 #'
 #' @references
-#' Jarník V., O jistem problemu minimalnim,
-#' \emph{Prace Moravske Prirodovedecke Spolecnosti} 6, 1930, 57-63.
+#' V. Jarník, O jistem problemu minimalnim (z dopisu panu O. Borůvkovi),
+#' \emph{Prace Moravske Prirodovedecke Spolecnosti} 6, 1930, 57-63
 #'
-#' Olson C.F., Parallel algorithms for hierarchical clustering,
-#' \emph{Parallel Computing} 21, 1995, 1313-1325.
+#' C.F. Olson, Parallel algorithms for hierarchical clustering,
+#' \emph{Parallel Computing} 21, 1995, 1313-1325
 #'
-#' Prim R., Shortest connection networks and some generalisations,
-#' \emph{The Bell System Technical Journal} 36(6), 1957, 1389-1401.
+#' R. Prim, Shortest connection networks and some generalisations,
+#' \emph{The Bell System Technical Journal} 36(6), 1957, 1389-1401
 #'
-#' Borůvka O., O jistém problému minimálním, \emph{Práce Moravské
-#' Přírodovědecké Společnosti} 3, 1926, 37–58.
+#' O. Borůvka, O jistém problému minimálním, \emph{Práce Moravské
+#' Přírodovědecké Společnosti} 3, 1926, 37–58
 #'
-#' Bentley J.L., Multidimensional binary search trees used for associative
+#' J.L. Bentley, Multidimensional binary search trees used for associative
 #' searching, \emph{Communications of the ACM} 18(9), 509–517, 1975,
-#' \doi{10.1145/361002.361007}.
+#' \doi{10.1145/361002.361007}
 #
-#' March W.B., Parikshit R., Gray A., Fast Euclidean minimum spanning
+#' W.B. March, R. Parikshit, A. Gray, Fast Euclidean minimum spanning
 #' tree: Algorithm, analysis, and applications, \emph{Proc. 16th ACM SIGKDD
-#' Intl. Conf. Knowledge Discovery and Data Mining (KDD '10)}, 2010, 603–612.
+#' Intl. Conf. Knowledge Discovery and Data Mining (KDD '10)}, 2010, 603–612
 #'
-#' Campello R.J.G.B., Moulavi D., Sander J.,
+#' R.J.G.B. Campello, D. Moulavi, J. Sander,
 #' Density-based clustering based on hierarchical density estimates,
 #' \emph{Lecture Notes in Computer Science} 7819, 2013, 160-172,
-#' \doi{10.1007/978-3-642-37456-2_14}.
+#' \doi{10.1007/978-3-642-37456-2_14}
 #'
-#' Gagolewski M., TODO, 2026
+#' M. Gagolewski M., deadwood, in preparation, 2026, TODO
 #'
 #'
 #' @param d either a numeric matrix (or an object coercible to one,
