@@ -52,10 +52,9 @@ ctypedef fused floatT:
 
 
 cdef extern from "c_kneedle.h":
-
     Py_ssize_t Ckneedle_increasing[floatT](
         const floatT* x, Py_ssize_t n, bool convex, floatT dt
-    )
+    ) except+
 
 
 cpdef Py_ssize_t kneedle_increasing(
@@ -110,14 +109,251 @@ cpdef Py_ssize_t kneedle_increasing(
 
 
 
-cdef extern from "c_deadwood.h":
 
+
+cdef extern from "c_argfuns.h":
+    # void Cargsort[T](Py_ssize_t* ret, T* x, Py_ssize_t n, bint stable) except+
+    Py_ssize_t Cargkmin[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf) except+
+    # Py_ssize_t Cargkmin[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf)  TODO
+
+
+
+
+cpdef np.ndarray[Py_ssize_t] cummin(T[:] x):
+    """
+    deadwood.cummin(x)
+
+    Cumulative minimum
+
+
+    Parameters
+    ----------
+
+    x : ndarray
+        A vector with *n* elements of type ``int``, ``float``,
+        or ``double``.
+
+
+    Returns
+    -------
+
+    ndarray
+        A vector of length *n* whose ``i``-th element
+        is equal to ``min(x[:i])``.
+
+
+    See Also
+    --------
+
+    deadwood.cummax : Cumulative maximum
+
+
+    Examples
+    --------
+
+    >>> deadwood.cummin(np.r_[3, 4, 2, 1, 5, 6])
+    array([3, 3, 2, 1, 1, 1])
+
+    """
+    cdef Py_ssize_t n = x.shape[0], i
+    cdef np.ndarray[T] ret = np.empty_like(x)
+    ret[0] = x[0]
+    for i in range(1, n):
+        if x[i] <= ret[i-1]:
+            ret[i] = x[i]
+        else:
+            ret[i] = ret[i-1]
+
+    return ret
+
+
+cpdef np.ndarray[Py_ssize_t] cummax(T[:] x):
+    """
+    deadwood.cummax(x)
+
+    Cumulative maximum
+
+
+    Parameters
+    ----------
+
+    x : ndarray
+        A vector with *n* elements of type ``int``, ``float``,
+        or ``double``.
+
+
+    Returns
+    -------
+
+    ndarray
+        A vector of length *n* whose ``i``-th element
+        is equal to ``max(x[:i])``.
+
+
+    See Also
+    --------
+
+    deadwood.cummin : Cumulative minimum
+
+
+    Examples
+    --------
+
+    >>> deadwood.cummax(np.r_[3, 2, 1, 4, 6, 5])
+    array([3, 3, 3, 4, 6, 6])
+
+    """
+    cdef Py_ssize_t n = x.shape[0], i
+    cdef np.ndarray[T] ret = np.empty_like(x)
+    ret[0] = x[0]
+    for i in range(1, n):
+        if x[i] >= ret[i-1]:
+            ret[i] = x[i]
+        else:
+            ret[i] = ret[i-1]
+
+    return ret
+
+
+
+cpdef bool is_increasing(T[:] x):
+    """
+    deadwood.is_increasing(x)
+
+    Verifies if an array is sorted nondecreasingly
+
+
+    Parameters
+    ----------
+
+    x : ndarray
+        A vector with *n* elements of type ``int``, ``float``,
+        or ``double``.
+
+
+    Returns
+    -------
+
+    bool
+
+
+    Examples
+    --------
+
+    >>> deadwood.is_increasing(np.r_[1, 2, 2, 3, 10])
+    True
+
+    >>> deadwood.is_increasing(np.r_[1, 2, 2, 3, 1])
+    False
+
+    """
+    cdef Py_ssize_t n = x.shape[0], i
+    for i in range(1, n):
+        if x[i-1] > x[i]:
+            return False
+
+    return True
+
+
+cpdef Py_ssize_t argkmin(T[::1] x, int k):
+    """
+    deadwood.argkmin(x, k)
+
+    Finds the position of an order statistic.
+    It holds ``argkmin(x, 0) == argmin(x)``, or, more generally,
+    ``argkmin(x, k) == np.argsort(x)[k]``.
+
+
+    Run time is :math:`O(nk)` and working memory is :math:`O(k)`.
+    An insertion sort-like scheme is used to locate the order statistic.
+    In practice, the function is very fast for small `k` and randomly
+    ordered or almost sorted (increasingly) data.
+
+
+    Parameters
+    ----------
+
+    x : ndarray
+        A c_contiguous vector with *n* elements of type ``int``, ``float``,
+        or ``double``.
+
+    k : int
+        An integer between 0 and *n* - 1, preferably small.
+
+
+    Returns
+    -------
+
+    int
+        The index where the (`k`-1)-th smallest value in `x` is located.
+
+
+    Examples
+    --------
+
+    >>> x = np.r_[2, 3, 6, 5, 1, 4]
+    >>> deadwood.argkmin(x, 0) # index of the smallest value
+    4
+    >>> deadwood.argkmin(x, 1) # index of the 2nd smallest value
+    0
+    """
+    cdef Py_ssize_t n = x.shape[0]
+    # TODO: allow returning the k indexes
+    # TODO: argkmax
+    return Cargkmin(&x[0], n, k, <Py_ssize_t*>0)
+
+
+# cpdef np.ndarray[Py_ssize_t] _argsort(np.ndarray[T] x, bint stable=True):
+#     """
+#     (provided for testing only)
+#
+#     Finds the/an ordering permutation
+#
+#
+#     Parameters
+#     ----------
+#
+#     x : ndarray
+#         A vector with *n* elements of type ``int``, ``float``,
+#         or ``double``.
+#
+#     stable : bool
+#         Should a stable (a bit slower) sorting algorithm be used?
+#
+#
+#     Returns
+#     -------
+#
+#     ndarray
+#         An ordering permutation of `x`, an integer vector `o` of length *n*
+#         with elements between 0 and *n* - 1
+#         such that ``x[o[0]] <= x[o[1]] <= ... <= x[o[n-1]]``.
+#
+#
+#     Notes
+#     -----
+#
+#     Finds the/an ordering permutation of a ``c_contiguous`` array `x`
+#     The ordering permutation is uniquely defined provided that
+#     `stable` is ``True``. Otherwise *an* ordering permutation
+#     will be generated.
+#
+#     """
+#     x = np.asarray(x, dtype=x.dtype, order="C")  # ensure c_contiguity
+#     cdef Py_ssize_t n = x.shape[0]
+#     cdef np.ndarray[Py_ssize_t] ret = np.empty(n, dtype=np.intp)
+#     Cargsort(&ret[0], &x[0], n, stable)
+#     return ret
+
+
+
+cdef extern from "c_deadwood.h":
     void Cindex_unskip(
         Py_ssize_t* ind,
         Py_ssize_t m,
         const bool* skip,
         Py_ssize_t n
-    )
+    ) except+
 
     Py_ssize_t Csum_bool(const bool* x, Py_ssize_t n)
 
@@ -126,7 +362,7 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t m,
         Py_ssize_t n,
         Py_ssize_t* deg
-    )
+    ) except+
 
     void Cgraph_vertex_incidences(
         const Py_ssize_t* graph_i,
@@ -134,7 +370,7 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t n,
         Py_ssize_t* cumdeg,
         Py_ssize_t* inc
-    )
+    ) except+
 
     void Cmst_cluster_sizes(
         const Py_ssize_t* mst_i,
@@ -146,7 +382,7 @@ cdef extern from "c_deadwood.h":
         const Py_ssize_t* mst_cumdeg,
         const Py_ssize_t* mst_inc,
         const bool* mst_skip
-    )
+    ) except+
 
     void Cmst_label_imputer(
         const Py_ssize_t* mst_i,
@@ -156,13 +392,13 @@ cdef extern from "c_deadwood.h":
         const Py_ssize_t* mst_cumdeg,
         const Py_ssize_t* mst_inc,
         const bool* mst_skip
-    )
+    ) except+
 
     # void Cmst_trim_branches[floatT](  # [DEPRECATED]
     #     const floatT* mst_d, floatT min_d, Py_ssize_t max_size,
     #     const Py_ssize_t* mst_i, Py_ssize_t m, Py_ssize_t n, Py_ssize_t* c,
     #     const Py_ssize_t* cumdeg, const Py_ssize_t* inc, const bool* mst_skip
-    # )
+    # ) except+
 
 
 cpdef np.ndarray[Py_ssize_t] index_unskip(

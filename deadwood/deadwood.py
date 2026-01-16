@@ -309,6 +309,7 @@ class MSTBase(BaseEstimator):
                 verbose=self.verbose
             )
 
+        assert core.is_increasing(tree_w)
         assert tree_w.shape[0] == n_samples-1
         assert tree_i.shape[0] == n_samples-1
         assert tree_i.shape[1] == 2
