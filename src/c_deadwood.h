@@ -240,6 +240,7 @@ protected:
     const Py_ssize_t n;  // number of vertices
 
     Py_ssize_t* c;  // nullable or length n
+
     const Py_ssize_t* cumdeg;  // nullable or length n+1
     const Py_ssize_t* inc;  // nullable or length 2*m
     const bool* skip_edges;  // nullable or length m

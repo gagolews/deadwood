@@ -51,7 +51,7 @@ ctypedef fused floatT:
     double
 
 
-cdef extern from "../src/c_kneedle.h":
+cdef extern from "c_kneedle.h":
 
     Py_ssize_t Ckneedle_increasing[floatT](
         const floatT* x, Py_ssize_t n, bool convex, floatT dt
@@ -110,7 +110,7 @@ cpdef Py_ssize_t kneedle_increasing(
 
 
 
-cdef extern from "../src/c_deadwood.h":
+cdef extern from "c_deadwood.h":
 
     void Cindex_unskip(
         Py_ssize_t* ind,

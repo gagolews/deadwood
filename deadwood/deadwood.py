@@ -181,6 +181,8 @@ class MSTBase(BaseEstimator):
         # "protected" slots
         self._tree_w_            = None
         self._tree_i_            = None
+        self._tree_cumdeg_       = None
+        self._tree_inc_          = None
         self._nn_w_              = None
         self._nn_i_              = None
         self._d_core_            = None
@@ -241,6 +243,8 @@ class MSTBase(BaseEstimator):
 
         tree_w     = None
         tree_i     = None
+        cumdeg     = None
+        inc        = None
         nn_w       = None
         nn_i       = None
         d_core     = None
@@ -316,6 +320,10 @@ class MSTBase(BaseEstimator):
             assert d_core.shape[0] == n_samples
 
 
+        cumdeg, inc = core.graph_vertex_incidences(tree_i, n_samples)
+        assert cumdeg.shape[0] == n_samples+1
+        assert inc.shape[0] == 2*(n_samples-1)
+
         self.__mst_last_params_ = dict()
         self.__mst_last_params_["id(X)"] = id_X
         self.__mst_last_params_["metric"] = self.metric
@@ -326,6 +334,8 @@ class MSTBase(BaseEstimator):
         self.n_features_    = n_features
         self._tree_w_       = tree_w
         self._tree_i_       = tree_i
+        self._tree_cumdeg_  = cumdeg
+        self._tree_inc_     = inc
         self._nn_w_         = nn_w
         self._nn_i_         = nn_i
         self._d_core_       = d_core
@@ -333,7 +343,7 @@ class MSTBase(BaseEstimator):
 
     def fit_predict(self, X, y=None, **kwargs):
         """
-        Perform cluster analysis of a dataset and return the predicted labels.
+        Performs cluster analysis of a dataset and returns the predicted labels.
 
 
         Parameters
@@ -470,6 +480,9 @@ class MSTOutlierDetector(MSTBase):
 
     Parameters
     ----------
+
+    TODO
+
 
     Attributes
     ----------
