@@ -20,9 +20,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dot_oldmst_matrix
+NumericMatrix dot_oldmst_matrix(NumericMatrix X, String distance, int M, bool cast_float32, bool verbose);
+RcppExport SEXP _deadwood_dot_oldmst_matrix(SEXP XSEXP, SEXP distanceSEXP, SEXP MSEXP, SEXP cast_float32SEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< String >::type distance(distanceSEXP);
+    Rcpp::traits::input_parameter< int >::type M(MSEXP);
+    Rcpp::traits::input_parameter< bool >::type cast_float32(cast_float32SEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(dot_oldmst_matrix(X, distance, M, cast_float32, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dot_oldmst_dist
+NumericMatrix dot_oldmst_dist(NumericVector d, int M, bool verbose);
+RcppExport SEXP _deadwood_dot_oldmst_dist(SEXP dSEXP, SEXP MSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type d(dSEXP);
+    Rcpp::traits::input_parameter< int >::type M(MSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(dot_oldmst_dist(d, M, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_deadwood_dot_deadwood", (DL_FUNC) &_deadwood_dot_deadwood, 0},
+    {"_deadwood_dot_oldmst_matrix", (DL_FUNC) &_deadwood_dot_oldmst_matrix, 5},
+    {"_deadwood_dot_oldmst_dist", (DL_FUNC) &_deadwood_dot_oldmst_dist, 3},
     {NULL, NULL, 0}
 };
 

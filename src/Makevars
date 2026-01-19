@@ -3,6 +3,7 @@ PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
 
 SOURCES = \
     RcppDeadwood.cpp \
+    RcppOldmst.cpp \
     RcppExports.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)

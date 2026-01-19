@@ -50,12 +50,12 @@
 #' nearest neighbour (not including self, unlike in Campello et al., 2013).
 #' This pulls outliers away from their neighbours.
 #'
-#' If ``quitefastmst`` is used, then possible ties between mutually
+#' If \pkg{quitefastmst} is used, then possible ties between mutually
 #' reachability distances are resolved in such a way that connecting
 #' to a neighbour of the smallest core distance is preferred.
 #' This leads to MSTs with more leaves and hubs.  Moreover, the leaves are
 #' then reconnected in such a way that they become incident with vertices
-#' that have them amongst their *M* nearest neighbours (if possible without
+#' that have them amongst their \eqn{M} nearest neighbours (if possible without
 #' violating the minimality condition); see (Gagolewski, 2025) and the manual
 #' of \code{\link[quitefastmst]{mst_euclid}} for discussion.
 #'
@@ -117,7 +117,7 @@
 #' @return
 #' Returns a numeric matrix of class \code{mst} with \eqn{n-1} rows and
 #' three columns: \code{from}, \code{to}, and \code{dist} sorted
-#' nondecreasingly. Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
+#' nondecreasingly.  Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
 #' which is incident to the vertices \code{from[i]} and \code{to[i]} with
 #' \code{from[i] < to[i]}  (in 1,...,n)
 #' and \code{dist[i]} gives the corresponding weight, i.e., the
@@ -149,7 +149,6 @@ mst <- function(d, ...)
 {
     UseMethod("mst")
 }
-
 
 
 #' @export

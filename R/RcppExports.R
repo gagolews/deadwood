@@ -5,3 +5,11 @@
     .Call(`_deadwood_dot_deadwood`)
 }
 
+.oldmst.matrix <- function(X, distance = "euclidean", M = 0L, cast_float32 = FALSE, verbose = FALSE) {
+    .Call(`_deadwood_dot_oldmst_matrix`, X, distance, M, cast_float32, verbose)
+}
+
+.oldmst.dist <- function(d, M = 0L, verbose = FALSE) {
+    .Call(`_deadwood_dot_oldmst_dist`, d, M, verbose)
+}
+
