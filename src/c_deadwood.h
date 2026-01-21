@@ -26,27 +26,27 @@
 
 
 
-/*! Translate indexes based on a skip array.
+/*! Decode indexes based on a skip array.
  *
  * If `skip=[False, True, False, False, True, False, False]`,
- * then the indexes in ind are mapped in such a way that:
- * 0 -> 0,
- * 1 -> 2,
- * 2 -> 3,
- * 3 -> 5,
- * 4 -> 6.
+ * then the indexes in `ind` are mapped in such a way that:
+ * 0 → 0,
+ * 1 → 2,
+ * 2 → 3,
+ * 3 → 5,
+ * 4 → 6.
  *
  * This function might be useful if we apply a method on `X[~skip,:]`
- * (a subset of rows in `X`), obtain a vector of indexes `ind` relative
- * to the indexes of rows in `X[~skip,:]` as result, and wish to translate `ind`
+ * (a subset of rows in `X`), obtain a vector of indexes `ind` relative to
+ * the indexes of rows in `X[~skip,:]` as a result, and wish to translate `ind`
  * back to the original row space of `X[:,:]`.
  *
- * For instance, `index_unskip([0, 1, 2], [True, False, True, False, False])`
- * yields `[1, 3, 4]`.
+ * For instance, `index_unskip([0, 2, 1], [True, False, True, False, False])`
+ * yields `[1, 4, 3]`.
  *
- * @param ind [in/out] array of m indexes to translate (does not have to be sorted)
+ * @param ind [in/out] array of m indexes in 0..k-1 to translate
  * @param m size of ind
- * @param skip Boolean array of size n
+ * @param skip Boolean array of size n with k elements equal to False
  * @param n size of skip
  */
 void Cindex_unskip(
@@ -54,26 +54,79 @@ void Cindex_unskip(
     const bool* skip, Py_ssize_t n
 ) {
     if (m <= 0) return;
+    DEADWOOD_ASSERT(n > 0);
 
-    std::vector<Py_ssize_t> o(m);
-    Cargsort(o.data(), ind, m, false);
-
-    Py_ssize_t j = 0;
+    std::vector<Py_ssize_t> o(n);  // actually, k needed
     Py_ssize_t k = 0;
     for (Py_ssize_t i=0; i<n; ++i) {
-        if (skip[i]) continue;
-
-        if (ind[o[k]] == j) {
-            ind[o[k]] = i;
-            k++;
-
-            if (k == m) return;
-        }
-
-        j++;
+        if (!skip[i]) o[k++] = i;
     }
 
-    throw std::domain_error("index to translate out of range");
+    for (Py_ssize_t i=0; i<m; ++i) {
+        DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < k)
+        ind[i] = o[ind[i]];
+    }
+
+    // std::vector<Py_ssize_t> o(m);
+    // Cargsort(o.data(), ind, m, false);
+    //
+    // Py_ssize_t j = 0;
+    // Py_ssize_t k = 0;
+    // for (Py_ssize_t i=0; i<n; ++i) {
+    //     if (skip[i]) continue;
+    //
+    //     if (ind[o[k]] == j) {
+    //         ind[o[k]] = i;
+    //         k++;
+    //
+    //         if (k == m) return;
+    //     }
+    //
+    //     j++;
+    // }
+    //
+    // throw std::domain_error("index to translate out of range");
+}
+
+
+/*! Encode indexes based on a skip array.
+ *
+ * If `skip=[False, True, False, False, True, False, False]`,
+ * then the indexes in `ind` are mapped in such a way that:
+ * 0 ← 0,
+ * 1 ← 2,
+ * 2 ← 3,
+ * 3 ← 5,
+ * 4 ← 6,
+ * i.e., the indexes for which `skip` is False are mapped
+ * to consecutive integers.  All other indexes are assigned the value -1.
+ *
+ * For instance, `index_skip([1, 4, 3], [True, False, True, False, False])`
+ * yields `[0, 2, 1]`.
+ *
+ * @param ind [in/out] array of m indexes in 0..n-1 to translate
+ * @param m size of ind
+ * @param skip Boolean array of size n
+ * @param n size of skip
+ */
+void Cindex_skip(
+    Py_ssize_t* ind, Py_ssize_t m,
+    const bool* skip, Py_ssize_t n
+) {
+    if (m <= 0) return;
+    DEADWOOD_ASSERT(n > 0);
+
+    std::vector<Py_ssize_t> o(n);
+    Py_ssize_t k = 0;
+    for (Py_ssize_t i=0; i<n; ++i) {
+        if (skip[i]) o[i] = -1;
+        else o[i] = (k++);
+    }
+
+    for (Py_ssize_t i=0; i<m; ++i) {
+        DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < n)
+        ind[i] = o[ind[i]];
+    }
 }
 
 

@@ -44,6 +44,15 @@ class MSTBase(BaseEstimator):
     :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
     spanning tree-based clustering and outlier detection algorithms [2]_.
 
+    A minimum spanning tree (MST) provides a computationally
+    convenient representation of a dataset: the `n` points are connected with
+    each other via `n-1` shortest segments.  Provided that the dataset
+    has been appropriately preprocessed so that the pairwise distances
+    are informative, an MST can be applied in outlier detection,
+    clustering, density reduction, and many other topological data
+    analysis tasks.
+
+
 
     Parameters
     ----------
@@ -64,15 +73,14 @@ class MSTBase(BaseEstimator):
 
         For ``"precomputed"``, the `X` argument to the ``fit`` method
         must be a distance vector or a square-form distance matrix;
-        see ``scipy.spatial.distance.pdist``.
+        see :any:`scipy.spatial.distance.pdist`.
 
         Determining minimum spanning trees with respect to the Euclidean
-        distance (the default) is much faster than with other metrics
-        thanks to the `quitefastmst <https://quitefastmst.gagolewski.com/>`_
-        package.
+        distance is much faster than with other metrics thanks to the
+        `quitefastmst <https://quitefastmst.gagolewski.com/>`_ package.
 
     quitefastmst_params : dict or None
-        Additional parameters to be passed to ``quitefastmst.mst_euclid``
+        Additional parameters to be passed to :any:`quitefastmst.mst_euclid`
         if ``metric`` is ``"l2"``.
 
     verbose : bool
@@ -83,30 +91,25 @@ class MSTBase(BaseEstimator):
     Notes
     -----
 
-    A minimum spanning tree (MST) of the graph representing
-    the points whose edge weights correspond to the distances between
-    the observations is a computationally convenient and somewhat informative
-    representation a dataset.
+    If ``metric`` is ``"l2"``, then the MST is computed via a call to
+    :any:`quitefastmst.mst_euclid`.  It is efficient in low-dimensional spaces.
+    Otherwise, a general-purpose implementation of the Jarník
+    (Prim/Dijkstra)-like     :math:`O(n^2)`-time algorithm is called.
 
-    If the Euclidean distance is selected, then ``quitefastmst.mst_euclid`` is
-    called to compute the MST.  It is efficient in low-dimensional spaces.
-    Otherwise, an implementation of the Jarník (Prim/Dijkstra)-like
-    :math:`O(n^2)`-time algorithm is called.
-
-    If *M > 0*, then the minimum spanning tree is computed with respect to the
-    mutual reachability distance (based, e.g., on the Euclidean metric) [1]_.
-    Formally, the distance :math:`d_M(i,j)` is used instead of the
-    chosen "raw" distance, :math:`d(i,j)`. It holds
-    :math:`d_M(i,j)=\\max\\{d(i,j), c_M(i), c_M(j)\\}`, where the "core"
-    distance :math:`c_M(i)` is given by :math:`d(i,k)` with :math:`k` being
+    If *M > 0*, then the minimum spanning tree is computed with respect to a
+    mutual reachability distance [1]_:
+    :math:`d_M(i,j)=\\max\\{d(i,j), c_M(i), c_M(j)\\}`, where
+    :math:`d(i,j)` is an ordinary distance and :math:`c_M(i) is the core
+    distance given by :math:`d(i,k)` with :math:`k` being
     :math:`i`'s :math:`M`-th nearest neighbour (not including self,
     unlike in [1]_).  This pulls outliers away from their neighbours.
 
-    If ``quitefastmst`` is used, then possible ties between mutually
-    reachability distances are resolved in such a way that connecting
-    to a neighbour of the smallest core distance is preferred.
-    This leads to MSTs with more leaves and hubs.  Moreover, the leaves are
-    then reconnected so that they become incident with vertices
+    If ``quitefastmst`` is used, by passing
+    ``dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min")``
+    to ``quitefastmst_params``, connecting to a neighbour of the smallest core
+    distance is preferred when resolving ties between mutual reachability
+    distances.  This leads to MSTs with more leaves and hubs.  Moreover,
+    the leaves are then reconnected so that they become incident with vertices
     that have them amongst their *M* nearest neighbours (if this is possible
     without violating the minimality condition); see [3]_ for discussion.
 
@@ -120,22 +123,21 @@ class MSTBase(BaseEstimator):
     Attributes
     ----------
 
-    labels_ : ndarray
+    n_samples_ : int
+        The number of points in the dataset.
+
+    n_features_ : int or None
+        The number of features in the dataset.
+
+    labels_ : ndarray of length n_samples_
         Detected cluster labels or outlier flags.
 
-        For clustering, ``labels_[i]`` gives the cluster ID
-        (between 0 and `n_clusters_` - 1) of the `i`-th object.
+        For clustering, ``labels_[i]`` gives the cluster ID of the `i`-th object
+        (between 0 and `n_clusters_` - 1).
 
         For outlier detection, ``1`` denotes an inlier.
 
         Outliers are labelled ``-1``.
-
-    n_samples_ : int
-        The number of points in the dataset.
-
-    n_features_ : int
-        The number of features in the dataset.
-        If the information is not available, it will be set to ``None``.
 
 
     References
@@ -358,7 +360,7 @@ class MSTBase(BaseEstimator):
             Ignored.
 
         **kwargs : dict
-            Arguments to be passed to ``fit``.
+            Arguments to be passed to :any:`fit`.
 
 
         Returns
@@ -373,14 +375,14 @@ class MSTBase(BaseEstimator):
 
         Acceptable `X` types are as follows.
 
-        For `metric` of ``"precomputed"``, `X` should either
+        For ``metric=="precomputed"``, `X` should either
         be a distance vector of length ``n_samples*(n_samples-1)/2``
-        (see ``scipy.spatial.distance.pdist``) or a square distance matrix
+        (see :any:`scipy.spatial.distance.pdist`) or a square distance matrix
         of shape ``(n_samples, n_samples)``
-        (see ``scipy.spatial.distance.squareform``).
+        (see :any:`scipy.spatial.distance.squareform`).
 
         Otherwise, `X` should be real-valued matrix
-        (dense ``numpy.ndarray``, or an object coercible to)
+        (dense ``numpy.ndarray`` or an object coercible to)
         with ``n_samples`` rows and ``n_features`` columns.
 
         In the latter case, it might be a good idea to standardise or at least
@@ -390,10 +392,7 @@ class MSTBase(BaseEstimator):
         This way the method becomes translation and scale invariant.
         What's more, if data are recorded with small precision (say, up
         to few decimal digits), adding a tiny bit of Gaussian noise will
-        ensure the solution is unique (note that this generally applies
-        to other distance-based clustering algorithms as well).
-
-        For the clustering result, refer to the `labels_` attribute.
+        ensure the MST is unique for `M ≤ 1`.
         """
         if y is not None:  # it is not a transductive classifier
             raise ValueError("y should be None")
@@ -405,12 +404,19 @@ class MSTBase(BaseEstimator):
 
 class MSTClusterer(MSTBase):
     """
-    The base class for :any:`deadwood.Deadwood` and other
-    spanning tree-based outlier detection algorithms [2]_.
+    The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
+    :any:`lumbermark.Lumbermark`, and other spanning tree-based clustering
+    algorithms [1]_.
+
+    By removing `k-1` edges from a spanning tree, we form `k` connected
+    components which can be conceived as clusters.
 
 
     Parameters
     ----------
+
+    M, metric, quitefastmst_params, verbose
+        see :any:`deadwood.MSTBase`
 
     n_clusters : int
         The number of clusters to detect.
@@ -419,20 +425,35 @@ class MSTClusterer(MSTBase):
     Attributes
     ----------
 
-    labels_ : ndarray
+    n_samples_, n_features_
+            see :any:`deadwood.MSTBase`
+
+    labels_ : ndarray of length n_samples_
         Detected cluster labels.
 
-        ``labels_[i]`` gives the cluster ID (between 0 and `n_clusters_` - 1)
-        of the `i`-th input point.
+        ``labels_[i]`` gives the cluster ID of the `i`-th input point
+        (between 0 and `n_clusters_`-1).
 
         Eventual outliers are labelled ``-1``.
 
     n_clusters_ : int
         The actual number of clusters detected by the algorithm.
 
-        It can be different from the requested one if there are too many
-        noise points in the dataset.
+        If it is different from the requested one, a warning is generated.
 
+    _cut_edges_ : ndarray of length n_clusters_-1
+        Indexes of the MST edges whose removal lead to the formation
+        of the detected n_clusters_ connected components (clusters).
+
+
+    References
+    ----------
+
+    .. [1]
+        M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
+        Clustering with minimum spanning trees: How good can it be?,
+        *Journal of Classification* 42, 2025, 90-112,
+        https://doi.org/10.1007/s00357-024-09483-1
     """
     def __init__(
             self,
@@ -443,6 +464,7 @@ class MSTClusterer(MSTBase):
             quitefastmst_params=None,
             verbose=False
         ):
+        # # # # # # # # # # # #
         super().__init__(
             M=M,
             metric=metric,
@@ -453,6 +475,7 @@ class MSTClusterer(MSTBase):
         self.n_clusters  = n_clusters  # requested number of clusters
 
         self.n_clusters_ = None  # actual number of clusters detected
+        self._cut_edges_ = None
 
 
     def _check_params(self):
@@ -460,7 +483,6 @@ class MSTClusterer(MSTBase):
 
         self.n_clusters = int(self.n_clusters)
         if self.n_clusters < 0: raise ValueError("n_clusters must be >= 0")
-
 
 
     def __sklearn_tags__(self):
@@ -474,21 +496,24 @@ class MSTClusterer(MSTBase):
 
 class MSTOutlierDetector(MSTBase):
     """
-    The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
-    :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
-    spanning tree-based clustering and outlier detection algorithms [2]_.
+    The base class for :any:`deadwood.Deadwood` and other
+    spanning tree-based outlier detection algorithms.
 
 
     Parameters
     ----------
 
-    TODO
+    M, metric, quitefastmst_params, verbose
+        see :any:`deadwood.MSTBase`
 
 
     Attributes
     ----------
 
-    labels_ : ndarray
+    n_samples_, n_features_
+            see :any:`deadwood.MSTBase`
+
+    labels_ : ndarray of length n_samples_
         ``labels_[i]`` gives the inlier (1) or outlier (-1) status
         of the `i`-th input point.
     """
@@ -500,6 +525,7 @@ class MSTOutlierDetector(MSTBase):
             quitefastmst_params=None,
             verbose=False
         ):
+        # # # # # # # # # # # #
         super().__init__(
             M=M,
             metric=metric,
@@ -507,12 +533,179 @@ class MSTOutlierDetector(MSTBase):
             verbose=verbose
         )
 
+
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         tags.estimator_type = "outlier_detector"
         if tags.transformer_tags is not None:
             tags.transformer_tags.preserves_dtype = []
         return tags
+
+
+
+class MSTOutlierDetector(Deadwood):
+    """
+    Deadwood [1]_ is an anomaly detection algorithm based on Euclidean minimum
+    spanning trees that trims long segments and marks small debris as outliers.
+    More precisely, edges with weights beyond the detected elbow point [2]_
+    are removed and all resulting connected components whose sizes are smaller
+    than a given threshold are considered outliers.
+
+    Mutual reachability minimum spanning trees, where peripheral points
+    are pulled farther away from each other [3]_, are also supported.
+
+
+    Parameters
+    ----------
+
+    M, metric, quitefastmst_params, verbose
+        see :any:`deadwood.MSTBase`
+
+    contamination : ``"auto"`` or float, default=``"auto"``
+        The estimated (approximate) proportion of outliers in the data set.
+        If ``"auto"``, the contamination amount will be determined
+        by identifying the most significant elbow point of the curve
+        comprised of increasingly ordered tree edge weights.
+
+    max_debris_size :  ``"auto"`` or int, default=``"auto"``
+        The maximal size of the leftover connected components that
+        will be considered outliers.  If ``"auto"``, ``sqrt(n_samples)``
+        is assumed.
+
+
+    Attributes
+    ----------
+
+    n_samples_, n_features_
+            see :any:`deadwood.MSTBase`
+
+    labels_ : ndarray of length n_samples_
+        ``labels_[i]`` gives the inlier (1) or outlier (-1) status
+        of the `i`-th input point.
+
+
+    References
+    ----------
+
+    .. [1]
+        M. Gagolewski, *deadwood*, in preparation, 2026, TODO
+
+    .. [2]
+        V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
+        in a haystack: Detecting knee points in system behavior*,
+        In: *31st Intl. Conf. Distributed Computing Systems Workshops*,
+        2011, 166-171, https://doi.org/10.1109/ICDCSW.2011.20
+
+    .. [3]
+        R.J.G.B. Campello, D. Moulavi, J. Sander,
+        Density-based clustering based on hierarchical density estimates,
+        *Lecture Notes in Computer Science* 7819, 2013, 160-172,
+        https://doi.org/10.1007/978-3-642-37456-2_14
+    """
+    def __init__(
+            self,
+            *,
+            contamination="auto",
+            max_debris_size="auto",
+            M=0,
+            metric="l2",
+            quitefastmst_params=dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
+            verbose=False
+        ):
+        # # # # # # # # # # # #
+        super().__init__(
+            M=M,
+            metric=metric,
+            quitefastmst_params=quitefastmst_params,
+            verbose=verbose
+        )
+
+        self.contamination   = contamination
+        self.max_debris_size = max_debris_size
+
+
+    def _check_params(self):
+        super()._check_params()
+
+        if self.contamination != "auto":
+            pass
+        else:
+            self.contamination = float(self.contamination)
+            if not 0 <= self.contamination <= 0.5:
+                raise ValueError("contamination must be 'auto' or in [0, 0.5]")
+
+        if self.max_debris_size != "auto":
+            pass
+        else:
+            self.max_debris_size = int(self.max_debris_size)
+            if self.max_debris_size <= 0:
+                raise ValueError("max_debris_size must be 'auto' or > 0")
+
+
+    def fit(self, X, y=None):
+        """
+        Detects outliers in a dataset.
+
+
+        Parameters
+        ----------
+
+        X : object
+            Typically a matrix or a data frame with ``n_samples`` rows
+            and ``n_features`` columns;
+            see :any:`deadwood.MSTBase.fit_predict` for more details.
+
+        y : None
+            Ignored.
+
+
+        Returns
+        -------
+
+        self : deadwood.Deadwood
+            The object that the method was called on.
+
+
+        Notes
+        -----
+
+        Refer to the `labels_` attribute for the result.
+        """
+        self.labels_ = None
+
+        self._check_params()  # re-check, they might have changed
+        self._get_mst(X)  # sets n_samples_, n_features_, _tree_w, _tree_i, _d_core, etc.
+
+
+        max_debris_size_ = self.max_debris_size
+        if max_debris_size_ == "auto":
+            max_debris_size_ = max(1, int(np.sqrt(self.n_samples_)))
+
+        contamination_ = self.contamination
+        if contamination_ == "auto":
+            #elbow....
+            pass  # TODO
+
+        # m = len(mst_d)
+        # if outliers_fraction == "auto":
+        #     p0 = 0.5
+        #     sub_mst_d = mst_d[int(m*p0):]
+        #     thr_i = deadwood.kneedle_increasing(sub_mst_d, convex=True, dt=0.01)
+        #     if thr_i == 0: thr_i = m-1
+        #     else: thr_i += int(m*p0)
+        #     #thr_d = sub_mst_d[thr_i]
+        # else:
+        #     thr_i = int(m*(1.0-outliers_fraction))
+        #     #thr_d = np.quantile(mst_d, 1.0-outliers_fraction)  # it's sorted...  -> nth_element
+        #
+        #
+        # #skip_edges = (mst_d > thr_d)  # it's sorted...
+        # skip_edges = np.zeros(m, bool)
+        # skip_edges[(thr_i+1):] = True
+        #
+        # l, s = deadwood.mst_cluster_sizes(mst_i, skip_edges)
+        #
+        # return (s[l] <= max_size).astype(int)
 
 
 # ###############################################################################

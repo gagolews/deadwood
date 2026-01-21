@@ -6,8 +6,8 @@
 # cython: language_level=3
 
 """
-The "old" (<=2025), slow yet more universal functions to compute
-k-nearest neighbours and minimum spanning trees.
+Functions to compute k-nearest neighbours and minimum spanning trees
+supporting generic distances.
 
 See the `quitefastmst` <https://quitefastmst.gagolewski.com/>
 package for faster algorithms working in the Euclidean space.
@@ -105,113 +105,7 @@ cdef extern from "../src/c_oldmst.h":
     #    T* mst_dist, Py_ssize_t* mst_ind, int* maybe_inexact, bint verbose) except +
 
 
-
-
-
-
 ################################################################################
-
-# cpdef tuple mst_from_nn(  # removed
-#     floatT[:,::1] dist,
-#     Py_ssize_t[:,::1] ind,
-#     floatT[::1] d_core=None,
-#     bint stop_disconnected=True,
-#     bint stop_inexact=False,
-#     bint verbose=False):
-#     """
-#     deadwood.oldmst.mst_from_nn(dist, ind, d_core=None, stop_disconnected=True, stop_inexact=False, verbose=False)
-#
-#     Computes a minimum spanning forest for a (<=k)-nearest neighbour graph [DEPRECATED]
-#
-#
-#     Parameters
-#     ----------
-#
-#     dist : ndarray
-#         A ``c_contiguous`` `ndarray` of shape (n, k).
-#         ``dist[i,:]`` is sorted nondecreasingly for all ``i``,
-#         ``dist[i,j]`` gives the weight of the edge ``{i, ind[i,j]}``
-#     ind : a ``c_contiguous`` ndarray, shape (n,k)
-#         Defines edges of the input graph, interpreted as ``{i, ind[i,j]}``.
-#     d_core : a ``c_contiguous`` ndarray, shape (n,), or ``None``
-#         Core distances for computing the mutual reachability distance,
-#         can be ``None``.
-#     stop_disconnected : bool
-#         Whether to raise an exception if the input graph is not connected.
-#     stop_inexact : bool
-#         Whether to raise an exception if the return MST is definitely
-#         subobtimal.
-#     verbose : bool
-#         Whether to print diagnostic messages.
-#
-#
-#     Returns
-#     -------
-#
-#     tuple like ``(mst_dist, mst_ind)``
-#         Defines the `n-1` edges of the resulting MST.
-#         The `(n-1)`-ary array ``mst_dist`` is such that
-#         ``mst_dist[i]`` gives the weight of the ``i``-th edge.
-#         Moreover, ``mst_ind`` is a matrix with `n-1` rows and 2 columns,
-#         where ``{mst_ind[i,0], mst_ind[i,1]}`` defines the ``i``-th edge of the tree.
-#
-#         The results are ordered w.r.t. nondecreasing weights.
-#         For each ``i``, it holds ``mst_ind[i,0] < mst_ind[i,1]``.
-#
-#         If `stop_disconnected` is ``False``, then the weights of the
-#         last `c-1` edges are set to infinity and the corresponding indexes
-#         are set to -1, where `c` is the number of connected components
-#         in the resulting minimum spanning forest.
-#
-#
-#
-#     See also
-#     --------
-#
-#     Kruskal's algorithm is used.
-#
-#     Note that in general, the sum of weights in an MST of the (<= k)-nearest
-#     neighbour graph might be greater than the sum of weights in a minimum
-#     spanning tree of the complete pairwise distances graph.
-#
-#     If the input graph is not connected, the result is a forest.
-#
-#     """
-#     cdef Py_ssize_t n = dist.shape[0]
-#     cdef Py_ssize_t k = dist.shape[1]
-#
-#     if not (ind.shape[0] == n and ind.shape[1] == k):
-#         raise ValueError("shapes of dist and ind must match")
-#
-#     cdef np.ndarray[Py_ssize_t,ndim=2] mst_ind  = np.empty((n-1, 2), dtype=np.intp)
-#     cdef np.ndarray[floatT]         mst_dist = np.empty(n-1,
-#         dtype=np.float32 if floatT is float else np.float64)
-#
-#     cdef int maybe_inexact
-#
-#     cdef floatT* d_core_ptr = NULL
-#     if d_core is not None:
-#         if not (d_core.shape[0] == n):
-#             raise ValueError("shapes of dist and d_core must match")
-#         d_core_ptr = &d_core[0]
-#
-#     # _openmp_set_num_threads()
-#     cdef Py_ssize_t n_edges = Cmst_from_nn(
-#         &dist[0,0], &ind[0,0],
-#         d_core_ptr,
-#         n, k,
-#         &mst_dist[0], &mst_ind[0,0], &maybe_inexact, verbose)
-#
-#     if stop_disconnected and n_edges < n-1:
-#         raise ValueError("graph is disconnected")
-#
-#     if stop_inexact and maybe_inexact:
-#         raise ValueError("MST maybe inexact")
-#
-#     return mst_dist, mst_ind
-
-
-
 
 cpdef tuple mst_from_complete(
         floatT[:,::1] X,
@@ -222,30 +116,14 @@ cpdef tuple mst_from_complete(
 
     A Jarník (Prim/Dijkstra)-like algorithm for determining
     a(*) minimum spanning tree (MST) of a complete undirected graph
-    with weights given by a symmetric n*n matrix
-    or a distance vector of length n*(n-1)/2.
+    with weights given by a symmetric `n*n` matrix
+    or a distance vector of length `n*(n-1)/2`.
 
     The number of threads used is controlled via the
-    OMP_NUM_THREADS environment variable or via
-    `quitefastmst.omp_set_num_threads` at runtime.
+    ``OMP_NUM_THREADS`` environment variable or via
+    ``quitefastmst.omp_set_num_threads`` at runtime.
 
     (*) Note that there might be multiple minimum trees spanning a given graph.
-
-
-    References
-    ----------
-
-    .. [1]
-        V. Jarník, O jistém problému minimálním (z dopisu panu O. Borůvkovi),
-        Práce Moravské Přírodovědecké Společnosti 6 (1930) 57–63.
-
-    .. [2]
-        C.F. Olson, Parallel algorithms for hierarchical clustering,
-        Parallel Computing 21(8) (1995) 1313–1325.
-
-    .. [3]
-        R. Prim, Shortest connection networks and some generalizations,
-        The Bell System Technical Journal 36(6) (1957) 1389–1401.
 
 
     Parameters
@@ -263,13 +141,31 @@ cpdef tuple mst_from_complete(
 
     pair : tuple
         A pair (mst_dist, mst_ind) defining the n-1 edges of the MST:
+
           a) the (n-1)-ary array mst_dist is such that
           mst_dist[i] gives the weight of the i-th edge;
+
           b) mst_ind is a matrix with n-1 rows and 2 columns,
           where {mst[i,0], mst[i,1]} defines the i-th edge of the tree.
 
         The results are ordered w.r.t. nondecreasing weights.
         For each i, it holds mst[i,0]<mst[i,1].
+
+
+    References
+    ----------
+
+    .. [1]
+        V. Jarník, O jistém problému minimálním (z dopisu panu O. Borůvkovi),
+        Práce Moravské Přírodovědecké Společnosti 6, 1930, 57–63
+
+    .. [2]
+        C.F. Olson, Parallel algorithms for hierarchical clustering,
+        Parallel Computing 21(8), 1995, 1313–1325
+
+    .. [3]
+        R. Prim, Shortest connection networks and some generalizations,
+        The Bell System Technical Journal 36(6), 1957, 1389–1401
     """
     cdef Py_ssize_t d = X.shape[1]
     cdef Py_ssize_t n = X.shape[0]
@@ -308,41 +204,20 @@ cpdef tuple mst_from_distance(
     deadwood.oldmst.mst_from_distance(X, metric="euclidean", d_core=None, verbose=False)
 
     A Jarník (Prim/Dijkstra)-like algorithm for determining
-    a(*) minimum spanning tree (MST) of X with respect to a given metric
-    (distance).  Distances are computed on the fly.  Memory use: O(n*d).
+    a(*) minimum spanning tree (MST) of `X` with respect to a given metric
+    (distance).  Distances are computed on the fly.  Memory use: `O(n*d)`.
 
     The number of threads used is controlled via the
-    OMP_NUM_THREADS environment variable or via
-    `quitefastmst.omp_set_num_threads` at runtime.
-
-
-    References
-    ----------
-
-    .. [1]
-        V. Jarník, O jistém problému minimálním (z dopisu panu O. Borůvkovi),
-        Práce Moravské Přírodovědecké Společnosti 6, 1930, 57–63
-
-    .. [2]
-        C.F. Olson, Parallel algorithms for hierarchical clustering,
-        Parallel Computing 21(8), 1995, 1313–1325
-
-    .. [3]
-        R. Prim, Shortest connection networks and some generalizations,
-        The Bell System Technical Journal 36(6), 1957, 1389–1401
-
-    .. [4] R.J.G.B. Campello, D. Moulavi, J. Sander,
-        Density-based clustering based on hierarchical density estimates,
-        Lecture Notes in Computer Science 7819, 2013, 160-172
+    ``OMP_NUM_THREADS`` environment variable or via
+    ``quitefastmst.omp_set_num_threads`` at runtime.
 
 
     Parameters
     ----------
 
-    X : c_contiguous ndarray, shape (n,d) or,
-            if metric == "precomputed", (n*(n-1)/2,1) or (n,n)
-        n data points in a feature space of dimensionality d
-        or pairwise distances between n points
+    X : c_contiguous ndarray, shape (n,d) or, if metric == "precomputed", (n*(n-1)/2,1) or (n,n)
+        `n` data points in a feature space of dimensionality `d`
+        or pairwise distances between `n` points
 
     metric : string
         one of ``"euclidean"`` (a.k.a. ``"l2"``),
@@ -370,6 +245,26 @@ cpdef tuple mst_from_distance(
 
         The results are ordered w.r.t. nondecreasing weights.
         For each i, it holds mst[i,0]<mst[i,1].
+
+
+    References
+    ----------
+
+    .. [1]
+        V. Jarník, O jistém problému minimálním (z dopisu panu O. Borůvkovi),
+        Práce Moravské Přírodovědecké Společnosti 6, 1930, 57–63
+
+    .. [2]
+        C.F. Olson, Parallel algorithms for hierarchical clustering,
+        Parallel Computing 21(8), 1995, 1313–1325
+
+    .. [3]
+        R. Prim, Shortest connection networks and some generalizations,
+        The Bell System Technical Journal 36(6), 1957, 1389–1401
+
+    .. [4] R.J.G.B. Campello, D. Moulavi, J. Sander,
+        Density-based clustering based on hierarchical density estimates,
+        Lecture Notes in Computer Science 7819, 2013, 160-172
     """
     cdef Py_ssize_t n = X.shape[0]
     cdef Py_ssize_t d = X.shape[1]
@@ -418,46 +313,52 @@ cpdef tuple knn_from_distance(floatT[:,::1] X, Py_ssize_t k,
     """
     deadwood.oldmst.knn_from_distance(X, k, metric="euclidean", d_core=None, verbose=False)
 
-    Determines the first k nearest neighbours of each point in X,
+    Determines the first k nearest neighbours of each point in `X`,
     with respect to a given metric (distance).
     Distances are computed on the fly.
-    Memory use: O(n*k).
+    Memory use: `O(n*k)`.
 
     It is assumed that each query point is not its own neighbour.
 
     The number of threads used is controlled via the
-    OMP_NUM_THREADS environment variable or via
-    `quitefastmst.omp_set_num_threads` at runtime.
+    ``OMP_NUM_THREADS`` environment variable or via
+    ``quitefastmst.omp_set_num_threads`` at runtime.
 
 
     Parameters
     ----------
 
-    X : c_contiguous ndarray, shape (n,d) or,
-            if metric == "precomputed", (n*(n-1)/2,1) or (n,n)
-        n data points in a feature space of dimensionality d
-        or pairwise distances between n points
+    X : c_contiguous ndarray, shape (n,d) or, if `metric == "precomputed"`, (n*(n-1)/2,1) or (n,n)
+        `n` data points in a feature space of dimensionality `d`
+        or pairwise distances between `n` points
+
     k : int < n
         number of nearest neighbours
+
     metric : string
         one of ``"euclidean"`` (a.k.a. ``"l2"``),
         ``"manhattan"`` (synonyms: ``"cityblock"``, ``"l1"``),
         ``"cosine"`` (a.k.a. ``"cosinesimil"``), or ``"precomputed"``.
         More metrics/distances might be supported in future versions.
+
     d_core : c_contiguous ndarray of length n; optional (default=None)
         core distances for computing the mutual reachability distance
+
     verbose: bool
         whether to print diagnostic messages
+
 
     Returns
     -------
 
     pair : tuple
         A pair (dist, ind) representing the k-NN graph, where:
+
             dist : a c_contiguous ndarray, shape (n,k)
                 dist[i,:] is sorted nondecreasingly for all i,
                 dist[i,j] gives the weight of the edge {i, ind[i,j]},
                 i.e., the distance between the i-th point and its j-th NN.
+
             ind : a c_contiguous ndarray, shape (n,k)
                 edge definition, interpreted as {i, ind[i,j]};
                 ind[i,j] is the index of the j-th nearest neighbour of i.
@@ -763,3 +664,108 @@ cpdef tuple knn_from_distance(floatT[:,::1] X, Py_ssize_t k,
 #             l += 1
 #
 #     return ret_nn_dist, ret_nn_ind
+
+
+# cpdef tuple mst_from_nn(  # removed
+#     floatT[:,::1] dist,
+#     Py_ssize_t[:,::1] ind,
+#     floatT[::1] d_core=None,
+#     bint stop_disconnected=True,
+#     bint stop_inexact=False,
+#     bint verbose=False):
+#     """
+#     deadwood.oldmst.mst_from_nn(dist, ind, d_core=None, stop_disconnected=True, stop_inexact=False, verbose=False)
+#
+#     Computes a minimum spanning forest for a (<=k)-nearest neighbour graph [DEPRECATED]
+#
+#
+#     Parameters
+#     ----------
+#
+#     dist : ndarray
+#         A ``c_contiguous`` `ndarray` of shape (n, k).
+#         ``dist[i,:]`` is sorted nondecreasingly for all ``i``,
+#         ``dist[i,j]`` gives the weight of the edge ``{i, ind[i,j]}``
+#
+#     ind : a ``c_contiguous`` ndarray, shape (n,k)
+#         Defines edges of the input graph, interpreted as ``{i, ind[i,j]}``.
+#
+#     d_core : a ``c_contiguous`` ndarray, shape (n,), or ``None``
+#         Core distances for computing the mutual reachability distance,
+#         can be ``None``.
+#
+#     stop_disconnected : bool
+#         Whether to raise an exception if the input graph is not connected.
+#
+#     stop_inexact : bool
+#         Whether to raise an exception if the return MST is definitely
+#         subobtimal.
+#
+#     verbose : bool
+#         Whether to print diagnostic messages.
+#
+#
+#     Returns
+#     -------
+#
+#     tuple like ``(mst_dist, mst_ind)``
+#         Defines the `n-1` edges of the resulting MST.
+#         The `(n-1)`-ary array ``mst_dist`` is such that
+#         ``mst_dist[i]`` gives the weight of the ``i``-th edge.
+#         Moreover, ``mst_ind`` is a matrix with `n-1` rows and 2 columns,
+#         where ``{mst_ind[i,0], mst_ind[i,1]}`` defines the ``i``-th edge of the tree.
+#
+#         The results are ordered w.r.t. nondecreasing weights.
+#         For each ``i``, it holds ``mst_ind[i,0] < mst_ind[i,1]``.
+#
+#         If `stop_disconnected` is ``False``, then the weights of the
+#         last `c-1` edges are set to infinity and the corresponding indexes
+#         are set to -1, where `c` is the number of connected components
+#         in the resulting minimum spanning forest.
+#
+#
+#
+#     See also
+#     --------
+#
+#     Kruskal's algorithm is used.
+#
+#     Note that in general, the sum of weights in an MST of the (<= k)-nearest
+#     neighbour graph might be greater than the sum of weights in a minimum
+#     spanning tree of the complete pairwise distances graph.
+#
+#     If the input graph is not connected, the result is a forest.
+#
+#     """
+#     cdef Py_ssize_t n = dist.shape[0]
+#     cdef Py_ssize_t k = dist.shape[1]
+#
+#     if not (ind.shape[0] == n and ind.shape[1] == k):
+#         raise ValueError("shapes of dist and ind must match")
+#
+#     cdef np.ndarray[Py_ssize_t,ndim=2] mst_ind  = np.empty((n-1, 2), dtype=np.intp)
+#     cdef np.ndarray[floatT]         mst_dist = np.empty(n-1,
+#         dtype=np.float32 if floatT is float else np.float64)
+#
+#     cdef int maybe_inexact
+#
+#     cdef floatT* d_core_ptr = NULL
+#     if d_core is not None:
+#         if not (d_core.shape[0] == n):
+#             raise ValueError("shapes of dist and d_core must match")
+#         d_core_ptr = &d_core[0]
+#
+#     # _openmp_set_num_threads()
+#     cdef Py_ssize_t n_edges = Cmst_from_nn(
+#         &dist[0,0], &ind[0,0],
+#         d_core_ptr,
+#         n, k,
+#         &mst_dist[0], &mst_ind[0,0], &maybe_inexact, verbose)
+#
+#     if stop_disconnected and n_edges < n-1:
+#         raise ValueError("graph is disconnected")
+#
+#     if stop_inexact and maybe_inexact:
+#         raise ValueError("MST maybe inexact")
+#
+#     return mst_dist, mst_ind

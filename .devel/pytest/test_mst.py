@@ -7,7 +7,6 @@ import deadwood
 import quitefastmst
 
 
-
 def mst_check(X, metric='euclidean', **kwargs):
     n = X.shape[0]
     d = X.shape[1]

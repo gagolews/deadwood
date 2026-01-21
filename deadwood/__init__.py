@@ -25,4 +25,5 @@ __version__ = "0.9.0"
 
 from .core import *
 from .deadwood import MSTBase, MSTClusterer, MSTOutlierDetector
+from .deadwood import Deadwood
 # from .deadwood import MSTClusterMixinWithProcessors

@@ -77,7 +77,15 @@ def test_index_unskip():
     assert np.all(deadwood.index_unskip(np.r_[0, 2, 1], np.r_[True, False, True, False, False]) == np.r_[1, 4, 3])
 
 
+def test_index_skip():
+    assert np.all(deadwood.index_skip(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
+    assert np.all(deadwood.index_skip(np.r_[1, 2, 3], np.r_[True, False, False, False]) == np.r_[0, 1, 2])
+    assert np.all(deadwood.index_skip(np.r_[1, 4, 3], np.r_[True, False, True, False, False]) == np.r_[0, 2, 1])
+    assert np.all(deadwood.index_skip(np.r_[0, 1, 4, 3, 2, 0], np.r_[True, False, True, False, False]) == np.r_[-1, 0, 2, 1, -1, -1])
+
+
 if __name__ == "__main__":
     test_deadwood_simple()
     test_deadwood_df()
     test_index_unskip()
+    test_index_skip()

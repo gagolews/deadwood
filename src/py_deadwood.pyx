@@ -100,7 +100,7 @@ cpdef Py_ssize_t kneedle_increasing(
         V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
         in a haystack: Detecting knee points in system behavior*,
         In: *31st Intl. Conf. Distributed Computing Systems Workshops*,
-        2011, pp. 166-171, DOI: 10.1109/ICDCSW.2011.20
+        2011, 166-171, https://doi.org/10.1109/ICDCSW.2011.20
 
     """
     cdef Py_ssize_t n = x.shape[0]
@@ -114,7 +114,7 @@ cpdef Py_ssize_t kneedle_increasing(
 cdef extern from "c_argfuns.h":
     # void Cargsort[T](Py_ssize_t* ret, T* x, Py_ssize_t n, bint stable) except+
     Py_ssize_t Cargkmin[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf) except+
-    # Py_ssize_t Cargkmin[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf)  TODO
+    # Py_ssize_t Cargkmax[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf)  TODO
 
 
 
@@ -247,7 +247,8 @@ cpdef bool is_increasing(T[:] x):
     False
 
     """
-    cdef Py_ssize_t n = x.shape[0], i
+    cdef size_t i
+    cdef size_t n = x.shape[0]
     for i in range(1, n):
         if x[i-1] > x[i]:
             return False
@@ -355,6 +356,13 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t n
     ) except+
 
+    void Cindex_skip(
+        Py_ssize_t* ind,
+        Py_ssize_t m,
+        const bool* skip,
+        Py_ssize_t n
+    ) except+
+
     Py_ssize_t Csum_bool(const bool* x, Py_ssize_t n)
 
     void Cgraph_vertex_degrees(
@@ -410,12 +418,11 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
 
     If ``skip=[False, True, False, False, True, False, False]``,
     then the indexes in `ind` are mapped in such a way that:
-    0 -> 0,
-    1 -> 2,
-    2 -> 3,
-    3 -> 5,
-    4 -> 6.
-
+    0 → 0,
+    1 → 2,
+    2 → 3,
+    3 → 5,
+    4 → 6.
 
     This function might be useful if we apply a method on ``X[~skip,:]``
     (a subset of rows in ``X``), obtain a vector of indexes `ind` relative
@@ -430,9 +437,9 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
     ----------
 
     ind : c_contiguous array of `m` indexes
-        `m` indexes to translate (between `0` and `n-1`)
+        `m` indexes to translate (between `0` and `k-1`)
 
-    skip : Boolean array of length `n`
+    skip : Boolean array of length `n` with `k` elements equal to `False`
         `skip[i]` indicates whether an index `i` was skipped or not
 
 
@@ -440,7 +447,7 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
     -------
 
     out : ndarray
-        `m` translated indexes
+        `m` translated indexes (between `0` and `n-1`)
     """
     cdef Py_ssize_t n = skip.shape[0]
     cdef Py_ssize_t m = ind.shape[0]
@@ -448,6 +455,53 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
     cdef np.ndarray[Py_ssize_t] ret = np.array(ind, dtype=np.intp)
 
     Cindex_unskip(&ret[0], m, &skip[0], n)
+
+    return ret
+
+
+cpdef np.ndarray[Py_ssize_t] index_skip(
+        Py_ssize_t[::1] ind,
+        bool[::1] skip
+    ):
+    """
+    deadwood.index_skip(ind, skip)
+
+    If ``skip=[False, True, False, False, True, False, False]``,
+    then the indexes in `ind` are mapped in such a way that:
+    0 ← 0,
+    1 ← 2,
+    2 ← 3,
+    3 ← 5,
+    4 ← 6,
+    i.e., the indexes for which `skip` is False are mapped
+    to consecutive integers.  All other indexes are assigned the value -1.
+
+    For instance, ``index_skip([1, 4, 3], [True, False, True, False, False])``
+    yields ``[0, 2, 1]``.
+
+
+    Parameters
+    ----------
+
+    ind : c_contiguous array of `m` indexes
+        `m` indexes to translate (between `0` and `n-1`)
+
+    skip : Boolean array of length `n` with `k` elements equal to `False`
+        `skip[i]` indicates whether an index `i` was skipped or not
+
+
+    Returns
+    -------
+
+    out : ndarray
+        `m` translated indexes (between `-1` and `k-1`)
+    """
+    cdef Py_ssize_t n = skip.shape[0]
+    cdef Py_ssize_t m = ind.shape[0]
+
+    cdef np.ndarray[Py_ssize_t] ret = np.array(ind, dtype=np.intp)
+
+    Cindex_skip(&ret[0], m, &skip[0], n)
 
     return ret
 
@@ -460,7 +514,7 @@ cpdef np.ndarray[Py_ssize_t] graph_vertex_degrees(
     deadwood.graph_vertex_degrees(graph_i, n)
 
     Determines the degrees of all nodes in an undirected simple graph over
-    a vertex set {0,...,n-1} specified via an adjacency list.
+    a vertex set `{0,...,n-1}` specified via an adjacency list.
 
 
     Parameters
@@ -479,7 +533,7 @@ cpdef np.ndarray[Py_ssize_t] graph_vertex_degrees(
 
     deg : ndarray, shape(n,)
         an integer array of length `n`; ``deg[i]`` denotes the degree of
-        the `i`-th vertex; for instance, ``deg[i]==1`` designates a leaf
+        the `i`-th vertex;  for instance, ``deg[i]==1`` designates a leaf
     """
     if graph_i.shape[1] != 2: raise ValueError("graph_i must have two columns")
     cdef Py_ssize_t m = graph_i.shape[0]
@@ -495,8 +549,8 @@ cpdef tuple graph_vertex_incidences(Py_ssize_t[:,::1] graph_i, Py_ssize_t n):
     """
     deadwood.graph_vertex_incidences(graph_i, n)
 
-    Computes the incidence lists of all vertices in an undirected simple graph over
-    a vertex set {0,...,n-1} specified via an adjacency list.
+    Computes the incidence lists of all vertices in an undirected simple graph
+    over a vertex set {0,...,n-1} specified via an adjacency list.
 
 
     Parameters
@@ -542,7 +596,7 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
     deadwood.mst_label_imputer(mst_i, labels, mst_skip=None)
 
     Imputes all missing labels down below a given tree's branches.
-    All nodes in branches with class ID of -1 will be assigned
+    All nodes in branches with class ID of `-1` will be assigned
     their parent node's class.
 
 
@@ -553,8 +607,8 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
         `n-1` undirected edges of the spanning tree/forest
 
     labels : c_contiguous array of shape (n,)
-        `labels[i]` gives the cluster ID (in {-1, 0, 1, ..., k-1} for some `k`)
-        of the `i`-th object;  class -1 represents the missing values
+        `labels[i]` gives the cluster ID (in `{-1, 0, 1, ..., k-1}` for some `k`)
+        of the `i`-th object;  class `-1` represents the missing values
         to be imputed
 
     mst_skip : c_contiguous array of length n-1 or None
