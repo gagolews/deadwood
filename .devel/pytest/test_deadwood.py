@@ -14,7 +14,7 @@ import pandas as pd
 
 
 
-def test_deadwood_simple():
+def test_deadwood_base_classes():
     np.random.seed(123)
     X = np.random.rand(100, 2)
     D = deadwood.MSTClusterer(n_clusters=2, verbose=True)
@@ -71,6 +71,40 @@ def test_deadwood_df():
     assert sum_w1 == sum_w2
 
 
+def test_deadwood_outliers():
+    np.random.seed(123)
+    n = 140
+    m = 19
+    r = np.random.rand(n)
+    u = np.random.rand(n)*2*np.pi
+    t = np.linspace(0, 2*np.pi, m+1)[1:]
+    X = np.vstack((
+        r.reshape(-1,1)*np.c_[np.cos(u), np.sin(u)],
+        5*np.c_[np.cos(t), np.sin(t)]
+    ))
+    y_true = np.repeat([1, -1], [n, m])
+
+    D = deadwood.Deadwood(contamination=0)
+    y_pred = D.fit_predict(X)
+    # print(y_pred)
+    assert D.contamination_ == 0.0
+    assert np.all(y_pred == np.repeat(1, X.shape[0]))
+
+    D = deadwood.Deadwood(contamination=m/(n+m)).fit(X)
+    y_pred = D.labels_
+    # print(y_pred)
+    assert D.contamination_ == m/(n+m)
+    assert np.all(y_pred == y_true)
+
+    D = deadwood.Deadwood()
+    D._ema_dt = 0.01
+    D._max_contamination = 0.37
+    y_pred = D.fit_predict(X)
+    # print(y_pred)
+    assert np.abs(D.contamination_ - m/(n+m))<1e-6
+    assert np.all(y_pred == y_true)
+
+
 def test_index_unskip():
     assert np.all(deadwood.index_unskip(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
     assert np.all(deadwood.index_unskip(np.r_[0, 1, 2], np.r_[True, False, False, False]) == np.r_[1, 2, 3])
@@ -85,7 +119,8 @@ def test_index_skip():
 
 
 if __name__ == "__main__":
-    test_deadwood_simple()
+    test_deadwood_base_classes()
     test_deadwood_df()
+    test_deadwood_outliers()
     test_index_unskip()
     test_index_skip()
