@@ -21,20 +21,20 @@ def test_deadwood_simple():
 
     D._check_params()
     D._get_mst(X)
-    sum_w1 = D._tree_w_.sum()
+    sum_w1 = D._tree_d_.sum()
 
     print("Not recomputing... ", file=sys.stderr, end="")
     D.M = 0
     D._check_params()
     D._get_mst(X)  # not recomputing! See outputs
-    sum_w2 = D._tree_w_.sum()
+    sum_w2 = D._tree_d_.sum()
     assert sum_w1 == sum_w2
     print("[by visual inspection of messages only!] OK", file=sys.stderr)
 
     D.M = 1
     D._check_params()
     D._get_mst(X)
-    sum_w3 = D._tree_w_.sum()
+    sum_w3 = D._tree_d_.sum()
     assert sum_w1 == sum_w3
 
     D = deadwood.MSTClusterer(n_clusters=2, verbose=True, metric="Manhattan")
@@ -46,13 +46,13 @@ def test_deadwood_simple():
     # D.M = 10
     # D._check_params()
     # D._get_mst(X)
-    # sum_w1 = D._tree_w_.sum()
+    # sum_w1 = D._tree_d_.sum()
     #
     # D.metric = "Euclidean"   !!! __buf[w] = sqrt(2.0*(1.0-__buf[w]));
     # X2 = X/np.sqrt(np.sum(X**2,axis=1)).reshape(-1,1)
     # D._check_params()
     # D._get_mst(X2)
-    # sum_w2 = (D._tree_w_).sum()
+    # sum_w2 = (D._tree_d_).sum()
     #
     # assert np.abs(sum_w1-sum_w2)<1e-9
 
@@ -62,12 +62,12 @@ def test_deadwood_df():
     D = deadwood.MSTClusterer(n_clusters=2, verbose=True)
     D._check_params()
     D._get_mst(X)
-    sum_w1 = D._tree_w_.sum()
+    sum_w1 = D._tree_d_.sum()
 
     X = pd.DataFrame(X)
     D._check_params()
     D._get_mst(X)
-    sum_w2 = D._tree_w_.sum()
+    sum_w2 = D._tree_d_.sum()
     assert sum_w1 == sum_w2
 
 

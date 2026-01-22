@@ -181,11 +181,11 @@ class MSTBase(BaseEstimator):
         self.n_features_         = None
 
         # "protected" slots
-        self._tree_w_            = None
+        self._tree_d_            = None
         self._tree_i_            = None
         self._tree_cumdeg_       = None
         self._tree_inc_          = None
-        self._nn_w_              = None
+        self._nn_d_              = None
         self._nn_i_              = None
         self._d_core_            = None
 
@@ -335,11 +335,11 @@ class MSTBase(BaseEstimator):
 
         self.n_samples_     = n_samples
         self.n_features_    = n_features
-        self._tree_w_       = tree_w
+        self._tree_d_       = tree_w
         self._tree_i_       = tree_i
         self._tree_cumdeg_  = cumdeg
         self._tree_inc_     = inc
-        self._nn_w_         = nn_w
+        self._nn_d_         = nn_w
         self._nn_i_         = nn_i
         self._d_core_       = d_core
 
@@ -543,7 +543,7 @@ class MSTOutlierDetector(MSTBase):
 
 
 
-class MSTOutlierDetector(Deadwood):
+class Deadwood(MSTOutlierDetector):
     """
     Deadwood [1]_ is an anomaly detection algorithm based on Euclidean minimum
     spanning trees that trims long segments and marks small debris as outliers.
@@ -623,6 +623,9 @@ class MSTOutlierDetector(Deadwood):
         self.contamination   = contamination
         self.max_debris_size = max_debris_size
 
+        self._max_contamination = 0.5
+        self._ema_dt            = 0.01  # controls the exponential moving average smoothing parameter alpha = 1-exp(-dt) (in elbow detection)
+
 
     def _check_params(self):
         super()._check_params()
@@ -631,8 +634,8 @@ class MSTOutlierDetector(Deadwood):
             pass
         else:
             self.contamination = float(self.contamination)
-            if not 0 <= self.contamination <= 0.5:
-                raise ValueError("contamination must be 'auto' or in [0, 0.5]")
+            if not 0 <= self.contamination <= self._max_contamination_:
+                raise ValueError("contamination must be 'auto' or in [0, %g]" % self._max_contamination_)
 
         if self.max_debris_size != "auto":
             pass
@@ -681,29 +684,23 @@ class MSTOutlierDetector(Deadwood):
         if max_debris_size_ == "auto":
             max_debris_size_ = max(1, int(np.sqrt(self.n_samples_)))
 
-        contamination_ = self.contamination
-        if contamination_ == "auto":
-            #elbow....
-            pass  # TODO
+        m = len(mst_d)
+        thr_i = None
+        if self.contamination == "auto":
+            # find elbow point of the right part of the sorted edge length curve (quantiles)
+            p0 = 1.0-self._max_contamination
+            sub_tree_d = self._tree_d_[int(m*p0):]
+            thr_i = core.kneedle_increasing(sub_tree_d, convex=True, dt=self._ema_dt)
+            if thr_i == 0: thr_i = m-1
+            else: thr_i += int(m*p0)
+        else:
+            thr_i = int(m*(1.0-self.contamination))
 
-        # m = len(mst_d)
-        # if outliers_fraction == "auto":
-        #     p0 = 0.5
-        #     sub_mst_d = mst_d[int(m*p0):]
-        #     thr_i = deadwood.kneedle_increasing(sub_mst_d, convex=True, dt=0.01)
-        #     if thr_i == 0: thr_i = m-1
-        #     else: thr_i += int(m*p0)
-        #     #thr_d = sub_mst_d[thr_i]
-        # else:
-        #     thr_i = int(m*(1.0-outliers_fraction))
-        #     #thr_d = np.quantile(mst_d, 1.0-outliers_fraction)  # it's sorted...  -> nth_element
-        #
-        #
         # #skip_edges = (mst_d > thr_d)  # it's sorted...
         # skip_edges = np.zeros(m, bool)
         # skip_edges[(thr_i+1):] = True
         #
-        # l, s = deadwood.mst_cluster_sizes(mst_i, skip_edges)
+        # l, s = core.mst_cluster_sizes(mst_i, skip_edges)
         #
         # return (s[l] <= max_size).astype(int)
 

@@ -6,7 +6,7 @@ import gc
 import quitefastmst
 import scipy.spatial
 import deadwood
-
+import deadwood.oldmst
 
 
 def knn_oldmst(X, k, Y, metric):

@@ -4,6 +4,7 @@ import scipy.spatial.distance
 import time
 import gc
 import deadwood
+import deadwood.oldmst
 import quitefastmst
 
 
