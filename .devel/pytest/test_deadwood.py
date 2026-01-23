@@ -71,7 +71,7 @@ def test_deadwood_df():
     assert sum_w1 == sum_w2
 
 
-def test_deadwood_outliers():
+def test_deadwood_single():
     np.random.seed(123)
     n = 140
     m = 19
@@ -105,6 +105,33 @@ def test_deadwood_outliers():
     assert np.all(y_pred == y_true)
 
 
+import matplotlib.pyplot as plt
+import genieclust  # TODO
+import lumbermark
+def test_deadwood_multi():
+    np.random.seed(1234)
+    n1, n2 = 1000, 250
+    X = np.vstack((
+        np.random.rand(n1, 2),
+        np.random.rand(n2, 2)+[1.2, 0]
+    ))
+    D = deadwood.Deadwood(M=10).fit(X)
+    y = D.labels_
+    # print(D.contamination_)
+    #genieclust.plots.plot_scatter(X, labels=y)
+    #plt.show()
+
+    L = lumbermark.Lumbermark(10, M=10, min_cluster_factor=0.5).fit(X)
+    y = L.labels_
+    #genieclust.plots.plot_scatter(X, labels=y)
+    #plt.show()
+
+    D = deadwood.Deadwood.from_clusterer(L)
+    o = D.labels_
+    genieclust.plots.plot_scatter(X, labels=o)
+    plt.show()
+
+
 def test_index_unskip():
     assert np.all(deadwood.index_unskip(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
     assert np.all(deadwood.index_unskip(np.r_[0, 1, 2], np.r_[True, False, False, False]) == np.r_[1, 2, 3])
@@ -121,6 +148,7 @@ def test_index_skip():
 if __name__ == "__main__":
     test_deadwood_base_classes()
     test_deadwood_df()
-    test_deadwood_outliers()
+    test_deadwood_single()
+    test_deadwood_multi()
     test_index_unskip()
     test_index_skip()
