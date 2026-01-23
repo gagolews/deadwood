@@ -57,12 +57,12 @@ class MSTBase(BaseEstimator):
     Parameters
     ----------
 
-    M : int
+    M : int, default=0
         Smoothing factor for the mutual reachability distance [1]_.
         *M = 0* and *M = 1* select the original distance as given by
         the `metric` parameter.
 
-    metric : str
+    metric : str, default='l2'
         The metric used to compute the linkage.
 
         One of:
@@ -79,11 +79,11 @@ class MSTBase(BaseEstimator):
         distance is much faster than with other metrics thanks to the
         `quitefastmst <https://quitefastmst.gagolewski.com/>`_ package.
 
-    quitefastmst_params : dict or None
+    quitefastmst_params : dict or None, default=None
         Additional parameters to be passed to :any:`quitefastmst.mst_euclid`
         if ``metric`` is ``"l2"``.
 
-    verbose : bool
+    verbose : bool, default=False
         Whether to print diagnostic messages and progress information
         onto ``stderr``.
 
@@ -129,7 +129,7 @@ class MSTBase(BaseEstimator):
     n_features_ : int or None
         The number of features in the dataset.
 
-    labels_ : ndarray of length n_samples_
+    labels_ : ndarray of shape(n_samples_, )
         Detected cluster labels or outlier flags.
 
         For clustering, ``labels_[i]`` gives the cluster ID of the `i`-th object
@@ -366,7 +366,7 @@ class MSTBase(BaseEstimator):
         Returns
         -------
 
-        labels_ : ndarray
+        labels_ : ndarray of shape (n_samples_)
             `self.labels_` attribute.
 
 
@@ -428,7 +428,7 @@ class MSTClusterer(MSTBase):
     n_samples_, n_features_
             see :any:`deadwood.MSTBase`
 
-    labels_ : ndarray of length n_samples_
+    labels_ : ndarray of shape (n_samples_,)
         Detected cluster labels.
 
         ``labels_[i]`` gives the cluster ID of the `i`-th input point
@@ -441,9 +441,9 @@ class MSTClusterer(MSTBase):
 
         If it is different from the requested one, a warning is generated.
 
-    _cut_edges_ : ndarray of length n_clusters_-1
-        Indexes of the MST edges whose removal lead to the formation
-        of the detected n_clusters_ connected components (clusters).
+    _cut_edges_ : ndarray of shape (n_clusters_-1,)
+        Indexes of the MST edges whose removal forms the n_clusters_ detected
+        connected components (clusters).
 
 
     References
@@ -513,7 +513,7 @@ class MSTOutlierDetector(MSTBase):
     n_samples_, n_features_
             see :any:`deadwood.MSTBase`
 
-    labels_ : ndarray of length n_samples_
+    labels_ : ndarray of shape (n_samples_,)
         ``labels_[i]`` gives the inlier (1) or outlier (-1) status
         of the `i`-th input point.
     """
@@ -561,13 +561,13 @@ class Deadwood(MSTOutlierDetector):
     M, metric, quitefastmst_params, verbose
         see :any:`deadwood.MSTBase`
 
-    contamination : ``"auto"`` or float, default=``"auto"``
+    contamination : 'auto' or float, default='auto'
         The estimated (approximate) proportion of outliers in the data set.
         If ``"auto"``, the contamination amount will be determined
         by identifying the most significant elbow point of the curve
         comprised of increasingly ordered tree edge weights.
 
-    max_debris_size :  ``"auto"`` or int, default=``"auto"``
+    max_debris_size : 'auto' or int, default='auto'
         The maximal size of the leftover connected components that
         will be considered outliers.  If ``"auto"``, ``sqrt(n_samples)``
         is assumed.
@@ -579,7 +579,7 @@ class Deadwood(MSTOutlierDetector):
     n_samples_, n_features_
             see :any:`deadwood.MSTBase`
 
-    labels_ : ndarray of length n_samples_
+    labels_ : ndarray of shape (n_samples_,)
         ``labels_[i]`` gives the inlier (1) or outlier (-1) status
         of the `i`-th input point.
 
@@ -590,6 +590,13 @@ class Deadwood(MSTOutlierDetector):
 
     max_debris_size_ : float
         Computed max debris size.
+
+    _cut_edges_ : ndarray or None
+        n_clusters_-1 indexes of the MST edges whose removal forms
+        n_clusters_ connected components (clusters).
+
+    _skip_edges_ : ndarray or None
+
 
 
     References
@@ -637,6 +644,9 @@ class Deadwood(MSTOutlierDetector):
         self._max_contamination = 0.5
         self._ema_dt            = 0.01  # controls the exponential moving average smoothing parameter alpha = 1-exp(-dt) (in elbow detection)
 
+        self._cut_edges_        = None  # actually, _cut_edges
+        self._skip_edges_       = None
+
 
     def _check_params(self):
         super()._check_params()
@@ -680,6 +690,8 @@ class Deadwood(MSTOutlierDetector):
             tree_i,
             contamination=0.1,
             max_debris_size=50,
+            tree_cumdeg=None,
+            tree_inc=None,
             verbose=False
         ):
 
@@ -693,9 +705,69 @@ class Deadwood(MSTOutlierDetector):
         skip_edges = np.zeros(m, bool)
         skip_edges[weight_threshold_index:] = True
 
-        node_labels, cluster_sizes = core.mst_cluster_sizes(tree_i, skip_edges)
+        node_labels, cluster_sizes = core.mst_cluster_sizes(
+            tree_i, skip_edges, tree_cumdeg, tree_inc
+        )
         is_outlier = (cluster_sizes[node_labels] <= max_debris_size)
-        return is_outlier
+        return is_outlier, skip_edges
+
+
+    @classmethod
+    def from_clusterer(
+            cls,
+            C,
+            contamination="auto",
+            max_debris_size="auto"
+        ):
+        """
+        Detects outliers in a dataset partitioned by a given MST-based
+        clusterer.
+
+
+        Parameters
+        ----------
+
+        C : deadwood.MSTClusterer
+            For example, an object of class :any:`genieclust.Genie` or
+            :any:`lumbermark.Lumbermark` on which `fit` was already called.
+
+        contamination, max_debris_size
+            See :any:`deadwood.Deadwood`
+
+
+        Returns
+        -------
+
+        y : deadwood.Deadwood
+            A new object of class :any:`deadwood.Deadwood`
+            initialised based on `C`'s params.
+
+        """
+        if C._tree_i_ is None or C._tree_d_ is None:
+            raise ValueError("fit() has not yet been called on C")
+
+        if C._cut_edges_ is None:
+            raise ValueError("_cut_edges_ attribute missing in C")
+
+        D = cls(
+            contamination=contamination,
+            max_debris_size=max_debris_size,
+            M=C.M,
+            metric=C.metric,
+            quitefastmst_params=C.quitefastmst_params,
+            verbose=C.verbose
+        )
+
+        D.__dict__.update(C.__dict__)  # copy all attributes
+        D._check_params()  # re-check, they might have changed
+
+        assert False # TODO
+
+        return D
+
+
+
+
 
 
     def fit(self, X, y=None):
@@ -710,6 +782,8 @@ class Deadwood(MSTOutlierDetector):
             Typically a matrix or a data frame with ``n_samples`` rows
             and ``n_features`` columns;
             see :any:`deadwood.MSTBase.fit_predict` for more details.
+
+            TODO: an instance of :any:`deadwood.MSTClusterer`
 
         y : None
             Ignored.
@@ -728,6 +802,7 @@ class Deadwood(MSTOutlierDetector):
         Refer to the `labels_` attribute for the result.
         """
         self.labels_ = None
+        self._skip_edges_ = None
 
         self._check_params()  # re-check, they might have changed
         self._get_mst(X)  # sets n_samples_, n_features_, _tree_w, _tree_i, _d_core, etc.
@@ -745,11 +820,12 @@ class Deadwood(MSTOutlierDetector):
         else:
             self.max_debris_size_ = self.max_debris_size
 
-        is_outlier = Deadwood._find_outliers(
-            self._tree_i_, self.contamination_,
-            self.max_debris_size_, self.verbose
+        is_outlier, skip_edges = Deadwood._find_outliers(
+            self._tree_i_, self.contamination_, self.max_debris_size_,
+            self._tree_cumdeg_, self._tree_inc_, self.verbose
         )
-        self.labels_ = 1-2*(is_outlier).astype(int)  # -1 (True=outlier) and 1 (False=inlier)
+        self.labels_ = 1-2*(is_outlier.astype(int))  # -1 (True=outlier) and 1 (False=inlier)
+        self._skip_edges_ = skip_edges
 
         if self.verbose:
             print("[deadwood] Done.", file=sys.stderr)

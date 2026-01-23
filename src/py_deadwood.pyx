@@ -683,7 +683,7 @@ cpdef tuple mst_cluster_sizes(
         mst_inc=None
     ):
     """
-    deadwood.mst_cluster_sizes(mst_i, mst_skip=None)
+    deadwood.mst_cluster_sizes(mst_i, mst_skip=None, mst_cumdeg=None, mst_inc=None)
 
     Labels connected components in a spanning forest and returns their sizes.
 
@@ -694,11 +694,11 @@ cpdef tuple mst_cluster_sizes(
     mst_i : c_contiguous array of shape (n-1, 2)
         `n-1` undirected edges of the spanning tree
 
-    mst_cumdeg, mst_inc : c_contiguous arrays or None
-        see ``deadwood.graph_vertex_incidences``
-
     mst_skip : c_contiguous array of length n-1 or None
         `mst_skip[i] == True` marks the `i`-th edge as non-existent (ignorable)
+
+    mst_cumdeg, mst_inc : c_contiguous arrays or None
+        see ``deadwood.graph_vertex_incidences``
 
 
     Returns
