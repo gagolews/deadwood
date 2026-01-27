@@ -121,14 +121,17 @@ def test_deadwood_multi():
     #genieclust.plots.plot_scatter(X, labels=y)
     #plt.show()
 
-    L = lumbermark.Lumbermark(10, M=10, min_cluster_factor=0.5).fit(X)
+    L = lumbermark.Lumbermark(2, M=10).fit(X)
     y = L.labels_
     #genieclust.plots.plot_scatter(X, labels=y)
     #plt.show()
 
-    D = deadwood.Deadwood.from_clusterer(L)
-    o = D.labels_
-    genieclust.plots.plot_scatter(X, labels=o)
+    D = deadwood.Deadwood()
+    o = D.fit_predict(L)
+    #w = o.copy(); w[w>0] = y[w>0]
+    #genieclust.plots.plot_scatter(X, labels=o)
+    assert (o[:n1]<0).mean() > 0.1
+    assert (o[n1:]<0).mean() > 0.1
     plt.show()
 
 

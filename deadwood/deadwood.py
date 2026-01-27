@@ -229,30 +229,62 @@ class MSTBase(BaseEstimator):
             raise ValueError("quitefastmst_params must be a dict")
 
 
+    def _check_mst(self):
+        assert self._tree_d_ is not None
+        assert self._tree_d_.shape[0] == self.n_samples_-1
+        assert self._tree_i_.shape[0] == self.n_samples_-1
+        assert self._tree_i_.shape[1] == 2
+        assert core.is_increasing(self._tree_d_)
+        if self.M >= 1:
+            assert self._nn_d_.shape[0]    == self.n_samples_
+            assert self._nn_d_.shape[1]    == self.M
+            assert self._nn_i_.shape[0]    == self.n_samples_
+            assert self._nn_i_.shape[1]    == self.M
+            assert self._d_core_.shape[0]  == self.n_samples_
+        assert self._tree_cumdeg_.shape[0] == self.n_samples_+1
+        assert self._tree_inc_.shape[0]    == 2*(self.n_samples_-1)
+
+
     def _get_mst(self, X):
         # call _check_params() first!
 
-        id_X = id(X)
+        if X is None:
+            # reuse last
+            if self.__mst_last_params_ is None or self._tree_d_ is None:
+                raise ValueError("fit() has not been called yet")
+            self.metric = self.__mst_last_params_["metric"]
+            self.quitefastmst_params = self.__mst_last_params_["quitefastmst_params"]
+            self.M = self.__mst_last_params_["M"]
+        elif isinstance(X, MSTBase):
+            if X.__mst_last_params_ is None or X._tree_d_ is None:
+                raise ValueError("fit() has not been called yet")
+            self.__dict__.update(X.__dict__)  # copy all attributes, overwriting params!
+        elif self.__mst_last_params_ is not None and \
+                self.__mst_last_params_["id(X)"] == id(X) and \
+                self.__mst_last_params_["metric"] == self.metric and \
+                self.__mst_last_params_["quitefastmst_params"] == self.quitefastmst_params and \
+                self.__mst_last_params_["M"] == self.M:
+            # the parameters did not change;
+            # and so the tree does not have to be recomputed
+            pass
+        else:
+            self.__mst_last_params_ = None
 
-        if self.__mst_last_params_ is not None and \
-           self.__mst_last_params_["id(X)"] == id_X and \
-           self.__mst_last_params_["metric"] == self.metric and \
-           self.__mst_last_params_["quitefastmst_params"] == self.quitefastmst_params and \
-           self.__mst_last_params_["M"] == self.M:
-               # the parameters did not change;
-               # and so the tree does not have to be recomputed
-               return
+        if self.__mst_last_params_ is not None:
+            self._check_mst()
+            return
 
-        tree_w     = None
+        tree_d     = None
         tree_i     = None
         cumdeg     = None
         inc        = None
-        nn_w       = None
+        nn_d       = None
         nn_i       = None
         d_core     = None
         n_features = None
         n_samples  = None
 
+        id_X = id(X)  # before the conversion
         X = np.asarray(X, dtype=float, order="C")
 
         if self.metric == "precomputed":
@@ -284,64 +316,52 @@ class MSTBase(BaseEstimator):
             )
 
             if self.M == 0:
-                tree_w, tree_i = _res
+                tree_d, tree_i = _res
             else:
-                tree_w, tree_i, nn_w, nn_i = _res
-                #d_core = internal.get_d_core_(nn_w, nn_i, self.M)
-                d_core = nn_w[:, self.M-1].copy()  # make it contiguous
+                tree_d, tree_i, nn_d, nn_i = _res
+                #d_core = internal.get_d_core_(nn_d, nn_i, self.M)
+                d_core = nn_d[:, self.M-1].copy()  # make it contiguous
         else:
             from . import oldmst
             if self.M >= 1:  # else d_core   = None
                 # determine d_core
-                nn_w, nn_i = oldmst.knn_from_distance(
+                nn_d, nn_i = oldmst.knn_from_distance(
                     X,  # if not c_contiguous, raises an error
                     k=self.M,
                     metric=self.metric,  # supports "precomputed"
                     verbose=self.verbose
                 )
-                #d_core = internal.get_d_core_(nn_w, nn_i, self.M)
-                d_core = nn_w[:, self.M-1].copy()  # make it contiguous
+                #d_core = internal.get_d_core_(nn_d, nn_i, self.M)
+                d_core = nn_d[:, self.M-1].copy()  # make it contiguous
 
             # Use Prim's algorithm to determine the MST
             # w.r.t. the distances computed on the fly
-            tree_w, tree_i = oldmst.mst_from_distance(
+            tree_d, tree_i = oldmst.mst_from_distance(
                 X,  # if not c_contiguous, raises an error
                 metric=self.metric,
                 d_core=d_core,
                 verbose=self.verbose
             )
 
-        assert core.is_increasing(tree_w)
-        assert tree_w.shape[0] == n_samples-1
-        assert tree_i.shape[0] == n_samples-1
-        assert tree_i.shape[1] == 2
-        if self.M >= 1:
-            assert nn_w.shape[0]   == n_samples
-            assert nn_w.shape[1]   == self.M
-            assert nn_i.shape[0]   == n_samples
-            assert nn_i.shape[1]   == self.M
-            assert d_core.shape[0] == n_samples
-
-
         cumdeg, inc = core.graph_vertex_incidences(tree_i, n_samples)
-        assert cumdeg.shape[0] == n_samples+1
-        assert inc.shape[0] == 2*(n_samples-1)
+
+        self.n_samples_     = n_samples
+        self.n_features_    = n_features
+        self._tree_d_       = tree_d
+        self._tree_i_       = tree_i
+        self._tree_cumdeg_  = cumdeg
+        self._tree_inc_     = inc
+        self._nn_d_         = nn_d
+        self._nn_i_         = nn_i
+        self._d_core_       = d_core
+
+        self._check_mst()
 
         self.__mst_last_params_ = dict()
         self.__mst_last_params_["id(X)"] = id_X
         self.__mst_last_params_["metric"] = self.metric
         self.__mst_last_params_["quitefastmst_params"] = self.quitefastmst_params
         self.__mst_last_params_["M"] = self.M
-
-        self.n_samples_     = n_samples
-        self.n_features_    = n_features
-        self._tree_d_       = tree_w
-        self._tree_i_       = tree_i
-        self._tree_cumdeg_  = cumdeg
-        self._tree_inc_     = inc
-        self._nn_d_         = nn_w
-        self._nn_i_         = nn_i
-        self._d_core_       = d_core
 
 
     def fit_predict(self, X, y=None, **kwargs):
@@ -375,6 +395,13 @@ class MSTBase(BaseEstimator):
 
         Acceptable `X` types are as follows.
 
+        If `X` is None, then the MST is not recomputed; the last spanning tree
+        as well as the corresponding `M`, `metric`, and `quitefastmst_params`
+        parameters are selected.
+
+        If `X` is an instance of ``MSTBase`` (or its descendant), all
+        its attributes are copied into the current object (including its MST).
+
         For ``metric=="precomputed"``, `X` should either
         be a distance vector of length ``n_samples*(n_samples-1)/2``
         (see :any:`scipy.spatial.distance.pdist`) or a square distance matrix
@@ -404,7 +431,7 @@ class MSTBase(BaseEstimator):
 
 class MSTClusterer(MSTBase):
     """
-    The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
+    A base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
     :any:`lumbermark.Lumbermark`, and other spanning tree-based clustering
     algorithms [1]_.
 
@@ -475,7 +502,7 @@ class MSTClusterer(MSTBase):
         self.n_clusters  = n_clusters  # requested number of clusters
 
         self.n_clusters_ = None  # actual number of clusters detected
-        self._cut_edges_ = None
+        self._cut_edges_ = None  # length n_clusters_-1
 
 
     def _check_params(self):
@@ -496,7 +523,7 @@ class MSTClusterer(MSTBase):
 
 class MSTOutlierDetector(MSTBase):
     """
-    The base class for :any:`deadwood.Deadwood` and other
+    A base class for :any:`deadwood.Deadwood` and other
     spanning tree-based outlier detection algorithms.
 
 
@@ -598,7 +625,6 @@ class Deadwood(MSTOutlierDetector):
     _skip_edges_ : ndarray or None
 
 
-
     References
     ----------
 
@@ -644,7 +670,7 @@ class Deadwood(MSTOutlierDetector):
         self._max_contamination = 0.5
         self._ema_dt            = 0.01  # controls the exponential moving average smoothing parameter alpha = 1-exp(-dt) (in elbow detection)
 
-        self._cut_edges_        = None  # actually, _cut_edges
+        self._cut_edges_        = None   # actually, _cut_edges
         self._skip_edges_       = None
 
 
@@ -732,63 +758,13 @@ class Deadwood(MSTOutlierDetector):
         self._skip_edges_ = skip_edges
 
 
-    @classmethod
-    def from_clusterer(
-            cls,
-            C,
-            #contamination="auto",
-            max_debris_size="auto"
-        ):
-        """
-        Detects outliers in a dataset partitioned by a given MST-based
-        clusterer.
-
-
-        Parameters
-        ----------
-
-        C : deadwood.MSTClusterer
-            For example, an object of class :any:`genieclust.Genie` or
-            :any:`lumbermark.Lumbermark` on which `fit` was already called.
-
-        max_debris_size
-            See :any:`deadwood.Deadwood`
-
-
-        Returns
-        -------
-
-        y : deadwood.Deadwood
-            A new object of class :any:`deadwood.Deadwood`
-            initialised based on `C`'s params.
-
-        """
-        if C._tree_i_ is None or C._tree_d_ is None:
-            raise ValueError("fit() has not yet been called on C")
-
-        if C._cut_edges_ is None:
-            raise ValueError("_cut_edges_ attribute missing in C")
-
-        D = cls(
-            contamination="auto",
-            max_debris_size=max_debris_size,
-            M=C.M,
-            metric=C.metric,
-            quitefastmst_params=C.quitefastmst_params,
-            verbose=C.verbose
-        )
-
-        D.__dict__.update(C.__dict__)  # copy all attributes
-        D._check_params()  # re-check, they might have changed
-        D.labels_ = None
-        D._fit_multi()
-
-        return D
-
-
     def _fit_multi(self):
         if self.verbose:
             print("[deadwood] Determining elbow points of edge length quantiles in each cluster.", file=sys.stderr)
+
+        assert self._cut_edges_ is not None
+        assert np.all(self._cut_edges_ >= 0)
+        assert np.all(self._cut_edges_ < self._tree_d_.shape[0])
 
         self.max_debris_size_ = max(1, int(np.sqrt(self.n_samples_))) \
             if self.max_debris_size == "auto" else self.max_debris_size
@@ -851,7 +827,18 @@ class Deadwood(MSTOutlierDetector):
             and ``n_features`` columns;
             see :any:`deadwood.MSTBase.fit_predict` for more details.
 
-            TODO: an instance of :any:`deadwood.MSTClusterer`
+            If `X` is an instance of :any:`deadwood.MSTClusterer` (with
+            ``fit`` method already invoked), e.g., :any:`genieclust.Genie` or
+            :any:`lumbermark.Lumbermark`, then the outliers are sought
+            separately in each detected cluster.  Note that this overrides
+            the ``M``, ``metric``, and ``quitefastmst_params`` parameters
+            (amongst others).
+
+            If `X` is None, then the outlier detector is applied on the
+            same MST as that determined by the previous call to ``fit``.
+            This way we may try out different values of `contamination`
+            and `max_debris_size` much more cheaply.
+
 
         y : None
             Ignored.
@@ -875,7 +862,10 @@ class Deadwood(MSTOutlierDetector):
         self._check_params()  # re-check, they might have changed
         self._get_mst(X)  # sets n_samples_, n_features_, _tree_w, _tree_i, _d_core, etc.
 
-        self._fit_single()
+        if self._cut_edges_ is not None:
+            self._fit_multi()
+        else:
+            self._fit_single()
 
         if self.verbose:
             print("[deadwood] Done.", file=sys.stderr)
