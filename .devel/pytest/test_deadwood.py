@@ -105,34 +105,54 @@ def test_deadwood_single():
     assert np.all(y_pred == y_true)
 
 
-import matplotlib.pyplot as plt
-import genieclust  # TODO
-import lumbermark
 def test_deadwood_multi():
+    try:
+        import matplotlib.pyplot as plt
+        import genieclust  # TODO
+        import lumbermark  # TODO
+    except:
+        return False
+
     np.random.seed(1234)
     n1, n2 = 1000, 250
     X = np.vstack((
         np.random.rand(n1, 2),
         np.random.rand(n2, 2)+[1.2, 0]
     ))
-    D = deadwood.Deadwood(M=10).fit(X)
+    D = deadwood.Deadwood(M=25).fit(X)
     y = D.labels_
-    # print(D.contamination_)
-    #genieclust.plots.plot_scatter(X, labels=y)
-    #plt.show()
+    print(D.contamination_)
+    # genieclust.plots.plot_scatter(X, labels=y)
+    # plt.show()
 
-    L = lumbermark.Lumbermark(2, M=10).fit(X)
+    L = lumbermark.Lumbermark(2, M=25).fit(X)
     y = L.labels_
     #genieclust.plots.plot_scatter(X, labels=y)
     #plt.show()
 
     D = deadwood.Deadwood()
     o = D.fit_predict(L)
+    print(D.contamination_)
     #w = o.copy(); w[w>0] = y[w>0]
-    #genieclust.plots.plot_scatter(X, labels=o)
+    # genieclust.plots.plot_scatter(X, labels=o)
+    # plt.show()
     assert (o[:n1]<0).mean() > 0.1
     assert (o[n1:]<0).mean() > 0.1
-    plt.show()
+
+
+    G = genieclust.Genie(2, gini_threshold=0.5, M=25).fit(X)
+    y = G.labels_
+    #genieclust.plots.plot_scatter(X, labels=y)
+    #plt.show()
+
+    D = deadwood.Deadwood()
+    o = D.fit_predict(G)
+    print(D.contamination_)
+    #w = o.copy(); w[w>0] = y[w>0]
+    # genieclust.plots.plot_scatter(X, labels=o)
+    # plt.show()
+    assert (o[:n1]<0).mean() > 0.1
+    assert (o[n1:]<0).mean() > 0.1
 
 
 def test_index_unskip():
@@ -148,6 +168,16 @@ def test_index_skip():
     assert np.all(deadwood.index_skip(np.r_[0, 1, 4, 3, 2, 0], np.r_[True, False, True, False, False]) == np.r_[-1, 0, 2, 1, -1, -1])
 
 
+def test_sort_groups():
+    y, ind = deadwood.sort_groups(np.r_[0,1,2], np.r_[0,0,0], 1)
+    assert np.all(y == np.r_[0,1,2]) and np.all(ind == np.r_[0, 3])
+
+    y, ind = deadwood.sort_groups(np.r_[0,1,2], np.r_[0,1,0], 3)
+    assert np.all(y == np.r_[0,2,1]) and np.all(ind == np.r_[0, 2, 3, 3])
+
+    y, ind = deadwood.sort_groups(np.r_[0,1,2], np.r_[0,1,-1], 3)
+    assert np.all(y == np.r_[2,0,1]) and np.all(ind == np.r_[1, 2, 3, 3])
+
 if __name__ == "__main__":
     test_deadwood_base_classes()
     test_deadwood_df()
@@ -155,3 +185,4 @@ if __name__ == "__main__":
     test_deadwood_multi()
     test_index_unskip()
     test_index_skip()
+    test_sort_groups()

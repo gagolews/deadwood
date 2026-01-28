@@ -349,6 +349,12 @@ cpdef Py_ssize_t argkmin(T[::1] x, int k):
 
 
 cdef extern from "c_deadwood.h":
+    void Csort_groups[T](
+        const T* x, Py_ssize_t n,
+        const Py_ssize_t* c, Py_ssize_t k,
+        T* y, Py_ssize_t* ind
+    )
+
     void Cindex_unskip(
         Py_ssize_t* ind,
         Py_ssize_t m,
@@ -407,6 +413,57 @@ cdef extern from "c_deadwood.h":
     #     const Py_ssize_t* mst_i, Py_ssize_t m, Py_ssize_t n, Py_ssize_t* c,
     #     const Py_ssize_t* cumdeg, const Py_ssize_t* inc, const bool* mst_skip
     # ) except+
+
+
+cpdef tuple sort_groups(
+        T[::1] x,
+        Py_ssize_t[::1] c,
+        Py_ssize_t k
+    ):
+    """
+    deadwood.sort_groups(x, ind, k)
+
+    Reorders the elements in `x` w.r.t. a factor `c`
+
+
+    Parameters
+    ----------
+
+    x : ndarray of shape (n,)
+        data items to sort w.r.t. `c`
+
+    c : ndarray of shape (n,)
+        the cluster IDs in {-1,0,...,k-1} corresponding to the items in `x`
+
+    k : int
+
+
+    Returns
+    -------
+
+    y : ndarray of shape (n,)
+        a reordered version of `x`
+
+    ind : ndarray of shape (k+1,)
+        `y[ind[j]]`, ..., `y[ind[j+1]-1]` give all `x[i]`s,
+        in their original relative order, for which `c[i]==j`.
+
+        All the elements corresponding to `c[i] < 0` are put at the start
+        of `y`.  `c[i] ≥ k` is disallowed.
+    """
+    cdef Py_ssize_t n = x.shape[0]
+    if c.shape[0] != n:
+        raise ValueError("x and c shape mismatch")
+    if k <= 0:
+        raise ValueError("k must be nonnegative")
+
+    cdef np.ndarray[T] y = np.empty_like(x)
+    cdef np.ndarray[Py_ssize_t] ind = np.empty(k+1, dtype=np.intp)
+
+    Csort_groups(&x[0], n, &c[0], k, &y[0], &ind[0])
+
+    return y, ind
+
 
 
 cpdef np.ndarray[Py_ssize_t] index_unskip(

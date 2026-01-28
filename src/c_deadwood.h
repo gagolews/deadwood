@@ -20,10 +20,55 @@
 
 #include "c_common.h"
 #include "c_argfuns.h"
+#include "c_kneedle.h"
 #include <stdexcept>
 #include <algorithm>
 
+/*! Reorders x w.r.t. a factor c
+ *
+ * y[ind[j]],...,y[ind[j+1]-1] give all x[i]s, in their original relative order,
+ * for which c[i]==j.
+ *
+ * Elements corresponding to c[i] < 0 are put at the start of y.
+ * c[i] >= k is disallowed.
+ *
+ * @param x [in] array of size n
+ * @param n
+ * @param c [in] array of size n with elements in {...,0,1,..,k-1}
+ * @param k
+ * @param y [out] array of size n
+ * @param ind [out] array of size k+1
+ */
+template <class FLOAT>
+void Csort_groups(
+    const FLOAT* x, Py_ssize_t n, const Py_ssize_t* c, Py_ssize_t k,
+    FLOAT* y, Py_ssize_t* ind
+) {
+    for (Py_ssize_t j=0; j<=k; ++j) ind[j] = 0;
 
+    for (Py_ssize_t i=0; i<n; ++i) {
+        DEADWOOD_ASSERT(c[i] < k);
+        if (c[i] < 0)
+            ++ind[0];
+        else if (c[i] < k)
+            ++ind[c[i]+1];
+    }
+
+    Py_ssize_t u = ind[0];
+    ind[0] = 0;
+    for (Py_ssize_t j=1; j<=k; ++j) {
+        Py_ssize_t v = ind[j];
+        ind[j] = u;  // sum of the original ind[0]..ind[j-1]
+        u += v;
+    }
+
+    for (Py_ssize_t i=0; i<n; ++i) {
+        if (c[i] < 0)
+            y[ind[0]++] = x[i];
+        else
+            y[ind[c[i]+1]++] = x[i];
+    }
+}
 
 
 /*! Decode indexes based on a skip array.
@@ -245,7 +290,7 @@ protected:
     const Py_ssize_t m;  // preferably == n-1; number of edges in mst_i
     const Py_ssize_t n;  // number of vertices
 
-    Py_ssize_t* c;  // nullable or length n
+    Py_ssize_t* c;  // nullable or length n; cluster IDs of the vertices
 
     const Py_ssize_t* cumdeg;  // nullable or length n+1
     const Py_ssize_t* inc;  // nullable or length 2*m
@@ -369,8 +414,6 @@ public:
     }
 
 };
-
-
 
 
 /*! Label connected components in a spanning forest (where skip_edges
