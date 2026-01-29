@@ -25,7 +25,6 @@
 #include <algorithm>
 
 
-
 /*! Abstract base class for all distances */
 template<class T>
 struct CDistance {

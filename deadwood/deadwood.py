@@ -704,7 +704,9 @@ class Deadwood(MSTOutlierDetector):
         if elbow_index == 0:
             return 0.0
         else:
-            return (m-(shift+elbow_index+1))/(m+1)
+            index = shift+elbow_index+1  # int(m*(1.0-contamination))
+            contamination = (m-index)/(m+1)
+            return contamination
 
 
     @staticmethod
@@ -716,6 +718,9 @@ class Deadwood(MSTOutlierDetector):
             tree_inc=None
         ):
         m = tree_i.shape[0]
+        if contamination <= 0.0:
+            return np.zeros(m+1, bool)
+
         weight_threshold_index = int(m*(1.0-contamination))
 
         # tree_i is sorted increasingly wrt weights

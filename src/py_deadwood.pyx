@@ -386,7 +386,7 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t* inc
     ) except+
 
-    void Cmst_cluster_sizes(
+    Py_ssize_t Cmst_cluster_sizes(
         const Py_ssize_t* mst_i,
         Py_ssize_t m,
         Py_ssize_t n,
@@ -406,6 +406,22 @@ cdef extern from "c_deadwood.h":
         const Py_ssize_t* mst_cumdeg,
         const Py_ssize_t* mst_inc,
         const bool* mst_skip
+    ) except+
+
+    void Cdeadwood[floatT](
+        const floatT* mst_d,
+        const Py_ssize_t* mst_i,
+        const Py_ssize_t* mst_cut,
+        Py_ssize_t m,
+        Py_ssize_t n,
+        Py_ssize_t k,
+        floatT max_contamination,
+        floatT ema_dt,
+        floatT* contamination,
+        Py_ssize_t max_debris_size,
+        Py_ssize_t* c,
+        const Py_ssize_t* mst_cumdeg,
+        const Py_ssize_t* mst_inc
     ) except+
 
     # void Cmst_trim_branches[floatT](  # [DEPRECATED]
@@ -815,13 +831,32 @@ cpdef tuple mst_cluster_sizes(
     cdef np.ndarray[Py_ssize_t] labels = np.empty(n, dtype=np.intp)
     cdef np.ndarray[Py_ssize_t] sizes = np.zeros(k, dtype=np.intp)
 
-    Cmst_cluster_sizes(
+    cdef Py_ssize_t _k = Cmst_cluster_sizes(
         &mst_i[0,0], m, n, &labels[0], k, &sizes[0],
         mst_cumdeg_ptr, mst_inc_ptr, mst_skip_ptr
     )
+    assert _k == k
 
     return labels, sizes
 
+
+
+
+    # void Cdeadwood[floatT](
+    #     const floatT* mst_d,
+    #     const Py_ssize_t* mst_i,
+    #     const Py_ssize_t* mst_cut,
+    #     Py_ssize_t m,
+    #     Py_ssize_t n,
+    #     Py_ssize_t k,
+    #     floatT max_contamination,
+    #     floatT ema_dt,
+    #     floatT* contamination,
+    #     Py_ssize_t max_debris_size,
+    #     Py_ssize_t* c,
+    #     const Py_ssize_t* mst_cumdeg,
+    #     const Py_ssize_t* mst_inc
+    # ) except+
 
 
 # cpdef np.ndarray[Py_ssize_t] trim_branches(

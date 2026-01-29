@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <algorithm>
 
+
 /*! Reorders x w.r.t. a factor c
  *
  * y[ind[j]],...,y[ind[j+1]-1] give all x[i]s, in their original relative order,
@@ -326,8 +327,6 @@ public:
             DEADWOOD_ASSERT(inc);
         }
     }
-
-    virtual void process() = 0;
 };
 
 
@@ -393,10 +392,10 @@ public:
     }
 
 
-    virtual void process()
+    Py_ssize_t process()
     {
         for (Py_ssize_t v=0; v<n; ++v) c[v] = -1;
-        //for (Py_ssize_t i=0; i<k; ++i) s[i] = 0;
+        //for (Py_ssize_t i=0; i<max_k; ++i) s[i] = 0;
 
         k = 0;
         for (Py_ssize_t v=0; v<n; ++v) {
@@ -411,6 +410,8 @@ public:
 
             k++;
         }
+
+        return k;
     }
 
 };
@@ -438,7 +439,7 @@ public:
  *  @param mst_inc an array of length 2*m or NULL; see Cgraph_vertex_incidences
  *  @param mst_skip Boolean array of length m or NULL; indicates the edges to skip
  */
-void Cmst_cluster_sizes(
+Py_ssize_t Cmst_cluster_sizes(
     const Py_ssize_t* mst_i,
     Py_ssize_t m,
     Py_ssize_t n,
@@ -450,7 +451,7 @@ void Cmst_cluster_sizes(
     const bool* mst_skip=nullptr
 ) {
     CMSTClusterSizeGetter get(mst_i, m, n, c, max_k, s, mst_cumdeg, mst_inc, mst_skip);
-    get.process();  // modifies c in place
+    return get.process();  // modifies c in place
 }
 
 
@@ -500,7 +501,7 @@ public:
     }
 
 
-    virtual void process()
+    void process()
     {
         for (Py_ssize_t v=0; v<n; ++v) {
             if (c[v] < 0) continue;
@@ -519,7 +520,6 @@ public:
     }
 
 };
-
 
 
 /*! Impute missing labels in all tree branches.
@@ -555,6 +555,102 @@ void Cmst_label_imputer(
 
 /* ************************************************************************** */
 
+
+
+
+/*! The Deadwood outlier detection algorithm
+ *
+ *  @param mst_d size m - edge weights
+ *  @param mst_i c_contiguous matrix of size m*2,
+ *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
+ *     in the spanning tree (or forest); 0 <= mst_i[i,j] < n
+ *  @param mst_cut array of size k-1 - cut edges defining a spanning forest
+ *     with k connected components
+ *  @param m number of rows in mst_i (edges)
+ *  @param n length of c and the number of vertices in the spanning tree
+ *  @param k number of initial clusters
+ *  @param c [out] array of length n, c[i]==1 marks an outlier
+ *         and c[i]==0 denotes an inlier
+ *  @param max_debris_size connected components of size <= max_debris_size will
+ *         be treated as outliers
+ *  @param max_contamination maximal contamination level;
+ *         negative values will be used as actual contamination levels
+ *  @param ema_dt controls the exponential moving average smoothing parameter
+ *         alpha = 1-exp(-dt) (in elbow detection)
+ *  @param contamination [out] detected contamination levels in each cluster
+ *  @param mst_cumdeg an array of length n+1 or NULL; see Cgraph_vertex_incidences
+ *  @param mst_inc an array of length 2*m or NULL; see Cgraph_vertex_incidences
+ */
+template <class FLOAT>
+void Cdeadwood(
+    const FLOAT* mst_d,  // size m [in]
+    const Py_ssize_t* mst_i,  // size m [in]
+    const Py_ssize_t* mst_cut,  // size k-1 [in]
+    Py_ssize_t m,
+    Py_ssize_t n,
+    Py_ssize_t k,
+    FLOAT max_contamination,
+    FLOAT ema_dt,
+    FLOAT* contamination,  // size k [out]
+    Py_ssize_t max_debris_size,
+    Py_ssize_t* c,  // size n [out]
+    const Py_ssize_t* mst_cumdeg=nullptr,
+    const Py_ssize_t* mst_inc=nullptr
+) {
+    DEADWOOD_ASSERT(k >= 1 && k <= n);
+    DEADWOOD_ASSERT(m == n-1);
+    DEADWOOD_ASSERT(n > 1);
+
+    std::vector<Py_ssize_t> sizes(n);  // upper bound for the number of clusters
+    std::basic_string<bool> mst_skip(m, false);  // std::vector<bool> has no data()
+
+    CMSTClusterSizeGetter size_getter(mst_i, m, n, c, n, sizes.data(), mst_cumdeg, mst_inc, mst_skip.data());
+
+    if (k == 1) {
+        Py_ssize_t elbow_index;
+        if (max_contamination < 0.0) {
+            contamination[0] = -max_contamination;
+            elbow_index =  int(m*(1.0-contamination[0]));
+        }
+        else {
+            Py_ssize_t shift = (int)(m*(1.0-max_contamination));
+            Py_ssize_t elbow_index = Ckneedle_increasing(mst_d+shift, m-shift, true, ema_dt);
+            if (elbow_index == 0) {
+                elbow_index = m;
+                contamination[0] = 0.0;
+            }
+            else {
+                elbow_index = shift+elbow_index+1;
+                contamination[0] = (m-elbow_index)/(FLOAT)(m+1);
+            }
+        }
+
+        for (Py_ssize_t i=elbow_index; i<m; ++i)
+            mst_skip[i] = true;
+    }
+    else {
+        for (Py_ssize_t i=0; i<k-1; ++i) {
+            DEADWOOD_ASSERT(mst_cut[i] >= 0 && mst_cut[i] < m);
+            DEADWOOD_ASSERT(!mst_skip[mst_cut[i]]);
+            mst_skip[mst_cut[i]] = true;
+        }
+
+        Py_ssize_t _k = size_getter.process();  // sets c and sizes based on the current mst_skip
+        DEADWOOD_ASSERT(_k == k);
+
+        DEADWOOD_ASSERT(false);
+        // TODO
+    }
+
+
+    size_getter.process();  // sets c and sizes based on the current mst_skip
+    for (Py_ssize_t i=0; i<k-1; ++i) {
+        if (sizes[c[i]] <= max_debris_size)
+            c[i] = 1;
+        else
+            c[i] = 0;
+    }
+}
 
 
 #if 0  /* /remove deprecated Cmst_trim_branches */
@@ -651,7 +747,7 @@ public:
     }
 
 
-    virtual void process()
+    void process()
     {
         for (Py_ssize_t v=0; v<n; ++v) c[v] = -1;
         for (Py_ssize_t i=0; i<clk; ++i) clsize[i] = 0;

@@ -23,7 +23,6 @@
 using namespace Rcpp;
 
 
-
 /**
  * Represents a matrix as a C-contiguous array,
  * i.e., in a row-major order.

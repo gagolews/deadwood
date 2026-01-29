@@ -73,6 +73,8 @@ void Cema(const FLOAT* x, Py_ssize_t n, FLOAT dt, FLOAT* y)
 template <class FLOAT>
 Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT dt)
 {
+    if (n < 1) return 0;
+
     std::vector<FLOAT> _y(n);
     FLOAT* y = _y.data();
 
