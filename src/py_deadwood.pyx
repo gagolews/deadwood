@@ -417,8 +417,8 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t k,
         floatT max_contamination,
         floatT ema_dt,
-        floatT* contamination,
         Py_ssize_t max_debris_size,
+        floatT* contamination,
         Py_ssize_t* c,
         const Py_ssize_t* mst_cumdeg,
         const Py_ssize_t* mst_inc
@@ -842,21 +842,93 @@ cpdef tuple mst_cluster_sizes(
 
 
 
-    # void Cdeadwood[floatT](
-    #     const floatT* mst_d,
-    #     const Py_ssize_t* mst_i,
-    #     const Py_ssize_t* mst_cut,
-    #     Py_ssize_t m,
-    #     Py_ssize_t n,
-    #     Py_ssize_t k,
-    #     floatT max_contamination,
-    #     floatT ema_dt,
-    #     floatT* contamination,
-    #     Py_ssize_t max_debris_size,
-    #     Py_ssize_t* c,
-    #     const Py_ssize_t* mst_cumdeg,
-    #     const Py_ssize_t* mst_inc
-    # ) except+
+cpdef tuple deadwood_from_mst(
+        floatT[::1] mst_d,
+        Py_ssize_t[:,::1] mst_i,
+        Py_ssize_t[::1] mst_cut,
+        Py_ssize_t[::1] mst_cumdeg,
+        Py_ssize_t[::1] mst_inc,
+        floatT max_contamination=0.5,
+        floatT ema_dt=0.01,
+        Py_ssize_t max_debris_size=50
+    ):
+    """
+    deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
+
+    The Deadwood outlier detection algorithm based on Euclidean spanning trees.
+
+
+    Parameters
+    ----------
+
+    mst_d, mst_i : ndarray
+        a spanning tree with `m=n-1` edges defined by a pair
+        `(mst_i, mst_d)`; see ``quitefastmst.mst_euclid``
+
+    mst_cut : ndarray, length k-1 (possibly 0)
+        indexes cut edges defining a spanning forest with `k` connected components
+
+    mst_cumdeg : ndarray, length n+1
+        see `deadwood.graph_vertex_incidences`
+
+    mst_inc : ndarray, length 2*m
+        see `deadwood.graph_vertex_incidences`
+
+    max_contamination : float
+        maximal contamination level used in elbow detection in the edge weight
+        quantile function; negative values will be used as actual (target)
+        contamination levels
+
+    ema_dt : float
+        controls the exponential moving average smoothing parameter
+        :math:`\\alpha = 1-\\exp(-dt)` (in elbow detection)
+
+    max_debris_size : int
+        connected components of size ≤ `max_debris_size` will be treated as outliers
+
+
+    Returns
+    -------
+
+    is_outlier : ndarray, shape (n,)
+        `is_outlier[i]=1` if the `i`-th point is an outlier and 0 otherwise
+
+    contamination : ndarray, shape (k,)
+        detected contamination levels in each cluster
+
+
+    References
+    ----------
+
+    .. [1]
+        M. Gagolewski, *Deadwood*, in preparation, 2026, TODO
+    """
+    cdef Py_ssize_t m = mst_i.shape[0]
+    cdef Py_ssize_t n = m+1
+    cdef Py_ssize_t k = mst_cut.shape[0]+1
+
+    if not m == mst_d.shape[0] or m != n-1 or mst_i.shape[1] != 2:
+        raise ValueError("ill-defined spanning tree")
+
+    if mst_cumdeg.shape[0] != n+1:
+        raise ValueError("mst_cumdeg should be of length n+1")
+
+    if mst_inc.shape[0] != 2*m:
+        raise ValueError("mst_inc should be of length 2*m")
+
+    cdef np.ndarray[Py_ssize_t] is_outlier_ = np.empty(n, dtype=np.intp)
+    cdef np.ndarray[floatT] contamination_ = np.empty(k,
+        dtype=np.float32 if floatT is float else np.float64)
+
+    Cdeadwood(
+        &mst_d[0], &mst_i[0,0], &mst_cut[0], m, n, k,
+        max_contamination, ema_dt, max_debris_size,
+        &contamination_[0],
+        &is_outlier_[0],
+        &mst_cumdeg[0], &mst_inc[0]
+    )
+
+    return is_outlier_, contamination_
 
 
 # cpdef np.ndarray[Py_ssize_t] trim_branches(

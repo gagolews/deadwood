@@ -675,6 +675,14 @@ class Deadwood(MSTOutlierDetector):
     def _check_params(self):
         super()._check_params()
 
+        self._max_contamination = float(self._max_contamination)
+        if not 0.0 <= self._max_contamination <= 1.0:
+            raise ValueError("_max_contamination must be in [0, 1]")
+
+        self._ema_dt = float(self._ema_dt)
+        if self._ema_dt <= 0.0:
+            raise ValueError("_ema_dt must be > 0")
+
         if self.contamination == "auto":
             pass
         else:
@@ -690,105 +698,105 @@ class Deadwood(MSTOutlierDetector):
                 raise ValueError("max_debris_size must be 'auto' or > 0")
 
 
-    @staticmethod
-    def _get_contamination(
-            tree_d, max_contamination=0.5, ema_dt=0.01
-        ):
-        # finds the elbow point of the right part of the sorted edge length curve (quantiles)
-        assert core.is_increasing(tree_d)
-
-        m = tree_d.shape[0]
-        shift = int(m*(1.0-max_contamination))
-        elbow_index = core.kneedle_increasing(tree_d[shift:], convex=True, dt=ema_dt)
-
-        if elbow_index == 0:
-            return 0.0
-        else:
-            index = shift+elbow_index+1  # int(m*(1.0-contamination))
-            contamination = (m-index)/(m+1)
-            return contamination
-
-
-    @staticmethod
-    def _find_outliers(
-            tree_i,
-            contamination=0.1,
-            max_debris_size=50,
-            tree_cumdeg=None,
-            tree_inc=None
-        ):
-        m = tree_i.shape[0]
-        if contamination <= 0.0:
-            return np.zeros(m+1, bool)
-
-        weight_threshold_index = int(m*(1.0-contamination))
-
-        # tree_i is sorted increasingly wrt weights
-        skip_edges = np.zeros(m, bool)
-        skip_edges[weight_threshold_index:] = True
-
-        node_labels, cluster_sizes = core.mst_cluster_sizes(
-            tree_i, skip_edges, tree_cumdeg, tree_inc
-        )
-
-        return (cluster_sizes[node_labels] <= max_debris_size)
-
-
-    def _fit_single(self):
-        if self.contamination == "auto":
-            self.contamination_ = Deadwood._get_contamination(
-                self._tree_d_, self._max_contamination, self._ema_dt
-            )
-        else:
-            self.contamination_ = self.contamination
-
-        return Deadwood._find_outliers(
-            self._tree_i_, self.contamination_, self.max_debris_size_,
-            self._tree_cumdeg_, self._tree_inc_
-        )
-
-
-    def _fit_multi(self):
-        assert self._cut_edges_ is not None
-        assert np.all(self._cut_edges_ >= 0)
-        assert np.all(self._cut_edges_ < self._tree_d_.shape[0])
-
-        m = self._tree_i_.shape[0]
-        skip_edges = np.zeros(m, bool)
-        skip_edges[self._cut_edges_] = True
-        node_labels, cluster_sizes = core.mst_cluster_sizes(
-            self._tree_i_, skip_edges, self._tree_cumdeg_, self._tree_inc_
-        )
-
-        k = cluster_sizes.shape[0]
-        edge_labels = node_labels[self._tree_i_[:,0]]
-        edge_labels[edge_labels != node_labels[self._tree_i_[:,1]]] = -1
-        assert np.sum(edge_labels<0) == k-1
-
-        tree_d_grp, ind = core.sort_groups(self._tree_d_, edge_labels, k)
-
-        self.contamination_ = np.empty(k, float)
-        weight_thresholds = np.empty(k, float)
-        for i in range(k):
-            mi = cluster_sizes[i]-1  # ind[i+1]-ind[i]
-            if self.contamination == "auto":
-                contamination = Deadwood._get_contamination(
-                    tree_d_grp[ind[i]:ind[i+1]],
-                    self._max_contamination, self._ema_dt
-                )
-            else:
-                contamination = self.contamination
-
-            self.contamination_[i] = contamination
-            weight_thresholds[i] = tree_d_grp[ind[i]+int(mi*(1.0-contamination))]
-            skip_edges[(edge_labels == i) & (self._tree_d_>=weight_thresholds[i])] = True
-
-
-        node_labels, cluster_sizes = core.mst_cluster_sizes(
-            self._tree_i_, skip_edges, self._tree_cumdeg_, self._tree_inc_
-        )
-
-        return (cluster_sizes[node_labels] <= self.max_debris_size_)
+    # @staticmethod
+    # def _get_contamination(
+    #         tree_d, max_contamination=0.5, ema_dt=0.01
+    #     ):
+    #     # finds the elbow point of the right part of the sorted edge length curve (quantiles)
+    #     assert core.is_increasing(tree_d)
+    #
+    #     m = tree_d.shape[0]
+    #     shift = int(m*(1.0-max_contamination))
+    #     elbow_index = core.kneedle_increasing(tree_d[shift:], convex=True, dt=ema_dt)
+    #
+    #     if elbow_index == 0:
+    #         return 0.0
+    #     else:
+    #         index = shift+elbow_index+1  # int(m*(1.0-contamination))
+    #         contamination = (m-index)/(m+1)
+    #         return contamination
+    #
+    #
+    # @staticmethod
+    # def _find_outliers(
+    #         tree_i,
+    #         contamination=0.1,
+    #         max_debris_size=50,
+    #         tree_cumdeg=None,
+    #         tree_inc=None
+    #     ):
+    #     m = tree_i.shape[0]
+    #     if contamination <= 0.0:
+    #         return np.zeros(m+1, bool)
+    #
+    #     weight_threshold_index = int(m*(1.0-contamination))
+    #
+    #     # tree_i is sorted increasingly wrt weights
+    #     skip_edges = np.zeros(m, bool)
+    #     skip_edges[weight_threshold_index:] = True
+    #
+    #     node_labels, cluster_sizes = core.mst_cluster_sizes(
+    #         tree_i, skip_edges, tree_cumdeg, tree_inc
+    #     )
+    #
+    #     return (cluster_sizes[node_labels] <= max_debris_size)
+    #
+    #
+    # def _fit_single(self):
+    #     if self.contamination == "auto":
+    #         self.contamination_ = Deadwood._get_contamination(
+    #             self._tree_d_, self._max_contamination, self._ema_dt
+    #         )
+    #     else:
+    #         self.contamination_ = self.contamination
+    #
+    #     return Deadwood._find_outliers(
+    #         self._tree_i_, self.contamination_, self.max_debris_size_,
+    #         self._tree_cumdeg_, self._tree_inc_
+    #     )
+    #
+    #
+    # def _fit_multi(self):
+    #     assert self._cut_edges_ is not None
+    #     assert np.all(self._cut_edges_ >= 0)
+    #     assert np.all(self._cut_edges_ < self._tree_d_.shape[0])
+    #
+    #     m = self._tree_i_.shape[0]
+    #     skip_edges = np.zeros(m, bool)
+    #     skip_edges[self._cut_edges_] = True
+    #     node_labels, cluster_sizes = core.mst_cluster_sizes(
+    #         self._tree_i_, skip_edges, self._tree_cumdeg_, self._tree_inc_
+    #     )
+    #
+    #     k = cluster_sizes.shape[0]
+    #     edge_labels = node_labels[self._tree_i_[:,0]]
+    #     edge_labels[edge_labels != node_labels[self._tree_i_[:,1]]] = -1
+    #     assert np.sum(edge_labels<0) == k-1
+    #
+    #     tree_d_grp, ind = core.sort_groups(self._tree_d_, edge_labels, k)
+    #
+    #     self.contamination_ = np.empty(k, float)
+    #     weight_thresholds = np.empty(k, float)
+    #     for i in range(k):
+    #         mi = cluster_sizes[i]-1  # ind[i+1]-ind[i]
+    #         if self.contamination == "auto":
+    #             contamination = Deadwood._get_contamination(
+    #                 tree_d_grp[ind[i]:ind[i+1]],
+    #                 self._max_contamination, self._ema_dt
+    #             )
+    #         else:
+    #             contamination = self.contamination
+    #
+    #         self.contamination_[i] = contamination
+    #         weight_thresholds[i] = tree_d_grp[ind[i]+int(mi*(1.0-contamination))]
+    #         skip_edges[(edge_labels == i) & (self._tree_d_>=weight_thresholds[i])] = True
+    #
+    #
+    #     node_labels, cluster_sizes = core.mst_cluster_sizes(
+    #         self._tree_i_, skip_edges, self._tree_cumdeg_, self._tree_inc_
+    #     )
+    #
+    #     return (cluster_sizes[node_labels] <= self.max_debris_size_)
 
 
     def fit(self, X, y=None):
@@ -846,12 +854,24 @@ class Deadwood(MSTOutlierDetector):
         if self.verbose:
             print("[deadwood] Finding outliers.", file=sys.stderr)
 
-        if self._cut_edges_ is None:
-            is_outlier = self._fit_single()
-        else:
-            is_outlier = self._fit_multi()
+        is_outlier_, contamination_ = core.deadwood_from_mst(
+            self._tree_d_,
+            self._tree_i_,
+            self._cut_edges_ if self._cut_edges_ is not None else np.empty(0, np.intp),
+            self._tree_cumdeg_,
+            self._tree_inc_,
+            max_contamination=self._max_contamination if self.contamination == "auto" else -self.contamination,
+            ema_dt=self._ema_dt,
+            max_debris_size=self.max_debris_size_
+        )
 
-        self.labels_ = 1-2*(is_outlier.astype(int))
+        # if self._cut_edges_ is None:
+        #     is_outlier = self._fit_single()
+        # else:
+        #     is_outlier = self._fit_multi()
+
+        self.labels_ = 1-2*(is_outlier_.astype(int))
+        self.contamination_ = contamination_ if contamination_.shape[0]>1 else contamination_[0]
 
         if self.verbose:
             print("[deadwood] Done.", file=sys.stderr)
