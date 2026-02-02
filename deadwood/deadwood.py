@@ -42,16 +42,16 @@ class MSTBase(BaseEstimator):
     """
     The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
     :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
-    spanning tree-based clustering and outlier detection algorithms [2]_.
+    Euclidean and mutual reachability minimum spanning tree-based
+    clustering and outlier detection algorithms [2]_.
 
-    A minimum spanning tree (MST) provides a computationally
-    convenient representation of a dataset: the `n` points are connected with
-    each other via `n-1` shortest segments.  Provided that the dataset
-    has been appropriately preprocessed so that the pairwise distances
-    are informative, an MST can be applied in outlier detection,
+    A Euclidean minimum spanning tree (MST) provides a computationally
+    convenient representation of a dataset: the `n` points are connected
+    via `n-1` shortest segments.  Provided that the dataset
+    has been appropriately preprocessed so that the distances between the
+    points are informative, an MST can be applied in outlier detection,
     clustering, density reduction, and many other topological data
     analysis tasks.
-
 
 
     Parameters
@@ -104,14 +104,8 @@ class MSTBase(BaseEstimator):
     :math:`i`'s :math:`M`-th nearest neighbour (not including self,
     unlike in [1]_).  This pulls outliers away from their neighbours.
 
-    If ``quitefastmst`` is used, by passing
-    ``dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min")``
-    to ``quitefastmst_params``, connecting to a neighbour of the smallest core
-    distance is preferred when resolving ties between mutual reachability
-    distances.  This leads to MSTs with more leaves and hubs.  Moreover,
-    the leaves are then reconnected so that they become incident with vertices
-    that have them amongst their `M` nearest neighbours (if this is possible
-    without violating the minimality condition); see [3]_ for discussion.
+    If the distances are not unique,  there might be multiple trees
+    spanning a given graph that meet the minimality property.
 
 
     :Environment variables:
@@ -412,14 +406,11 @@ class MSTBase(BaseEstimator):
         (dense ``numpy.ndarray`` or an object coercible to)
         with ``n_samples`` rows and ``n_features`` columns.
 
-        In the latter case, it might be a good idea to standardise or at least
-        somehow preprocess the coordinates of the input data points by calling,
-        for instance, ``X = (X-X.mean(axis=0))/X.std(axis=None, ddof=1)``
-        so that the dataset is centred at 0 and has total variance of 1.
-        This way the method becomes translation and scale invariant.
-        What's more, if data are recorded with small precision (say, up
-        to few decimal digits), adding a tiny bit of Gaussian noise will
-        ensure the MST is unique for `M ≤ 1`.
+        As in the case of all the distance-based methods (including
+        k-nearest neighbours and DBSCAN), the standardisation of the input
+        features is definitely worth giving a try.  Oftentimes, applying
+        feature selection and engineering techniques (e.g., dimensionality
+        reduction) might lead to more meaningful results.
         """
         if y is not None:  # it is not a transductive classifier
             raise ValueError("y should be None")
@@ -572,14 +563,16 @@ class MSTOutlierDetector(MSTBase):
 
 class Deadwood(MSTOutlierDetector):
     """
-    Deadwood [1]_ is an anomaly detection algorithm based on Euclidean minimum
-    spanning trees that trims long segments and marks small debris as outliers.
-    More precisely, edges with weights beyond the detected elbow point [2]_
-    are removed and all resulting connected components whose sizes are smaller
-    than a given threshold are considered outliers.
+    Deadwood [1]_ is an anomaly detection algorithm based on Mutual
+    Reachability Minimum Spanning Trees.  It trims long tree segments
+    and marks small debris as outliers.
 
-    Mutual reachability minimum spanning trees, where peripheral points
-    are pulled farther away from each other [3]_, are also supported.
+    More precisely, the use of a mutual reachability distance
+    pulls peripheral points farther away from each other [3]_.
+    Tree edges with weights beyond the detected elbow point [2]_
+    are removed. All the resulting connected components whose
+    sizes are smaller than a given threshold are considered outliers.
+
 
 
     Parameters

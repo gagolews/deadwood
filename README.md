@@ -1,22 +1,37 @@
 <a href="https://deadwood.gagolewski.com/"><img src="https://www.gagolewski.com/_static/img/deadwood.png" align="right" height="128" width="128" /></a>
 # [**deadwood**](https://deadwood.gagolewski.com/) Package for R and Python
 
-### *Deadwood*: Outlier Detection via Minimum Spanning Trees
+### *Deadwood*: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
 
 ![deadwood for Python](https://github.com/gagolews/deadwood/workflows/deadwood%20for%20Python/badge.svg)
 ![deadwood for R](https://github.com/gagolews/deadwood/workflows/deadwood%20for%20R/badge.svg)
 
 **Keywords**: Deadwood, outlier detection, anomaly detection, HDBSCAN\*, DBSCAN,
-minimum spanning tree, MST, density estimation, mutual reachability distance,
-mutual reachability distance.
-
-> **this package is a work in progress**
+minimum spanning tree, MST, density estimation, mutual reachability distance.
 
 
 Refer to the package **homepage** at <https://deadwood.gagolewski.com/>
 for the reference manual, tutorials, examples, and benchmarks.
 
 **Author and Maintainer**: [Marek Gagolewski](https://www.gagolewski.com/)
+
+
+## About
+
+*Deadwood* is an anomaly detection algorithm based on Mutual Reachability
+Minimum Spanning Trees.  It trims long tree segments and marks small debris
+as outliers.
+
+More precisely:
+
+* the use of a mutual reachability distance pulls peripheral points
+    farther away from each other,
+
+* tree edges with weights beyond the detected elbow point are removed,
+
+* all the resulting connected components whose sizes are smaller than
+    a given threshold are considered outliers.
+
 
 
 ## How to Install

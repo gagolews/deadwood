@@ -2,6 +2,7 @@
 
 S3method(mst,default)
 S3method(mst,dist)
+export(kneedle_increasing)
 export(mst)
 importFrom(Rcpp,evalCpp)
 importFrom(quitefastmst,knn_euclid)

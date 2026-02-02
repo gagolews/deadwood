@@ -19,7 +19,7 @@
 
 
 
-#' @title The Deadwood Outlier Detection Algorithm (TODO)
+#' @title The Deadwood Outlier Detection Algorithm
 #'
 #' @description
 #' See \code{\link{deadwood}()} for more details.

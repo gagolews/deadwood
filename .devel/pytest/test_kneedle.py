@@ -16,6 +16,5 @@ def test_kneedle():
     assert deadwood.kneedle_increasing(y, convex=True, dt=100) == 760
 
 
-
 if __name__ == "__main__":
     test_kneedle()

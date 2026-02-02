@@ -10,6 +10,19 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// kneedle_increasing
+double kneedle_increasing(NumericVector x, bool convex, double dt);
+RcppExport SEXP _deadwood_kneedle_increasing(SEXP xSEXP, SEXP convexSEXP, SEXP dtSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< bool >::type convex(convexSEXP);
+    Rcpp::traits::input_parameter< double >::type dt(dtSEXP);
+    rcpp_result_gen = Rcpp::wrap(kneedle_increasing(x, convex, dt));
+    return rcpp_result_gen;
+END_RCPP
+}
 // dot_deadwood
 RObject dot_deadwood();
 RcppExport SEXP _deadwood_dot_deadwood() {
@@ -50,6 +63,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_deadwood_kneedle_increasing", (DL_FUNC) &_deadwood_kneedle_increasing, 3},
     {"_deadwood_dot_deadwood", (DL_FUNC) &_deadwood_dot_deadwood, 0},
     {"_deadwood_dot_oldmst_matrix", (DL_FUNC) &_deadwood_dot_oldmst_matrix, 5},
     {"_deadwood_dot_oldmst_dist", (DL_FUNC) &_deadwood_dot_oldmst_dist, 3},

@@ -1,8 +1,8 @@
 Package: deadwood
 Type: Package
-Title: Deadwood: Outlier Detection via Minimum Spanning Trees
+Title: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
 Version: 0.9.0
-Date: 2026-01-29
+Date: 2026-02-02
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),
@@ -10,8 +10,14 @@ Authors@R:
         comment = c(ORCID = "0000-0003-0637-6028")
     )
 Description:
-    TODO...
-    The 'Python' version of 'deadwood' is available via 'PyPI'.
+    Deadwood is an anomaly detection algorithm based on Mutual Reachability
+    Minimum Spanning Trees.  It trims long tree segments and marks small debris
+    as outliers.  More precisely, the use of a mutual reachability distance
+    pulls peripheral points farther away from each other.  Tree edges with
+    weights beyond the detected elbow point are removed.  All the resulting
+    connected components whose sizes are smaller than a given threshold are
+    considered outliers.  The 'Python' version of 'deadwood' is available via
+    'PyPI'.
 BugReports: https://github.com/gagolews/deadwood/issues
 URL:
     https://deadwood.gagolewski.com/,

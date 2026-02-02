@@ -114,12 +114,13 @@ cpdef tuple mst_from_complete(
     """
     deadwood.oldmst.mst_from_complete(X, verbose=False)
 
-    A Jarník (Prim/Dijkstra)-like algorithm for determining
-    a(*) minimum spanning tree (MST) of a complete undirected graph
-    with weights given by a symmetric `n*n` matrix
-    or a distance vector of length `n*(n-1)/2`.
+    Minimum Spanning Trees of a Complete Graph
 
-    The number of threads used is controlled via the
+    A Jarník (Prim/Dijkstra)-like algorithm for determining a(*) minimum
+    spanning tree (MST) of a complete undirected graph with weights given by
+    a symmetric `n*n` matrix or a distance vector of length `n*(n-1)/2`.
+
+    The number of running threads is controlled via the
     ``OMP_NUM_THREADS`` environment variable or via
     ``quitefastmst.omp_set_num_threads`` at runtime.
 
@@ -140,16 +141,16 @@ cpdef tuple mst_from_complete(
     -------
 
     pair : tuple
-        A pair (mst_dist, mst_ind) defining the n-1 edges of the MST:
+        A pair `(mst_dist, mst_ind)` defining the `n-1` edges of the MST:
 
-          a) the (n-1)-ary array mst_dist is such that
-          mst_dist[i] gives the weight of the i-th edge;
+          a) the `(n-1)`-ary array mst_dist is such that
+          `mst_dist[i]` gives the weight of the `i`-th edge;
 
-          b) mst_ind is a matrix with n-1 rows and 2 columns,
-          where {mst[i,0], mst[i,1]} defines the i-th edge of the tree.
+          b) `mst_ind` is a matrix with `n-1` rows and 2 columns,
+          where `{mst[i,0], mst[i,1]}` defines the `i`-th edge of the tree.
 
         The results are ordered w.r.t. nondecreasing weights.
-        For each i, it holds mst[i,0]<mst[i,1].
+        For each `i`, it holds `mst[i,0]<mst[i,1]`.
 
 
     References
@@ -203,9 +204,12 @@ cpdef tuple mst_from_distance(
     """
     deadwood.oldmst.mst_from_distance(X, metric="euclidean", d_core=None, verbose=False)
 
+    Euclidean and Mutual Reachability Minimum Spanning Trees
+
     A Jarník (Prim/Dijkstra)-like algorithm for determining
-    a(*) minimum spanning tree (MST) of `X` with respect to a given metric
-    (distance).  Distances are computed on the fly.  Memory use: `O(n*d)`.
+    a(*) Euclidean minimum spanning tree (MST) of `X` with respect
+    to a given metric (distance).  Distances are computed on the fly.
+    Memory use: `O(n*d)`.
 
     The number of threads used is controlled via the
     ``OMP_NUM_THREADS`` environment variable or via
@@ -231,20 +235,21 @@ cpdef tuple mst_from_distance(
     verbose: bool
         whether to print diagnostic messages
 
+
     Returns
     -------
 
     pair : tuple
-        A pair (mst_dist, mst_ind) defining the n-1 edges of the MST:
+        A pair `(mst_dist, mst_ind)` defining the `n-1` edges of the MST:
 
-          a) the (n-1)-ary array mst_dist is such that
-          mst_dist[i] gives the weight of the i-th edge;
+          a) the `(n-1)`-ary array mst_dist is such that
+          `mst_dist[i]` gives the weight of the `i`-th edge;
 
-          b) mst_ind is a matrix with n-1 rows and 2 columns,
-          where {mst[i,0], mst[i,1]} defines the i-th edge of the tree.
+          b) `mst_ind` is a matrix with `n-1` rows and 2 columns,
+          where `{mst[i,0], mst[i,1]}` defines the `i`-th edge of the tree.
 
         The results are ordered w.r.t. nondecreasing weights.
-        For each i, it holds mst[i,0]<mst[i,1].
+        For each `i`, it holds `mst[i,0]<mst[i,1]`.
 
 
     References
@@ -313,10 +318,9 @@ cpdef tuple knn_from_distance(floatT[:,::1] X, Py_ssize_t k,
     """
     deadwood.oldmst.knn_from_distance(X, k, metric="euclidean", d_core=None, verbose=False)
 
-    Determines the first k nearest neighbours of each point in `X`,
+    Determines the first `k` nearest neighbours of each point in `X`,
     with respect to a given metric (distance).
-    Distances are computed on the fly.
-    Memory use: `O(n*k)`.
+    Distances are computed on the fly.  Memory use: `O(n*k)`.
 
     It is assumed that each query point is not its own neighbour.
 
@@ -352,16 +356,16 @@ cpdef tuple knn_from_distance(floatT[:,::1] X, Py_ssize_t k,
     -------
 
     pair : tuple
-        A pair (dist, ind) representing the k-NN graph, where:
+        A pair `(dist, ind)` representing the `k`-NN graph, where:
 
             dist : a c_contiguous ndarray, shape (n,k)
-                dist[i,:] is sorted nondecreasingly for all i,
-                dist[i,j] gives the weight of the edge {i, ind[i,j]},
-                i.e., the distance between the i-th point and its j-th NN.
+                `dist[i,:]` is sorted nondecreasingly for all `i`,
+                `dist[i,j]` gives the weight of the edge `{i, ind[i,j]}`,
+                i.e., the distance between the `i`-th point and its `j`-th NN.
 
             ind : a c_contiguous ndarray, shape (n,k)
-                edge definition, interpreted as {i, ind[i,j]};
-                ind[i,j] is the index of the j-th nearest neighbour of i.
+                edge definition, interpreted as `{i, ind[i,j]}`;
+                `ind[i,j]` is the index of the `j`-th nearest neighbour of `i`.
     """
     cdef Py_ssize_t n = X.shape[0]
     cdef Py_ssize_t d = X.shape[1]

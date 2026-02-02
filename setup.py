@@ -126,7 +126,7 @@ with open("deadwood/__init__.py", "r", encoding="utf8") as fh:
 setuptools.setup(
     name="deadwood",
     version=__version__,
-    description="Deadwood: Outlier Detection via Minimum Spanning Trees",
+    description="Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Marek Gagolewski",

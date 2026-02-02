@@ -65,7 +65,7 @@ cpdef Py_ssize_t kneedle_increasing(
     """
     deadwood.kneedle_increasing(x, convex=True, dt=0.01)
 
-    Finds the most significant knee/elbow using the Kneedle algorithm
+    Finds the most significant knee/elbow using the Kneedle algorithm [1]_
     with exponential smoothing.
 
 
@@ -855,7 +855,8 @@ cpdef tuple deadwood_from_mst(
     """
     deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
 
-    The Deadwood outlier detection algorithm based on Euclidean spanning trees.
+    Deadwood is an outlier detection algorithm via trimming
+    mutual reachability minimum spanning trees.
 
 
     Parameters
