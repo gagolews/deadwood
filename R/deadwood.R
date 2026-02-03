@@ -22,7 +22,7 @@
 #'
 #' @description
 #' Deadwood is an anomaly detection algorithm based on Mutual Reachability
-#' Minimum Spanning Trees.  It trims long tree segments and marks small
+#' Minimum Spanning Trees.  It trims protruding tree segments and marks small
 #' debris as outliers.
 #'
 #' More precisely, the use of a mutual reachability distance
@@ -34,16 +34,16 @@
 #'
 #' @details
 #' As in the case of all the distance-based methods (including
-#' k-nearest neighbours and DBSCAN),  the standardisation of the input features
+#' k-nearest neighbours and DBSCAN), the standardisation of the input features
 #' is definitely worth giving a try.  Oftentimes, applying feature selection
 #' and engineering techniques (e.g., dimensionality reduction) might lead
 #' to more meaningful results.
 #'
 #' If \code{d} is a numeric matrix or an object of class \code{dist},
-#' \code{\link[deadwood]{mst}()} will be called to compute an MST, which generally
-#' takes at most \eqn{O(n^2)} time. However, by default, a faster algorithm
-#' based on K-d trees is selected automatically for low-dimensional Euclidean
-#' spaces; see \code{\link[quitefastmst]{mst_euclid}} from
+#' \code{\link[deadwood]{mst}()} will be called to compute an MST, which
+#' generally takes at most \eqn{O(n^2)} time. However, by default, a faster
+#' algorithm based on K-d trees is selected automatically for low-dimensional
+#' Euclidean spaces; see \code{\link[quitefastmst]{mst_euclid}} from
 #' the \pkg{quitefastmst} package.
 #'
 #' Once a minimum spanning tree is determined, the Deadwood algorithm runs in
@@ -69,6 +69,14 @@
 #'
 #' @param M smoothing factor; \eqn{M \leq 1} gives the selected \code{distance};
 #'     otherwise, the mutual reachability distance is used
+#'
+#' @param contamination
+#'
+#' @param max_contamination
+#'
+#' @param ema_dt
+#'
+#' @param max_debris_size
 #'
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information
@@ -99,8 +107,13 @@ deadwood <- function(d, ...)
 #' @method deadwood default
 deadwood.default <- function(
     d,
+    M=0L, #TODO: set default
+    clusters=NULL,
+    contamination=NA_real_,
+    max_debris_size=NA_real_,
+    max_contamination=0.5,
+    ema_dt=0.01,
     distance=c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
-    M=0L,
     verbose=FALSE,
     ...
 ) {
@@ -108,7 +121,10 @@ deadwood.default <- function(
     tree <- mst(d, M=M, distance=distance, verbose=verbose, ...)
     deadwood.mst(
         tree,
-        gini_threshold=gini_threshold,
+        clusters=clusters,
+        max_contamination=max_contamination,
+        ema_dt=ema_dt,
+        max_debris_size=max_debris_size,
         verbose=verbose
     )
 }
@@ -119,13 +135,22 @@ deadwood.default <- function(
 #' @method deadwood dist
 deadwood.dist <- function(
     d,
-    M=0L,
+    M=0L, #TODO: set default
+    clusters=NULL,
+    contamination=NA_real_,
+    max_debris_size=NA_real_,
+    max_contamination=0.5,
+    ema_dt=0.01,
     verbose=FALSE,
     ...
 ) {
     deadwood.mst(
         mst(d, M=M, verbose=verbose, ...),
-        gini_threshold=gini_threshold, verbose=verbose
+        cut_edges=numeric(0),
+        max_contamination=max_contamination,
+        ema_dt=ema_dt,
+        max_debris_size=max_debris_size,
+        verbose=verbose
     )
 }
 
@@ -135,21 +160,32 @@ deadwood.dist <- function(
 #' @method deadwood mst
 deadwood.mst <- function(
     d,
+    M=0L, #TODO: set default
+    clusters=NULL,
+    contamination=NA_real_,
+    max_debris_size=NA_real_,
+    max_contamination=0.5,
+    ema_dt=0.01,
     verbose=FALSE,
     ...
 ) {
-    gini_threshold <- as.double(gini_threshold)[1]
-    stopifnot(gini_threshold >= 0.0, gini_threshold <= 1.0)
     verbose <- !identical(verbose, FALSE)
+    max_debris_size <- as.integer(max_debris_size)[1]
+    contamination <- as.double(contamination)[1]
+    max_contamination <- as.double(max_contamination)[1]
+    ema_dt <- as.double(ema_dt)[1]
+    clusters <- as.integer(clusters)
 
-    result <- .deadwood(d, gini_threshold, verbose)
+    result <- .deadwood(
+        d, clusters, max_contamination, ema_dt, max_debris_size, verbose
+    )
 
-    result[["height"]] <- .correct_height(result[["height"]])
-    result[["labels"]] <- attr(d, "Labels") # yes, >L<abels
-    result[["method"]] <- sprintf("Genie(%g)", gini_threshold)
-    result[["call"]]   <- match.call()
-    result[["dist.method"]] <- attr(d, "method")
-    class(result) <- "hclust"
+#     result[["height"]] <- .correct_height(result[["height"]])
+#     result[["labels"]] <- attr(d, "Labels") # yes, >L<abels
+#     result[["method"]] <- sprintf("Genie(%g)", gini_threshold)
+#     result[["call"]]   <- match.call()
+#     result[["dist.method"]] <- attr(d, "method")
+#     class(result) <- "hclust"
 
     result
 }

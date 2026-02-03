@@ -560,19 +560,17 @@ class MSTOutlierDetector(MSTBase):
         return tags
 
 
-
 class Deadwood(MSTOutlierDetector):
     """
     Deadwood [1]_ is an anomaly detection algorithm based on Mutual
-    Reachability Minimum Spanning Trees.  It trims long tree segments
+    Reachability Minimum Spanning Trees.  It trims protruding tree segments
     and marks small debris as outliers.
 
-    More precisely, the use of a mutual reachability distance
-    pulls peripheral points farther away from each other [3]_.
+    More precisely, the use of a mutual reachability distance [3]_
+    pulls peripheral points farther away from each other.
     Tree edges with weights beyond the detected elbow point [2]_
-    are removed. All the resulting connected components whose
+    are removed.  All the resulting connected components whose
     sizes are smaller than a given threshold are considered outliers.
-
 
 
     Parameters
@@ -640,7 +638,7 @@ class Deadwood(MSTOutlierDetector):
             *,
             contamination="auto",
             max_debris_size="auto",
-            M=0,
+            M=0,  #TODO: set default
             metric="l2",
             quitefastmst_params=dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
             verbose=False

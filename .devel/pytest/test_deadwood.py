@@ -200,17 +200,17 @@ def test_deadwood_multi1():
     assert (o[n1:]<0).mean() > 0.1
 
 
-def test_index_unskip():
-    assert np.all(deadwood.index_unskip(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
-    assert np.all(deadwood.index_unskip(np.r_[0, 1, 2], np.r_[True, False, False, False]) == np.r_[1, 2, 3])
-    assert np.all(deadwood.index_unskip(np.r_[0, 2, 1], np.r_[True, False, True, False, False]) == np.r_[1, 4, 3])
+def test_unskip_indexes():
+    assert np.all(deadwood.unskip_indexes(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
+    assert np.all(deadwood.unskip_indexes(np.r_[0, 1, 2], np.r_[True, False, False, False]) == np.r_[1, 2, 3])
+    assert np.all(deadwood.unskip_indexes(np.r_[0, 2, 1], np.r_[True, False, True, False, False]) == np.r_[1, 4, 3])
 
 
-def test_index_skip():
-    assert np.all(deadwood.index_skip(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
-    assert np.all(deadwood.index_skip(np.r_[1, 2, 3], np.r_[True, False, False, False]) == np.r_[0, 1, 2])
-    assert np.all(deadwood.index_skip(np.r_[1, 4, 3], np.r_[True, False, True, False, False]) == np.r_[0, 2, 1])
-    assert np.all(deadwood.index_skip(np.r_[0, 1, 4, 3, 2, 0], np.r_[True, False, True, False, False]) == np.r_[-1, 0, 2, 1, -1, -1])
+def test_skip_indexes():
+    assert np.all(deadwood.skip_indexes(np.r_[0, 1, 2], np.r_[False, False, False]) == np.r_[0, 1, 2])
+    assert np.all(deadwood.skip_indexes(np.r_[1, 2, 3], np.r_[True, False, False, False]) == np.r_[0, 1, 2])
+    assert np.all(deadwood.skip_indexes(np.r_[1, 4, 3], np.r_[True, False, True, False, False]) == np.r_[0, 2, 1])
+    assert np.all(deadwood.skip_indexes(np.r_[0, 1, 4, 3, 2, 0], np.r_[True, False, True, False, False]) == np.r_[-1, 0, 2, 1, -1, -1])
 
 
 def test_sort_groups():
@@ -229,6 +229,6 @@ if __name__ == "__main__":
     test_deadwood_single()
     test_deadwood_multi1()
     test_deadwood_multi2()
-    test_index_unskip()
-    test_index_skip()
+    test_unskip_indexes()
+    test_skip_indexes()
     test_sort_groups()

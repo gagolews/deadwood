@@ -355,14 +355,22 @@ cdef extern from "c_deadwood.h":
         T* y, Py_ssize_t* ind
     )
 
-    void Cindex_unskip(
+    Py_ssize_t Cget_skip_edges(
+        const Py_ssize_t* mst_i,
+        Py_ssize_t m,
+        const Py_ssize_t* c,
+        Py_ssize_t n,
+        bool* skip
+    )
+
+    void Cunskip_indexes(
         Py_ssize_t* ind,
         Py_ssize_t m,
         const bool* skip,
         Py_ssize_t n
     ) except+
 
-    void Cindex_skip(
+    void Cskip_indexes(
         Py_ssize_t* ind,
         Py_ssize_t m,
         const bool* skip,
@@ -481,13 +489,58 @@ cpdef tuple sort_groups(
     return y, ind
 
 
+cpdef np.ndarray[bool] get_skip_edges(
+        Py_ssize_t[:,::1] mst_i,
+        Py_ssize_t[::1] labels,
+    ):
+    """
+    deadwood.get_skip_edges(mst_i, labels)
 
-cpdef np.ndarray[Py_ssize_t] index_unskip(
+    Identifies which MST edges must be skipped to obtain a forest whose
+    connected components match a given partition.  If this is not possible,
+    a more fine-grained split is generated.
+
+    This is as easy as finding all MST edges `{u,v}` for which
+    `labels[u]≠labels[v]`.
+
+
+    Parameters
+    ----------
+
+    mst_i : c_contiguous array of shape (n-1, 2)
+        `n-1` undirected edges of the spanning tree
+
+    labels : c_contiguous array of shape (n,)
+        `labels[i]` gives the cluster ID of the `i`-th object
+
+
+    Returns
+    -------
+
+    skip : boolean array of shape (n-1,)
+        ideally, there should be `k-1` values equal to `True` in `skip`,
+        where `k` is the number of distinct classes in `labels`;
+        this happens when `labels` was extracted from a given MST
+        (and is not an arbitrary partition)
+    """
+    cdef Py_ssize_t n = labels.shape[0]
+    cdef Py_ssize_t m = n-1
+    if mst_i.shape[0] != m:
+        raise ValueError("mst_i must have n-1 rows")
+
+    cdef np.ndarray[bool] skip = np.empty(m, dtype=np.intp)
+
+    Cget_skip_edges(&mst_i[0,0], m, &labels[0], n, &skip[0])
+
+    return skip
+
+
+cpdef np.ndarray[Py_ssize_t] unskip_indexes(
         Py_ssize_t[::1] ind,
         bool[::1] skip
     ):
     """
-    deadwood.index_unskip(ind, skip)
+    deadwood.unskip_indexes(ind, skip)
 
     If ``skip=[False, True, False, False, True, False, False]``,
     then the indexes in `ind` are mapped in such a way that:
@@ -502,7 +555,7 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
     to the indexes of rows in ``X[~skip,:]`` as result, and wish to translate
     `ind` back to the original row space of ``X[:,:]``.
 
-    For instance, ``index_unskip([0, 2, 1], [True, False, True, False, False])``
+    For instance, ``unskip_indexes([0, 2, 1], [True, False, True, False, False])``
     yields ``[1, 4, 3]``.
 
 
@@ -527,17 +580,17 @@ cpdef np.ndarray[Py_ssize_t] index_unskip(
 
     cdef np.ndarray[Py_ssize_t] ret = np.array(ind, dtype=np.intp)
 
-    Cindex_unskip(&ret[0], m, &skip[0], n)
+    Cunskip_indexes(&ret[0], m, &skip[0], n)
 
     return ret
 
 
-cpdef np.ndarray[Py_ssize_t] index_skip(
+cpdef np.ndarray[Py_ssize_t] skip_indexes(
         Py_ssize_t[::1] ind,
         bool[::1] skip
     ):
     """
-    deadwood.index_skip(ind, skip)
+    deadwood.skip_indexes(ind, skip)
 
     If ``skip=[False, True, False, False, True, False, False]``,
     then the indexes in `ind` are mapped in such a way that:
@@ -549,7 +602,7 @@ cpdef np.ndarray[Py_ssize_t] index_skip(
     i.e., the indexes for which `skip` is False are mapped
     to consecutive integers.  All other indexes are assigned the value -1.
 
-    For instance, ``index_skip([1, 4, 3], [True, False, True, False, False])``
+    For instance, ``skip_indexes([1, 4, 3], [True, False, True, False, False])``
     yields ``[0, 2, 1]``.
 
 
@@ -574,7 +627,7 @@ cpdef np.ndarray[Py_ssize_t] index_skip(
 
     cdef np.ndarray[Py_ssize_t] ret = np.array(ind, dtype=np.intp)
 
-    Cindex_skip(&ret[0], m, &skip[0], n)
+    Cskip_indexes(&ret[0], m, &skip[0], n)
 
     return ret
 

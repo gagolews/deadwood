@@ -72,6 +72,50 @@ void Csort_groups(
 }
 
 
+/*! Identifies which MST edges must be skipped to obtain a forest whose
+ *  connected components match a given partition.  If this is not possible,
+ *  a more fine-grained split is generated.
+ *
+ *  This is as easy as finding all MST edges {u,v} for which c[u]≠c[v].
+ *
+ *  @param mst_i c_contiguous matrix of size m*2,
+ *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
+ *     in the spanning tree
+ *  @param m number of rows in mst_i (edges)
+ *  @param n length of c and the number of vertices in the spanning tree
+ *  @param c [in] array of length n, where
+ *      c[i] denotes the cluster ID of the i-th object
+ *  @param skip [out] array of length m, indicating which edges
+ *      of the tree must be skipped to create a subpartition of c
+ *
+ *  @return s number of edges in skip;  ideally, s=k-1, where k is the
+ *      number of classes in c
+ */
+Py_ssize_t Cget_skip_edges(
+    const Py_ssize_t* mst_i,  // size m [in]
+    Py_ssize_t m,
+    const Py_ssize_t* c,  // size n [in]
+    Py_ssize_t n,
+    bool* skip  // size m [out]
+) {
+    Py_ssize_t s = 0;
+
+    for (Py_ssize_t i=0; i<m; ++i) {
+        Py_ssize_t u = mst_i[2*i+0];
+        Py_ssize_t v = mst_i[2*i+1];
+        DEADWOOD_ASSERT(u >= 0 && u < n);
+        DEADWOOD_ASSERT(v >= 0 && v < n);
+        if (c[u] != c[v]) {
+            s++;
+            skip[i] = true;
+        }
+        else
+            skip[i] = false;
+    }
+
+    return s;
+}
+
 /*! Decode indexes based on a skip array.
  *
  * If `skip=[False, True, False, False, True, False, False]`,
@@ -87,7 +131,7 @@ void Csort_groups(
  * the indexes of rows in `X[~skip,:]` as a result, and wish to translate `ind`
  * back to the original row space of `X[:,:]`.
  *
- * For instance, `index_unskip([0, 2, 1], [True, False, True, False, False])`
+ * For instance, `unskip_indexes([0, 2, 1], [True, False, True, False, False])`
  * yields `[1, 4, 3]`.
  *
  * @param ind [in/out] array of m indexes in 0..k-1 to translate
@@ -95,7 +139,7 @@ void Csort_groups(
  * @param skip Boolean array of size n with k elements equal to False
  * @param n size of skip
  */
-void Cindex_unskip(
+void Cunskip_indexes(
     Py_ssize_t* ind, Py_ssize_t m,
     const bool* skip, Py_ssize_t n
 ) {
@@ -147,7 +191,7 @@ void Cindex_unskip(
  * i.e., the indexes for which `skip` is False are mapped
  * to consecutive integers.  All other indexes are assigned the value -1.
  *
- * For instance, `index_skip([1, 4, 3], [True, False, True, False, False])`
+ * For instance, `skip_indexes([1, 4, 3], [True, False, True, False, False])`
  * yields `[0, 2, 1]`.
  *
  * @param ind [in/out] array of m indexes in 0..n-1 to translate
@@ -155,7 +199,7 @@ void Cindex_unskip(
  * @param skip Boolean array of size n
  * @param n size of skip
  */
-void Cindex_skip(
+void Cskip_indexes(
     Py_ssize_t* ind, Py_ssize_t m,
     const bool* skip, Py_ssize_t n
 ) {
@@ -417,13 +461,12 @@ public:
 };
 
 
-/*! Label connected components in a spanning forest (where skip_edges
+/*! Labels connected components in a spanning forest (where skip_edges
  *  designate the edges omitted from the tree) and fetch their sizes
  *
  *  @param mst_i c_contiguous matrix of size m*2,
  *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
- *     in the spanning tree (or forest); 0 <= mst_i[i,j] < n;
- *     edges with mst_i[i,0] < 0 or mst_i[i,1] < 0 are ignored.
+ *     in the spanning tree
  *  @param m number of rows in mst_i (edges)
  *  @param n length of c and the number of vertices in the spanning tree
  *  @param c [out] array of length n, where
@@ -526,8 +569,7 @@ public:
  *
  *  @param mst_i c_contiguous matrix of size m*2,
  *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
- *     in the spanning tree (or forest); 0 <= mst_i[i,j] < n;
- *     edges with mst_i[i,0] < 0 or mst_i[i,1] < 0 are ignored.
+ *     in the spanning tree
  *  @param m number of rows in mst_i (edges)
  *  @param n length of c and the number of vertices in the spanning tree
  *  @param c [in/out] c_contiguous vector of length n, where
@@ -589,9 +631,9 @@ void Cget_contamination(
  *  @param mst_d size m - edge weights
  *  @param mst_i c_contiguous matrix of size m*2,
  *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
- *     in the spanning tree (or forest); 0 <= mst_i[i,j] < n
- *  @param mst_cut array of size k-1; indexes of cut edges defining a spanning forest
- *     with k connected components
+ *     in the spanning tree
+ *  @param mst_cut array of size k-1; indexes of cut edges defining a spanning
+ *     forest with k connected components
  *  @param m number of rows in mst_i (edges)
  *  @param n length of c and the number of vertices in the spanning tree
  *  @param k number of initial clusters
@@ -856,8 +898,7 @@ public:
  *  @param mst_d m edge weights
  *  @param mst_i c_contiguous matrix of size m*2,
  *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
- *     in the spanning tree (or forest); 0 <= mst_i[i,j] < n;
- *     edges with mst_i[i,0] < 0 or mst_i[i,1] < 0 are ignored.
+ *     in the spanning tree
  *  @param m number of rows in mst_i (edges)
  *  @param c [out] vector of length n; c[i] == -1 marks a trimmed-out point,
  *     whereas c[i] >= 0 denotes a retained one
