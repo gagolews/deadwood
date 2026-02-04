@@ -103,12 +103,12 @@
 #'
 #' @return
 #' Returns a numeric matrix of class \code{mst} with \eqn{n-1} rows and
-#' three columns: \code{from}, \code{to}, and \code{dist} sorted
-#' nondecreasingly.  Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
+#' three columns: \code{from}, \code{to}, and \code{dist}.
+#' Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
 #' which is incident to the vertices \code{from[i]} and \code{to[i]} with
-#' \code{from[i] < to[i]}  (in 1,...,n)
-#' and \code{dist[i]} gives the corresponding weight, i.e., the
-#' distance between the point pair.
+#' \code{from[i] < to[i]}  (in 1,...,n) and \code{dist[i]} gives
+#' the corresponding weight, i.e., the distance between the point pair.
+#' Edges are ordered increasingly with respect to their weights.
 #'
 #' The \code{Size} attribute specifies the number of points, \eqn{n}.
 #' The \code{Labels} attribute gives the labels of the input points,

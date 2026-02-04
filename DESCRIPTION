@@ -31,4 +31,4 @@ Suggests:
 LinkingTo: Rcpp
 Encoding: UTF-8
 SystemRequirements: OpenMP
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

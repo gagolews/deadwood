@@ -24,12 +24,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // dot_deadwood
-RObject dot_deadwood();
-RcppExport SEXP _deadwood_dot_deadwood() {
+LogicalVector dot_deadwood(NumericMatrix mst, NumericVector cut_edges, double max_contamination, double ema_dt, int max_debris_size, bool verbose);
+RcppExport SEXP _deadwood_dot_deadwood(SEXP mstSEXP, SEXP cut_edgesSEXP, SEXP max_contaminationSEXP, SEXP ema_dtSEXP, SEXP max_debris_sizeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(dot_deadwood());
+    Rcpp::traits::input_parameter< NumericMatrix >::type mst(mstSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cut_edges(cut_edgesSEXP);
+    Rcpp::traits::input_parameter< double >::type max_contamination(max_contaminationSEXP);
+    Rcpp::traits::input_parameter< double >::type ema_dt(ema_dtSEXP);
+    Rcpp::traits::input_parameter< int >::type max_debris_size(max_debris_sizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(dot_deadwood(mst, cut_edges, max_contamination, ema_dt, max_debris_size, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -64,7 +70,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_deadwood_kneedle_increasing", (DL_FUNC) &_deadwood_kneedle_increasing, 3},
-    {"_deadwood_dot_deadwood", (DL_FUNC) &_deadwood_dot_deadwood, 0},
+    {"_deadwood_dot_deadwood", (DL_FUNC) &_deadwood_dot_deadwood, 6},
     {"_deadwood_dot_oldmst_matrix", (DL_FUNC) &_deadwood_dot_oldmst_matrix, 5},
     {"_deadwood_dot_oldmst_dist", (DL_FUNC) &_deadwood_dot_oldmst_dist, 3},
     {NULL, NULL, 0}

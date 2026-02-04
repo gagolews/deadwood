@@ -107,16 +107,10 @@ cpdef Py_ssize_t kneedle_increasing(
     return Ckneedle_increasing(&x[0], n, convex, dt)
 
 
-
-
-
-
 cdef extern from "c_argfuns.h":
     # void Cargsort[T](Py_ssize_t* ret, T* x, Py_ssize_t n, bint stable) except+
     Py_ssize_t Cargkmin[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf) except+
     # Py_ssize_t Cargkmax[T](T* x, Py_ssize_t n, Py_ssize_t k, Py_ssize_t* buf)  TODO
-
-
 
 
 cpdef np.ndarray[Py_ssize_t] cummin(T[:] x):
@@ -213,7 +207,6 @@ cpdef np.ndarray[Py_ssize_t] cummax(T[:] x):
             ret[i] = ret[i-1]
 
     return ret
-
 
 
 cpdef bool is_increasing(T[:] x):

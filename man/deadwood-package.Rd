@@ -2,9 +2,8 @@
 % Please edit documentation in R/deadwood-package.R
 \docType{package}
 \name{deadwood-package}
-\alias{deadwood}
 \alias{deadwood-package}
-\title{The Deadwood Outlier Detection Algorithm (TODO)}
+\title{The Deadwood Outlier Detection Algorithm}
 \description{
 See \code{\link{deadwood}()} for more details.
 }

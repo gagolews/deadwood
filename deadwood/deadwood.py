@@ -360,7 +360,10 @@ class MSTBase(BaseEstimator):
 
     def fit_predict(self, X, y=None, **kwargs):
         """
-        Performs cluster analysis of a dataset and returns the predicted labels.
+        Performs cluster or anomaly analysis of a dataset and returns
+        the predicted labels.
+
+        Refer to :any:`fit` for a mode detailed description.
 
 
         Parameters
@@ -406,8 +409,8 @@ class MSTBase(BaseEstimator):
         (dense ``numpy.ndarray`` or an object coercible to)
         with ``n_samples`` rows and ``n_features`` columns.
 
-        As in the case of all the distance-based methods (including
-        k-nearest neighbours and DBSCAN), the standardisation of the input
+        As in the case of all the distance-based methods (including k-nearest
+        neighbours, k-means, and DBSCAN), the standardisation of the input
         features is definitely worth giving a try.  Oftentimes, applying
         feature selection and engineering techniques (e.g., dimensionality
         reduction) might lead to more meaningful results.
@@ -831,6 +834,12 @@ class Deadwood(MSTOutlierDetector):
         -----
 
         Refer to the `labels_` attribute for the result.
+
+        As in the case of all the distance-based methods (including k-nearest
+        neighbours, k-means, and DBSCAN), the standardisation of the input
+        features in `X` is definitely worth giving a try.  Oftentimes, applying
+        feature selection and engineering techniques (e.g., dimensionality
+        reduction) might lead to more meaningful results.
         """
         self.labels_ = None
 

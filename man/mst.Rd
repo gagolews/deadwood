@@ -4,17 +4,15 @@
 \alias{mst}
 \alias{mst.default}
 \alias{mst.dist}
-\title{Minimum Spanning Tree of the Pairwise Distance Graph}
+\title{Euclidean and Mutual Reachability Minimum Spanning Trees}
 \usage{
 mst(d, ...)
 
 \method{mst}{default}(
   d,
-  distance = c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
   M = 0L,
+  distance = c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
   verbose = FALSE,
-  mutreach_ties = "dcore_min",
-  mutreach_leaves = "reconnect_dcore_min",
   ...
 )
 
@@ -25,31 +23,29 @@ mst(d, ...)
 e.g., a data frame with numeric-like columns) or an
 object of class \code{dist}; see \code{\link[stats]{dist}}}
 
-\item{distance}{metric used in the case where \code{d} is a matrix; one of:
-\code{"euclidean"} (synonym: \code{"l2"}),
-\code{"manhattan"} (a.k.a. \code{"l1"} and \code{"cityblock"}),
-\code{"cosine"}}
+\item{...}{further arguments passed to \code{\link[quitefastmst]{mst_euclid}}}
 
 \item{M}{smoothing factor; \eqn{M=0} selects the requested
 \code{distance}; otherwise, the corresponding degree-\code{M} mutual
 reachability distance is used; \code{M} should be rather small,
 say, \eqn{\leq 20}}
 
+\item{distance}{metric used in the case where \code{d} is a matrix; one of:
+\code{"euclidean"} (synonym: \code{"l2"}),
+\code{"manhattan"} (a.k.a. \code{"l1"} and \code{"cityblock"}),
+\code{"cosine"}}
+
 \item{verbose}{logical; whether to print diagnostic messages
 and progress information}
-
-\item{mutreach_ties, mutreach_leaves, ...}{further arguments passed to
-or from other methods, in particular, to
-\code{\link[quitefastmst]{mst_euclid}} from the \pkg{quitefastmst} package}
 }
 \value{
 Returns a numeric matrix of class \code{mst} with \eqn{n-1} rows and
-three columns: \code{from}, \code{to}, and \code{dist} sorted
-nondecreasingly.  Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
+three columns: \code{from}, \code{to}, and \code{dist}.
+Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
 which is incident to the vertices \code{from[i]} and \code{to[i]} with
-\code{from[i] < to[i]}  (in 1,...,n)
-and \code{dist[i]} gives the corresponding weight, i.e., the
-distance between the point pair.
+\code{from[i] < to[i]}  (in 1,...,n) and \code{dist[i]} gives
+the corresponding weight, i.e., the distance between the point pair.
+Edges are ordered increasingly with respect to their weights.
 
 The \code{Size} attribute specifies the number of points, \eqn{n}.
 The \code{Labels} attribute gives the labels of the input points,
@@ -62,42 +58,31 @@ and \code{nn.dist} provides the corresponding distances,
 both in the form of an \eqn{n} by \eqn{M} matrix.
 }
 \description{
-Determine a(*) minimum spanning tree (MST) of the complete
-undirected graph representing a set of \eqn{n} points
-whose weights correspond to the pairwise distances between the points.
+A Euclidean minimum spanning tree (MST) provides a computationally
+convenient representation of a dataset: the `n` points are connected
+via `n-1` shortest segments.  Provided that the dataset
+has been appropriately preprocessed so that the distances between the
+points are informative, an MST can be applied in outlier detection,
+clustering, density reduction, and many other topological data
+analysis tasks.
 }
 \details{
-(*) Note that if the distances are not unique,
-there might be multiple trees spanning a given graph that meet the
-minimality property.
+If \code{d} is a matrix and the Euclidean distance is requested
+(the default), then the MST is computed via a call to
+\code{\link[quitefastmst]{mst_euclid}}.  It is efficient in low-dimensional
+spaces.  Otherwise, a general-purpose implementation of the Jarník
+(Prim/Dijkstra)-like \eqn{O(n^2)}-time algorithm is called.
 
-If \code{d} is a matrix and the use of Euclidean distance is requested
-(the default), then \code{\link[quitefastmst]{mst_euclid}} is called
-to determine the MST.  It is quite fast in spaces of low intrinsic
-dimensionality, even for 10M points.
-
-Otherwise, a much slower generic implementation of the Jarník
-(Prim/Dijkstra)-like method, which requires \eqn{O(n^2)} time, is used.
-The algorithm is parallelised; the number of threads is determined
-by the \code{OMP_NUM_THREADS} environment variable. As a rule of thumb,
-datasets up to 100k points should be processed relatively quickly.
-
-For the smoothing factor \eqn{M>0},
-the mutual reachability distance \eqn{d_M(i,j)} (Campello et al., 2013)
-is used instead of the chosen "raw" distance \eqn{d(i,j)}.  It holds
-\eqn{d_M(i,j)=\max(d(i,j), c_M(i), c_M(j))}, where the core distance
-\eqn{c_M(i)} is the distance to the \eqn{i}-th point's \eqn{M}-th
-nearest neighbour (not including self, unlike in Campello et al., 2013).
+If \eqn{M>0}, then the minimum spanning tree is computed with respect to
+a mutual reachability distance (Campello et al., 2013):
+\eqn{d_M(i,j)=\max(d(i,j), c_M(i), c_M(j))}, where \eqn{d(i,j)} is
+an ordinary distance and \eqn{c_M(i)} is the core distance given by
+\eqn{d(i,k)} with \eqn{k} being \eqn{i}'s \eqn{M}-th nearest neighbour
+(not including self, unlike in Campello et al., 2013).
 This pulls outliers away from their neighbours.
 
-If \pkg{quitefastmst} is used, then possible ties between mutually
-reachability distances are resolved in such a way that connecting
-to a neighbour of the smallest core distance is preferred.
-This leads to MSTs with more leaves and hubs.  Moreover, the leaves are
-then reconnected in such a way that they become incident with vertices
-that have them amongst their \eqn{M} nearest neighbours (if possible without
-violating the minimality condition); see (Gagolewski, 2025) and the manual
-of \code{\link[quitefastmst]{mst_euclid}} for discussion.
+If the distances are not unique, there might be multiple trees
+spanning a given graph that meet the minimality property.
 }
 \examples{
 library("datasets")
@@ -134,7 +119,7 @@ Density-based clustering based on hierarchical density estimates,
 \emph{Lecture Notes in Computer Science} 7819, 2013, 160-172,
 \doi{10.1007/978-3-642-37456-2_14}
 
-M. Gagolewski, deadwood, in preparation, 2026, TODO
+M. Gagolewski, quitefastmst, in preparation, 2026, TODO
 }
 \seealso{
 The official online manual of \pkg{deadwood} at \url{https://deadwood.gagolewski.com/}

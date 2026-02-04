@@ -22,6 +22,17 @@
 using namespace Rcpp;
 
 
+// TODO: sort_groups
+// TODO: mst_cluster_sizes
+// TODO: get_skip_edges
+// TODO: unskip_indexes
+// TODO: skip_indexes
+// TODO: graph_vertex_degrees
+// TODO: graph_vertex_incidences
+// TODO: mst_label_imputer
+
+
+
 //' @title Knee/Elbow Point Detection with Kneedle
 //'
 //' @description
@@ -42,7 +53,7 @@ using namespace Rcpp;
 //' Returns the index of the knee/elbow point; 1 if not found.
 //'
 //' @references
-//' V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *
+//' V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan,
 //' Finding a "Kneedle" in a haystack: Detecting knee points in system behavior,
 //' In: 31st Intl. Conf. Distributed Computing Systems Workshops,
 //' 2011, 166-171, \doi{10.1109/ICDCSW.2011.20}
@@ -59,7 +70,52 @@ double kneedle_increasing(NumericVector x, bool convex=true, double dt=0.01)
 
 
 // [[Rcpp::export(".deadwood")]]
-RObject dot_deadwood()
-{
-    return R_NilValue;
+LogicalVector dot_deadwood(
+    NumericMatrix mst,
+    NumericVector cut_edges,
+    double max_contamination,
+    double ema_dt,
+    int max_debris_size,
+    bool verbose
+) {
+    if (verbose) DEADWOOD_PRINT("[deadwood] Determining clusters.\n");
+
+    Py_ssize_t n = mst.nrow()+1;
+
+    std::vector<Py_ssize_t> mst_i((n-1)*2);
+    std::vector<double> mst_d(n-1);
+
+    for (Py_ssize_t i=0; i<n-1; ++i) {
+        mst_i[i*2+0] = (Py_ssize_t)mst(i, 0) - 1;  // 1-based to 0-based indexes
+        mst_i[i*2+1] = (Py_ssize_t)mst(i, 1) - 1;  // 1-based to 0-based indexes
+        mst_d[i] = mst(i, 2);
+    }
+
+
+    Py_ssize_t k = cut_edges.size()+1;
+
+    std::vector<Py_ssize_t> mst_cut(k-1);
+    for (Py_ssize_t i=0; i<k-1; ++i) {
+        mst_cut[i] = (Py_ssize_t)cut_edges[i]-1;
+        DEADWOOD_ASSERT(mst_cut[i] >= 0 && mst_cut[i] < n-1);
+    }
+
+    std::vector<double> contamination(k);
+    std::vector<Py_ssize_t> is_outlier(n);
+    Cdeadwood(
+        mst_d.data(), mst_i.data(), mst_cut.data(), n-1, n, k,
+        max_contamination, ema_dt, max_debris_size,
+        contamination.data(), is_outlier.data(), NULL, NULL
+    );
+
+    LogicalVector res(n);
+    for (Py_ssize_t i=0; i<n; ++i) {
+        if (is_outlier[i]) res[i] = TRUE;
+        else res[i] = FALSE;
+    }
+
+    if (verbose) DEADWOOD_PRINT("[deadwood] Done.\n");
+
+    return res;
+
 }

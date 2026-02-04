@@ -33,8 +33,8 @@
 #'
 #'
 #' @details
-#' As in the case of all the distance-based methods (including
-#' k-nearest neighbours and DBSCAN), the standardisation of the input features
+#' As in the case of all the distance-based methods (including k-nearest
+#' neighbours, k-means, and DBSCAN), the standardisation of the input features
 #' is definitely worth giving a try.  Oftentimes, applying feature selection
 #' and engineering techniques (e.g., dimensionality reduction) might lead
 #' to more meaningful results.
@@ -56,10 +56,22 @@
 #' @references
 #' M. Gagolewski, deadwood, in preparation, 2026, TODO
 #'
+#' V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, Finding a "Kneedle"
+#' in a haystack: Detecting knee points in system behavior,
+#' In: 31st Intl. Conf. Distributed Computing Systems Workshops,
+#' 2011, 166-171, \doi{10.1109/ICDCSW.2011.20}
+#'
+#' R.J.G.B. Campello, D. Moulavi, J. Sander,
+#' Density-based clustering based on hierarchical density estimates,
+#' Lecture Notes in Computer Science 7819, 2013, 160-172,
+#' \doi{10.1007/978-3-642-37456-2_14}
+#'
 #'
 #' @param d a numeric matrix (or an object coercible to one,
 #'     e.g., a data frame with numeric-like columns) or an
 #'     object of class \code{dist} (see \code{\link[stats]{dist}}),
+#'     or an object of class \code{mstclust} (see \pkg{genieclust}
+#'     or \pkg{lumbermark}),
 #'     or an object of class \code{mst} (see \code{\link[deadwood]{mst}})
 #'
 #' @param distance metric used in the case where \code{d} is a matrix; one of:
@@ -70,13 +82,29 @@
 #' @param M smoothing factor; \eqn{M \leq 1} gives the selected \code{distance};
 #'     otherwise, the mutual reachability distance is used
 #'
-#' @param contamination
+#' @param contamination single numeric value or NA;
+#'     the estimated (approximate) proportion of outliers in the data set;
+#'     if NA, the contamination amount will be determined
+#'     by identifying the most significant elbow point of the curve
+#'     comprised of increasingly ordered tree edge weights
 #'
-#' @param max_contamination
+#' @param max_contamination single numeric value or NA;
+#'    maximal contamination level assumed when \code{contamination} is NA
 #'
-#' @param ema_dt
+#' @param ema_dt single numeric value or NA;
+#'    controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
+#'    of the exponential moving average (in elbow detection),
+#'    \eqn{y_i = \alpha x_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = x_1}
 #'
-#' @param max_debris_size
+#' @param max_debris_size single integer value or NA;
+#'     the maximal size of the leftover connected components that
+#'     will be considered outliers; if NA, \code{sqrt(n)} is assumed
+#'
+#' @param cut_edges numeric vector or NULL;
+#'     \eqn{k-1} indexes of the tree edges whose omission lead to
+#'     \eqn{k} connected components (clusters), where the outliers are to
+#'     be sought independently; most frequently this is generated
+#'     via \pkg{genieclust} or \pkg{lumbermark}
 #'
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information
@@ -85,14 +113,20 @@
 #'
 #'
 #' @return
-#' TODO
+#' A logical vector of length \eqn{n}, where TRUE denotes outliers.
+#'
+#' The \code{mst} attribute gives the computed minimum
+#' spanning tree which can be reused in further calls to the functions
+#' from \pkg{genieclust}, \pkg{lumbermark}, and \pkg{deadwood}.
 #'
 #'
 #' @examples
 #' library("datasets")
 #' data("iris")
 #' X <- jitter(as.matrix(iris[1:2]))  # some data
-#' # TODO
+#' is_outlier <- deadwood(X, M=5)
+#' plot(X, col=c("#ff000066", "#55555555")[is_outlier+1],
+#'     pch=c(16, 1)[is_outlier+1], asp=1, las=1)
 #'
 #' @rdname deadwood
 #' @export
@@ -107,8 +141,7 @@ deadwood <- function(d, ...)
 #' @method deadwood default
 deadwood.default <- function(
     d,
-    M=0L, #TODO: set default
-    clusters=NULL,
+    M=0L,  #TODO: set default
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -121,10 +154,10 @@ deadwood.default <- function(
     tree <- mst(d, M=M, distance=distance, verbose=verbose, ...)
     deadwood.mst(
         tree,
-        clusters=clusters,
+        contamination=contamination,
+        max_debris_size=max_debris_size,
         max_contamination=max_contamination,
         ema_dt=ema_dt,
-        max_debris_size=max_debris_size,
         verbose=verbose
     )
 }
@@ -135,8 +168,7 @@ deadwood.default <- function(
 #' @method deadwood dist
 deadwood.dist <- function(
     d,
-    M=0L, #TODO: set default
-    clusters=NULL,
+    M=0L,  #TODO: set default
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -146,10 +178,40 @@ deadwood.dist <- function(
 ) {
     deadwood.mst(
         mst(d, M=M, verbose=verbose, ...),
-        cut_edges=numeric(0),
+        contamination=contamination,
+        max_debris_size=max_debris_size,
         max_contamination=max_contamination,
         ema_dt=ema_dt,
+        verbose=verbose
+    )
+}
+
+
+#' @export
+#' @rdname deadwood
+#' @method deadwood mstclust
+deadwood.mstclust <- function(
+    d,
+    contamination=NA_real_,
+    max_debris_size=NA_real_,
+    max_contamination=0.5,
+    ema_dt=0.01,
+    verbose=FALSE,
+    ...
+) {
+    tree <- attr(d, "mst")
+    stopifnot(!is.null(tree))
+
+    cut_edges <- attr(d, "cut_edges")
+    stopifnot(!is.null(cut_edges))
+
+    deadwood.mst(
+        tree,
+        contamination=contamination,
         max_debris_size=max_debris_size,
+        max_contamination=max_contamination,
+        ema_dt=ema_dt,
+        cut_edges=cut_edges,
         verbose=verbose
     )
 }
@@ -160,36 +222,49 @@ deadwood.dist <- function(
 #' @method deadwood mst
 deadwood.mst <- function(
     d,
-    M=0L, #TODO: set default
-    clusters=NULL,
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
     ema_dt=0.01,
+    cut_edges=NULL,
     verbose=FALSE,
     ...
 ) {
     verbose <- !identical(verbose, FALSE)
-    max_debris_size <- as.integer(max_debris_size)[1]
     contamination <- as.double(contamination)[1]
+    max_debris_size <- as.integer(max_debris_size)[1]
     max_contamination <- as.double(max_contamination)[1]
     ema_dt <- as.double(ema_dt)[1]
-    clusters <- as.integer(clusters)
+    cut_edges <- as.numeric(cut_edges)   # numeric(0) if NULL
 
-    result <- .deadwood(
-        d, clusters, max_contamination, ema_dt, max_debris_size, verbose
+    stopifnot(ema_dt > 0.0)
+
+    n <- NROW(d)+1
+    if (is.na(max_debris_size))
+        max_debris_size <- as.integer(sqrt(n))
+    max_debris_size <- max(1L, max_debris_size)
+
+    stopifnot(max_contamination >= 0, max_contamination <= 1)
+    if (!is.na(contamination)) {
+        stopifnot(contamination >= 0, contamination <= 1)
+        max_contamination <- -contamination
+    }
+
+    is_outlier <- .deadwood(
+        d, cut_edges, max_contamination, ema_dt, max_debris_size, verbose
     )
 
-#     result[["height"]] <- .correct_height(result[["height"]])
-#     result[["labels"]] <- attr(d, "Labels") # yes, >L<abels
-#     result[["method"]] <- sprintf("Genie(%g)", gini_threshold)
-#     result[["call"]]   <- match.call()
-#     result[["dist.method"]] <- attr(d, "method")
-#     class(result) <- "hclust"
-
-    result
+    structure(
+        is_outlier,
+        names=attr(d, "Labels"),
+        mst=d,
+        cut_edges=cut_edges,
+        class="mstoutlier"
+    )
 }
 
-registerS3method("deadwood", "default", "deadwood.default")
-registerS3method("deadwood", "dist",    "deadwood.dist")
-registerS3method("deadwood", "mst",     "deadwood.mst")
+registerS3method("deadwood", "default",   "deadwood.default")
+registerS3method("deadwood", "dist",      "deadwood.dist")
+# registerS3method("deadwood", "msthclust", "deadwood.msthclust")  TODO
+registerS3method("deadwood", "mstclust",  "deadwood.mstclust")
+registerS3method("deadwood", "mst",       "deadwood.mst")
