@@ -41,13 +41,14 @@
 #'
 #' If \code{d} is a numeric matrix or an object of class \code{dist},
 #' \code{\link[deadwood]{mst}()} will be called to compute an MST, which
-#' generally takes at most \eqn{O(n^2)} time. However, by default, a faster
-#' algorithm based on K-d trees is selected automatically for low-dimensional
-#' Euclidean spaces; see \code{\link[quitefastmst]{mst_euclid}} from
+#' generally takes at most \eqn{O(n^2)} time. However, by default,
+#' for low-dimensional Euclidean spaces, a faster algorithm based on K-d trees
+#' is selected automatically; see \code{\link[quitefastmst]{mst_euclid}} from
 #' the \pkg{quitefastmst} package.
 #'
-#' Once a minimum spanning tree is determined, the Deadwood algorithm runs in
-#' \eqn{O(TODO)} time.
+#' Once the spanning tree is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
+#' the Deadwood algorithm runs in \eqn{O(n)} time.
+#' Memory use is also \eqn{O(n)}.
 #'
 #'
 #' @seealso
@@ -104,7 +105,7 @@
 #'     \eqn{k-1} indexes of the tree edges whose omission lead to
 #'     \eqn{k} connected components (clusters), where the outliers are to
 #'     be sought independently; most frequently this is generated
-#'     via \pkg{genieclust} or \pkg{lumbermark}
+#'     via \pkg{genieclust} or \pkg{lumbermark}.
 #'
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information
@@ -118,6 +119,10 @@
 #' The \code{mst} attribute gives the computed minimum
 #' spanning tree which can be reused in further calls to the functions
 #' from \pkg{genieclust}, \pkg{lumbermark}, and \pkg{deadwood}.
+#' \code{cut_edges} gives the \code{cut_edges} passed as argument.
+#' \code{contamination} gives the detected contamination levels
+#' in each cluster (which can be different from the observed proportion
+#' of outliers detected).
 #'
 #'
 #' @examples
@@ -253,6 +258,9 @@ deadwood.mst <- function(
     is_outlier <- .deadwood(
         d, cut_edges, max_contamination, ema_dt, max_debris_size, verbose
     )
+
+    stopifnot(attr(is_outlier, "contamination") >= 0)
+    stopifnot(attr(is_outlier, "contamination") <= 1)
 
     structure(
         is_outlier,

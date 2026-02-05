@@ -114,6 +114,12 @@ LogicalVector dot_deadwood(
         else res[i] = FALSE;
     }
 
+    NumericVector contaminationr(k);
+    for (Py_ssize_t i=0; i<k; ++i)
+        contaminationr[i] = contamination[i];
+
+    res.attr("contamination") = contaminationr;
+
     if (verbose) DEADWOOD_PRINT("[deadwood] Done.\n");
 
     return res;

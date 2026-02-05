@@ -71,10 +71,9 @@ def test_deadwood_df():
     assert sum_w1 == sum_w2
 
 
-def test_deadwood_single():
-    np.random.seed(123)
-    n = 140
-    m = 19
+def _blob_and_aureola(n, m, seed=123):
+    if seed is not None:
+        np.random.seed(seed)
     r = np.random.rand(n)
     u = np.random.rand(n)*2*np.pi
     t = np.linspace(0, 2*np.pi, m+1)[1:]
@@ -82,7 +81,13 @@ def test_deadwood_single():
         r.reshape(-1,1)*np.c_[np.cos(u), np.sin(u)],
         5*np.c_[np.cos(t), np.sin(t)]
     ))
-    y_true = np.repeat([1, -1], [n, m])
+    y = np.repeat([1, -1], [n, m])
+    return X, y
+
+
+def test_deadwood_single():
+    n, m = 140, 19
+    X, y_true = _blob_and_aureola(n, m)
 
     D = deadwood.Deadwood(contamination=m/(n+m)).fit(X)
     y_pred = D.labels_
@@ -105,99 +110,33 @@ def test_deadwood_single():
     assert np.all(y_pred == y_true)
 
 
-def test_deadwood_multi2():
-    try:
-        import matplotlib.pyplot as plt
-        import genieclust  # TODO
-        import lumbermark  # TODO
-    except:
-        return False
+def test_deadwood_multi():
+    # more tests in genieclust and deadwood
 
-    np.random.seed(123)
-    n1 = 140
-    m1 = 19
-    r1 = np.random.rand(n1)
-    u1 = np.random.rand(n1)*2*np.pi
-    t1 = np.linspace(0, 2*np.pi, m1+1)[1:]
+    # two blobs with outlier aureole
+    n1, m1 = 140, 19
+    X1, y_true1 = _blob_and_aureola(n1, m1)
 
-    n2 = 15
-    m2 = 5
-    r2 = np.random.rand(n2)
-    u2 = np.random.rand(n2)*2*np.pi
-    t2 = np.linspace(0, 2*np.pi, m2+1)[1:]
-    X = np.vstack((
-        r1.reshape(-1,1)*np.c_[np.cos(u1), np.sin(u1)],
-        4*np.c_[np.cos(t1), np.sin(t1)],
-        r2.reshape(-1,1)*np.c_[np.cos(u2), np.sin(u2)]+np.r_[8, 8],
-        4*np.c_[np.cos(t2), np.sin(t2)]+np.r_[8, 8],
-    ))
-    y_true = np.repeat([1, -1, 1, -1], [n1, m1, n2, m2])
+    n2, m2 = 15, 5
+    X2, y_true2 = _blob_and_aureola(n2, m2)
+
+    X = np.vstack((X1, X2+11))
+    y_true = np.r_[y_true1, y_true2]
+
     # genieclust.plots.plot_scatter(X, labels=y_true, asp=1)
     # plt.show()
 
-    L = lumbermark.Lumbermark(2).fit(X)
-    y = L.labels_
-    # genieclust.plots.plot_scatter(X, labels=y, asp=1)
-    # plt.show()
-
-    D = deadwood.Deadwood().fit(L)
+    D = deadwood.Deadwood(M=10)
+    D._cut_edges_ = np.r_[X.shape[0]-2]
+    D.fit(X)
     y = D.labels_
     print(D.contamination_)
+    # import matplotlib.pyplot as plt, genieclust
+    # genieclust.plots.plot_scatter(X, labels=y, asp=1)
+    # plt.show()
     assert np.abs(D.contamination_[0] - m1/(n1+m1))<1e-6
     assert np.abs(D.contamination_[1] - m2/(n2+m2))<1e-6
     assert np.all(y == y_true)
-    # genieclust.plots.plot_scatter(X, labels=y, asp=1)
-    # plt.show()
-
-
-def test_deadwood_multi1():
-    try:
-        import matplotlib.pyplot as plt
-        import genieclust  # TODO
-        import lumbermark  # TODO
-    except:
-        return False
-
-    np.random.seed(1234)
-    n1, n2 = 1000, 250
-    X = np.vstack((
-        np.random.rand(n1, 2),
-        np.random.rand(n2, 2)+[1.2, 0]
-    ))
-    D = deadwood.Deadwood(M=25).fit(X)
-    y = D.labels_
-    print(D.contamination_)
-    # genieclust.plots.plot_scatter(X, labels=y, asp=1)
-    # plt.show()
-
-    L = lumbermark.Lumbermark(2, M=25).fit(X)
-    y = L.labels_
-    #genieclust.plots.plot_scatter(X, labels=y, asp=1)
-    #plt.show()
-
-    D = deadwood.Deadwood()
-    o = D.fit_predict(L)
-    print(D.contamination_)
-    #w = o.copy(); w[w>0] = y[w>0]
-    # genieclust.plots.plot_scatter(X, labels=o, asp=1)
-    # plt.show()
-    assert (o[:n1]<0).mean() > 0.1
-    assert (o[n1:]<0).mean() > 0.1
-
-
-    G = genieclust.Genie(2, gini_threshold=0.5, M=25).fit(X)
-    y = G.labels_
-    #genieclust.plots.plot_scatter(X, labels=y, asp=1, asp=1)
-    #plt.show()
-
-    D = deadwood.Deadwood()
-    o = D.fit_predict(G)
-    print(D.contamination_)
-    #w = o.copy(); w[w>0] = y[w>0]
-    # genieclust.plots.plot_scatter(X, labels=o, asp=1)
-    # plt.show()
-    assert (o[:n1]<0).mean() > 0.1
-    assert (o[n1:]<0).mean() > 0.1
 
 
 def test_unskip_indexes():
@@ -227,8 +166,7 @@ if __name__ == "__main__":
     test_deadwood_base_classes()
     test_deadwood_df()
     test_deadwood_single()
-    test_deadwood_multi1()
-    test_deadwood_multi2()
+    test_deadwood_multi()
     test_unskip_indexes()
     test_skip_indexes()
     test_sort_groups()

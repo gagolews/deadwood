@@ -575,6 +575,10 @@ class Deadwood(MSTOutlierDetector):
     are removed.  All the resulting connected components whose
     sizes are smaller than a given threshold are considered outliers.
 
+    Once the spanning tree is determined (:math:`\\Omega(n \\log n)} –
+    :math:`O(n^2)`), the Deadwood algorithm runs in :math:`O(n)` time.
+    Memory use is also :math:`O(n)`.
+
 
     Parameters
     ----------
