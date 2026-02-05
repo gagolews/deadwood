@@ -30,7 +30,7 @@ More precisely:
 * tree edges with weights beyond the detected elbow point are removed,
 
 * all the resulting connected components whose sizes are smaller than
-    a given threshold are considered outliers.
+    a given threshold are deemed anomalous.
 
 
 ## How to Install

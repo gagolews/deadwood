@@ -29,7 +29,7 @@
 #' pulls peripheral points farther away from each other.
 #' Tree edges with weights beyond the detected elbow point
 #' are removed. All the resulting connected components whose
-#' sizes are smaller than a given threshold are considered outliers.
+#' sizes are smaller than a given threshold are deemed anomalous.
 #'
 #'
 #' @details

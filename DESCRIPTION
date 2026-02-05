@@ -2,7 +2,7 @@ Package: deadwood
 Type: Package
 Title: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
 Version: 0.9.0
-Date: 2026-02-03
+Date: 2026-02-05
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),
@@ -16,7 +16,7 @@ Description:
     distance pulls peripheral points farther away from each other.  Tree edges
     with weights beyond the detected elbow point are removed.  All the resulting
     connected components whose sizes are smaller than a given threshold are
-    considered outliers.  The 'Python' version of 'deadwood' is available via
+    deemed anomalous.  The 'Python' version of 'deadwood' is available via
     'PyPI'.
 BugReports: https://github.com/gagolews/deadwood/issues
 URL:
