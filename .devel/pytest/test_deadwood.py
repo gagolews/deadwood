@@ -123,17 +123,17 @@ def test_deadwood_multi():
     X = np.vstack((X1, X2+11))
     y_true = np.r_[y_true1, y_true2]
 
-    # genieclust.plots.plot_scatter(X, labels=y_true, asp=1)
-    # plt.show()
+    # deadwood.plot_scatter(X, labels=y_true, asp=1)
+    # deadwood.plt.show()
 
     D = deadwood.Deadwood(M=10)
     D._cut_edges_ = np.r_[X.shape[0]-2]
     D.fit(X)
     y = D.labels_
     print(D.contamination_)
-    # import matplotlib.pyplot as plt, genieclust
-    # genieclust.plots.plot_scatter(X, labels=y, asp=1)
-    # plt.show()
+    # import matplotlib.pyplot as plt
+    # deadwood.plot_scatter(X, labels=y, asp=1)
+    # deadwood.plt.show()
     assert np.abs(D.contamination_[0] - m1/(n1+m1))<1e-6
     assert np.abs(D.contamination_[1] - m2/(n2+m2))<1e-6
     assert np.all(y == y_true)
@@ -161,6 +161,7 @@ def test_sort_groups():
 
     y, ind = deadwood.sort_groups(np.r_[0,1,2], np.r_[0,1,-1], 3)
     assert np.all(y == np.r_[2,0,1]) and np.all(ind == np.r_[1, 2, 3, 3])
+
 
 if __name__ == "__main__":
     test_deadwood_base_classes()

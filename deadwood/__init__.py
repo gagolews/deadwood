@@ -24,6 +24,7 @@ deadwood Python Package
 __version__ = "0.9.0"
 
 from .core import *
-from .deadwood import MSTBase, MSTClusterer, MSTOutlierDetector
-from .deadwood import Deadwood
+from .classes import MSTBase, MSTClusterer, MSTOutlierDetector, Deadwood
+from .plots import *
+
 # from .deadwood import MSTClusterMixinWithProcessors
