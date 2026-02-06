@@ -40,7 +40,7 @@
 #' to more meaningful results.
 #'
 #' If \code{d} is a numeric matrix or an object of class \code{dist},
-#' \code{\link[deadwood]{mst}()} will be called to compute an MST, which
+#' \code{\link{mst}} will be called to compute an MST, which
 #' generally takes at most \eqn{O(n^2)} time. However, by default,
 #' for low-dimensional Euclidean spaces, a faster algorithm based on K-d trees
 #' is selected automatically; see \code{\link[quitefastmst]{mst_euclid}} from
@@ -50,9 +50,6 @@
 #' the Deadwood algorithm runs in \eqn{O(n)} time.
 #' Memory use is also \eqn{O(n)}.
 #'
-#'
-#' @seealso
-#' \code{\link[quitefastmst]{mst_euclid}}
 #'
 #' @references
 #' M. Gagolewski, deadwood, in preparation, 2026, TODO
@@ -68,12 +65,12 @@
 #' \doi{10.1007/978-3-642-37456-2_14}
 #'
 #'
-#' @param d a numeric matrix (or an object coercible to one,
-#'     e.g., a data frame with numeric-like columns) or an
-#'     object of class \code{dist} (see \code{\link[stats]{dist}}),
-#'     or an object of class \code{mstclust} (see \pkg{genieclust}
-#'     or \pkg{lumbermark}),
-#'     or an object of class \code{mst} (see \code{\link[deadwood]{mst}})
+#' @param d a numeric matrix with \eqn{n} rows and \eqn{p} columns
+#'     (or an object coercible to one, e.g., a data frame with numeric-like
+#'     columns), an object of class \code{dist} (see \code{\link[stats]{dist}}),
+#'     an object of class \code{mstclust} (see \pkg{genieclust}
+#'     and \pkg{lumbermark}),
+#'     or an object of class \code{mst} (see \code{\link{mst}})
 #'
 #' @param distance metric used in the case where \code{d} is a matrix; one of:
 #'     \code{"euclidean"} (synonym: \code{"l2"}),
@@ -81,27 +78,27 @@
 #'     \code{"cosine"}
 #'
 #' @param M smoothing factor; \eqn{M \leq 1} gives the selected \code{distance};
-#'     otherwise, the mutual reachability distance is used
+#'     otherwise, the corresponding mutual reachability distance is used
 #'
-#' @param contamination single numeric value or NA;
+#' @param contamination single numeric value or \code{NA};
 #'     the estimated (approximate) proportion of outliers in the data set;
-#'     if NA, the contamination amount will be determined
+#'     if \code{NA}, the contamination amount will be determined
 #'     by identifying the most significant elbow point of the curve
 #'     comprised of increasingly ordered tree edge weights
 #'
-#' @param max_contamination single numeric value or NA;
-#'    maximal contamination level assumed when \code{contamination} is NA
+#' @param max_contamination single numeric value or \code{NA};
+#'    maximal contamination level assumed when \code{contamination} is \code{NA}
 #'
-#' @param ema_dt single numeric value or NA;
+#' @param ema_dt single numeric value or \code{NA};
 #'    controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
 #'    of the exponential moving average (in elbow detection),
 #'    \eqn{y_i = \alpha x_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = x_1}
 #'
-#' @param max_debris_size single integer value or NA;
+#' @param max_debris_size single integer value or \code{NA};
 #'     the maximal size of the leftover connected components that
-#'     will be considered outliers; if NA, \code{sqrt(n)} is assumed
+#'     will be considered outliers; if \code{NA}, \eqn{\sqrt{n}} is assumed
 #'
-#' @param cut_edges numeric vector or NULL;
+#' @param cut_edges numeric vector or \code{NULL};
 #'     \eqn{k-1} indexes of the tree edges whose omission lead to
 #'     \eqn{k} connected components (clusters), where the outliers are to
 #'     be sought independently; most frequently this is generated
@@ -110,7 +107,7 @@
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information
 #'
-#' @param ... further arguments passed to \code{\link[deadwood]{mst}()}
+#' @param ... further arguments passed to \code{\link{mst}}
 #'
 #'
 #' @return

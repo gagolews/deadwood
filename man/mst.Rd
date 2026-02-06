@@ -23,7 +23,8 @@ mst(d, ...)
 e.g., a data frame with numeric-like columns) or an
 object of class \code{dist}; see \code{\link[stats]{dist}}}
 
-\item{...}{further arguments passed to \code{\link[quitefastmst]{mst_euclid}}}
+\item{...}{further arguments passed to \code{\link[quitefastmst]{mst_euclid}}
+from \pkg{quitefastmst}}
 
 \item{M}{smoothing factor; \eqn{M=0} selects the requested
 \code{distance}; otherwise, the corresponding degree-\code{M} mutual
@@ -59,19 +60,20 @@ both in the form of an \eqn{n} by \eqn{M} matrix.
 }
 \description{
 A Euclidean minimum spanning tree (MST) provides a computationally
-convenient representation of a dataset: the `n` points are connected
-via `n-1` shortest segments.  Provided that the dataset
+convenient representation of a dataset: the \eqn{n} points are connected
+via \eqn{n-1} shortest segments.  Provided that the dataset
 has been appropriately preprocessed so that the distances between the
 points are informative, an MST can be applied in outlier detection,
-clustering, density reduction, and many other topological data
-analysis tasks.
+clustering, density estimation, dimensionality reduction, and many other
+topological data analysis tasks.
 }
 \details{
 If \code{d} is a matrix and the Euclidean distance is requested
 (the default), then the MST is computed via a call to
-\code{\link[quitefastmst]{mst_euclid}}.  It is efficient in low-dimensional
-spaces.  Otherwise, a general-purpose implementation of the Jarník
-(Prim/Dijkstra)-like \eqn{O(n^2)}-time algorithm is called.
+\code{\link[quitefastmst]{mst_euclid}} from \pkg{quitefastmst}.
+It is efficient in low-dimensional spaces.  Otherwise, a general-purpose
+implementation of the Jarník (Prim/Dijkstra)-like \eqn{O(n^2)}-time algorithm
+is called.
 
 If \eqn{M>0}, then the minimum spanning tree is computed with respect to
 a mutual reachability distance (Campello et al., 2013):
@@ -123,6 +125,7 @@ M. Gagolewski, quitefastmst, in preparation, 2026, TODO
 }
 \seealso{
 The official online manual of \pkg{deadwood} at \url{https://deadwood.gagolewski.com/}
+
 \code{\link[quitefastmst]{mst_euclid}}
 }
 \author{

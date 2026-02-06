@@ -33,7 +33,7 @@ using namespace Rcpp;
 
 
 
-//' @title Knee/Elbow Point Detection with Kneedle
+//' @title Knee/Elbow Point Detection
 //'
 //' @description
 //' Finds the most significant knee/elbow using the Kneedle algorithm

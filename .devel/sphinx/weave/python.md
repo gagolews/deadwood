@@ -1,0 +1,27 @@
+
+
+
+
+# Python Examples
+
+*To learn more about Python, check out my open-access textbook*
+[Minimalist Data Wrangling in Python](https://datawranglingpy.gagolewski.com/).
+
+
+## How to Install
+
+To install the package from [PyPI](https://pypi.org/project/deadwood), call:
+
+
+```bash
+pip3 install deadwood  # python3 -m pip install deadwood
+```
+
+
+
+## Basic Use
+
+::::{note}
+This section is a work in progress.
+In the meantime, take a look at the examples in the [reference manual](../pythonapi).
+::::

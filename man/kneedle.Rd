@@ -3,7 +3,7 @@
 \name{kneedle}
 \alias{kneedle}
 \alias{kneedle_increasing}
-\title{Knee/Elbow Point Detection with Kneedle}
+\title{Knee/Elbow Point Detection}
 \usage{
 kneedle_increasing(x, convex = TRUE, dt = 0.01)
 }
@@ -35,4 +35,5 @@ In: 31st Intl. Conf. Distributed Computing Systems Workshops,
 }
 \seealso{
 The official online manual of \pkg{deadwood} at \url{https://deadwood.gagolewski.com/}
+
 }

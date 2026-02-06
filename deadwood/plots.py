@@ -73,7 +73,7 @@ def plot_scatter(
         **kwargs
     ):
     """
-    Draws a scatter plot
+    Draws a scatter plot.
 
 
     Parameters
@@ -208,7 +208,7 @@ def plot_scatter(
 
 def plot_segments(pairs, X, y=None, style="k-", **kwargs):
     """
-    Draws a set of disjoint line segments
+    Draws a set of disjoint line segments.
 
 
     Parameters

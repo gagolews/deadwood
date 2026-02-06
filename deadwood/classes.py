@@ -43,15 +43,15 @@ class MSTBase(BaseEstimator):
     The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
     :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
     Euclidean and mutual reachability minimum spanning tree-based
-    clustering and outlier detection algorithms [2]_.
+    clustering and outlier detection algorithms.
 
     A Euclidean minimum spanning tree (MST) provides a computationally
     convenient representation of a dataset: the `n` points are connected
     via `n-1` shortest segments.  Provided that the dataset
     has been appropriately preprocessed so that the distances between the
     points are informative, an MST can be applied in outlier detection,
-    clustering, density reduction, and many other topological data
-    analysis tasks.
+    clustering, density estimation, dimensionality reduction,
+    and many other topological data analysis tasks.
 
 
     Parameters
@@ -99,7 +99,7 @@ class MSTBase(BaseEstimator):
     If `M > 0`, then the minimum spanning tree is computed with respect to a
     mutual reachability distance [1]_:
     :math:`d_M(i,j)=\\max\\{d(i,j), c_M(i), c_M(j)\\}`, where
-    :math:`d(i,j)` is an ordinary distance and :math:`c_M(i) is the core
+    :math:`d(i,j)` is an ordinary distance and :math:`c_M(i)` is the core
     distance given by :math:`d(i,k)` with :math:`k` being
     :math:`i`'s :math:`M`-th nearest neighbour (not including self,
     unlike in [1]_).  This pulls outliers away from their neighbours.
@@ -565,7 +565,7 @@ class MSTOutlierDetector(MSTBase):
 
 class Deadwood(MSTOutlierDetector):
     """
-    Deadwood [1]_ is an anomaly detection algorithm based on Mutual
+    Deadwood is an anomaly detection algorithm based on Mutual
     Reachability Minimum Spanning Trees.  It trims protruding tree segments
     and marks small debris as outliers.
 
@@ -575,7 +575,7 @@ class Deadwood(MSTOutlierDetector):
     are removed.  All the resulting connected components whose
     sizes are smaller than a given threshold are deemed anomalous.
 
-    Once the spanning tree is determined (:math:`\\Omega(n \\log n)} –
+    Once the spanning tree is determined (:math:`\\Omega(n \\log n)` –
     :math:`O(n^2)`), the Deadwood algorithm runs in :math:`O(n)` time.
     Memory use is also :math:`O(n)`.
 

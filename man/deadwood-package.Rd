@@ -9,6 +9,7 @@ See \code{\link{deadwood}()} for more details.
 }
 \seealso{
 The official online manual of \pkg{deadwood} at \url{https://deadwood.gagolewski.com/}
+
 Useful links:
 \itemize{
   \item \url{https://deadwood.gagolewski.com/}

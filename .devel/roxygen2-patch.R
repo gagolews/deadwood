@@ -13,7 +13,8 @@ postprocess_contents <- function(contents)
 
     seealso <- stringi::stri_paste(
         "The official online manual of \\pkg{deadwood} at ",
-        "\\url{https://deadwood.gagolewski.com/}\n"
+        "\\url{https://deadwood.gagolewski.com/}\n",
+        "\n"
     )
 
     if (!stringi::stri_detect_regex(

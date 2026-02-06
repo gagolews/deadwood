@@ -18,7 +18,6 @@
 # ############################################################################ #
 
 
-
 #' @title The Deadwood Outlier Detection Algorithm
 #'
 #' @description
