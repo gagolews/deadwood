@@ -409,11 +409,10 @@ class MSTBase(BaseEstimator):
         (dense ``numpy.ndarray`` or an object coercible to)
         with ``n_samples`` rows and ``n_features`` columns.
 
-        As in the case of all the distance-based methods (including k-nearest
-        neighbours, k-means, and DBSCAN), the standardisation of the input
-        features is definitely worth giving a try.  Oftentimes, applying
-        feature selection and engineering techniques (e.g., dimensionality
-        reduction) might lead to more meaningful results.
+        As with all distance-based methods (this includes k-means and DBSCAN
+        as well), applying data preprocessing and feature engineering techniques
+        (e.g., feature scaling, feature selection, dimensionality reduction)
+        might lead to more meaningful results.
         """
         if y is not None:  # it is not a transductive classifier
             raise ValueError("y should be None")
@@ -645,9 +644,9 @@ class Deadwood(MSTOutlierDetector):
             *,
             contamination="auto",
             max_debris_size="auto",
-            M=0,  #TODO: set default
+            M=5,  #TODO: set default
             metric="l2",
-            quitefastmst_params=dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
+            quitefastmst_params=None,  # TODO: set default ?dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
             verbose=False
         ):
         # # # # # # # # # # # #
@@ -839,11 +838,10 @@ class Deadwood(MSTOutlierDetector):
 
         Refer to the `labels_` attribute for the result.
 
-        As in the case of all the distance-based methods (including k-nearest
-        neighbours, k-means, and DBSCAN), the standardisation of the input
-        features in `X` is definitely worth giving a try.  Oftentimes, applying
-        feature selection and engineering techniques (e.g., dimensionality
-        reduction) might lead to more meaningful results.
+        As with all distance-based methods (this includes local outlier factor
+        as well), applying data preprocessing and feature engineering techniques
+        (e.g., feature scaling, feature selection, dimensionality reduction)
+        might lead to more meaningful results.
         """
         self.labels_ = None
 

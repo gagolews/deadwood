@@ -33,11 +33,10 @@
 #'
 #'
 #' @details
-#' As in the case of all the distance-based methods (including k-nearest
-#' neighbours, k-means, and DBSCAN), the standardisation of the input features
-#' is definitely worth giving a try.  Oftentimes, applying feature selection
-#' and engineering techniques (e.g., dimensionality reduction) might lead
-#' to more meaningful results.
+#' As with all distance-based methods (this includes k-means and DBSCAN as well),
+#' applying data preprocessing and feature engineering techniques
+#' (e.g., feature scaling, feature selection, dimensionality reduction)
+#' might lead to more meaningful results.
 #'
 #' If \code{d} is a numeric matrix or an object of class \code{dist},
 #' \code{\link{mst}} will be called to compute an MST, which
@@ -143,7 +142,7 @@ deadwood <- function(d, ...)
 #' @method deadwood default
 deadwood.default <- function(
     d,
-    M=0L,  #TODO: set default
+    M=5L,  # TODO: set default
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -170,7 +169,7 @@ deadwood.default <- function(
 #' @method deadwood dist
 deadwood.dist <- function(
     d,
-    M=0L,  #TODO: set default
+    M=5L,  # TODO: set default
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,

@@ -1,5 +1,11 @@
 # *Deadwood*: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
 
+::::{image} _static/img/deadwood_toy_example.png
+:class: img-right-align-always
+:alt: Deadwood
+:width: 128px
+::::
+
 
 **Keywords**: Deadwood, outlier detection, anomaly detection, HDBSCAN\*, DBSCAN,
 minimum spanning tree, MST, density estimation, mutual reachability distance.
@@ -54,11 +60,20 @@ CRAN Entry <https://CRAN.R-project.org/package=deadwood>
 
 ::::{toctree}
 :maxdepth: 1
-:caption: Documentation
+:caption: Python API
 :hidden:
 
 weave/python
+weave/sklearn_toy_example
 pythonapi
+::::
+
+
+::::{toctree}
+:maxdepth: 1
+:caption: R API
+:hidden:
+
 weave/r
 rapi
 ::::

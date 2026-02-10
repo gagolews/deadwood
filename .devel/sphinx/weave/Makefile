@@ -2,7 +2,8 @@
 
 FILES_RMD = \
 	python.Rmd \
-	r.Rmd
+	r.Rmd \
+	sklearn_toy_example.Rmd
 
 RMD_MD_OUTPUTS=$(patsubst %.Rmd,%.md,$(FILES_RMD))
 

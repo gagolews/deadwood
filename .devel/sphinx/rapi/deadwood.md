@@ -77,7 +77,7 @@ deadwood(
 
 ## Details
 
-As in the case of all the distance-based methods (including k-nearest neighbours, k-means, and DBSCAN), the standardisation of the input features is definitely worth giving a try. Oftentimes, applying feature selection and engineering techniques (e.g., dimensionality reduction) might lead to more meaningful results.
+As with all distance-based methods (this includes k-means and DBSCAN as well), applying data preprocessing and feature engineering techniques (e.g., feature scaling, feature selection, dimensionality reduction) might lead to more meaningful results.
 
 If `d` is a numeric matrix or an object of class `dist`, [`mst`](mst.md) will be called to compute an MST, which generally takes at most $O(n^2)$ time. However, by default, for low-dimensional Euclidean spaces, a faster algorithm based on K-d trees is selected automatically; see [`mst_euclid`](https://quitefastmst.gagolewski.com/rapi/mst_euclid.html) from the <span class="pkg">quitefastmst</span> package.
 
