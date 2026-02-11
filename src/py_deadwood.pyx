@@ -82,7 +82,7 @@ cpdef Py_ssize_t kneedle_increasing(
     dt : float
         controls the smoothing parameter :math:`\\alpha = 1-\\exp(-dt)`
         of the exponential moving average,
-        :math:`y_i = \\alpha x_i + (1-\\alpha) y_{i-1}`,
+        :math:`y_i = \\alpha x_i + (1-\\alpha) x_{i-1}`,
         :math:`y_1 = x_1`.
 
 

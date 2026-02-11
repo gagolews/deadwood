@@ -65,25 +65,27 @@ or an object of class \code{mst} (see \code{\link{mst}})}
 \item{...}{further arguments passed to \code{\link{mst}}}
 
 \item{M}{smoothing factor; \eqn{M \leq 1} gives the selected \code{distance};
-otherwise, the corresponding mutual reachability distance is used}
+otherwise, the mutual reachability distance based on the \eqn{M}-th
+nearest neighbours is used}
 
 \item{contamination}{single numeric value or \code{NA};
-the estimated (approximate) proportion of outliers in the data set;
+the estimated (approximate) proportion of outliers in the dataset;
 if \code{NA}, the contamination amount will be determined
 by identifying the most significant elbow point of the curve
-comprised of increasingly ordered tree edge weights}
+comprised of increasingly ordered tree edge weights
+smoothened with an exponential moving average}
 
 \item{max_debris_size}{single integer value or \code{NA};
 the maximal size of the leftover connected components that
 will be considered outliers; if \code{NA}, \eqn{\sqrt{n}} is assumed}
 
-\item{max_contamination}{single numeric value or \code{NA};
+\item{max_contamination}{single numeric value;
 maximal contamination level assumed when \code{contamination} is \code{NA}}
 
-\item{ema_dt}{single numeric value or \code{NA};
+\item{ema_dt}{single numeric value;
 controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
-of the exponential moving average (in elbow detection),
-\eqn{y_i = \alpha x_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = x_1}}
+of the exponential moving average (in edge length elbow point detection),
+\eqn{y_i = \alpha w_i + (1-\alpha) w_{i-1}}, \eqn{y_1 = d_1}}
 
 \item{distance}{metric used in the case where \code{d} is a matrix; one of:
 \code{"euclidean"} (synonym: \code{"l2"}),
@@ -100,7 +102,8 @@ be sought independently; most frequently this is generated
 via \pkg{genieclust} or \pkg{lumbermark}.}
 }
 \value{
-A logical vector of length \eqn{n}, where TRUE denotes outliers.
+A logical vector \code{y} of length \eqn{n}, where \code{y[i] == TRUE}
+means that the \code{i}-th observation is deemed to be an outlier.
 
 The \code{mst} attribute gives the computed minimum
 spanning tree which can be reused in further calls to the functions

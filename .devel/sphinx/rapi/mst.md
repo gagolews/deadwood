@@ -28,7 +28,7 @@ mst(d, M = 0L, verbose = FALSE, ...)
 |----|----|
 | `d` | either a numeric matrix (or an object coercible to one, e.g., a data frame with numeric-like columns) or an object of class `dist`; see [`dist`](https://stat.ethz.ch/R-manual/R-devel/library/stats/help/dist.html) |
 | `...` | further arguments passed to [`mst_euclid`](https://quitefastmst.gagolewski.com/rapi/mst_euclid.html) from <span class="pkg">quitefastmst</span> |
-| `M` | smoothing factor; $M=0$ selects the requested `distance`; otherwise, the corresponding degree-`M` mutual reachability distance is used; `M` should be rather small, say, $\leq 20$ |
+| `M` | smoothing factor; $M=0$ selects the requested `distance`; otherwise, the corresponding degree-`M` mutual reachability distance is used |
 | `distance` | metric used in the case where `d` is a matrix; one of: `"euclidean"` (synonym: `"l2"`), `"manhattan"` (a.k.a. `"l1"` and `"cityblock"`), `"cosine"` |
 | `verbose` | logical; whether to print diagnostic messages and progress information |
 
@@ -42,7 +42,7 @@ If the distances are not unique, there might be multiple trees spanning a given 
 
 ## Value
 
-Returns a numeric matrix of class `mst` with $n-1$ rows and three columns: `from`, `to`, and `dist`. Its $i$-th row specifies the $i$-th edge of the MST which is incident to the vertices `from[i]` and `to[i]` with `from[i] < to[i]` (in 1,\...,n) and `dist[i]` gives the corresponding weight, i.e., the distance between the point pair. Edges are ordered increasingly with respect to their weights.
+Returns a numeric matrix of class `mst` with $n-1$ rows and three columns: `from`, `to`, and `dist`. Its $i$-th row specifies the $i$-th edge of the MST which is incident to the vertices `from[i]` and `to[i]` with `from[i] < to[i]` (in $1,...,n$) and `dist[i]` gives the corresponding weight, i.e., the distance between the point pair. Edges are ordered increasingly with respect to their weights.
 
 The `Size` attribute specifies the number of points, $n$. The `Labels` attribute gives the labels of the input points, if available. The `method` attribute provides the name of the distance function used.
 

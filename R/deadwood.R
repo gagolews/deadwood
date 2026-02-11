@@ -77,21 +77,23 @@
 #'     \code{"cosine"}
 #'
 #' @param M smoothing factor; \eqn{M \leq 1} gives the selected \code{distance};
-#'     otherwise, the corresponding mutual reachability distance is used
+#'     otherwise, the mutual reachability distance based on the \eqn{M}-th
+#'     nearest neighbours is used
 #'
 #' @param contamination single numeric value or \code{NA};
-#'     the estimated (approximate) proportion of outliers in the data set;
+#'     the estimated (approximate) proportion of outliers in the dataset;
 #'     if \code{NA}, the contamination amount will be determined
 #'     by identifying the most significant elbow point of the curve
 #'     comprised of increasingly ordered tree edge weights
+#'     smoothened with an exponential moving average
 #'
-#' @param max_contamination single numeric value or \code{NA};
+#' @param max_contamination single numeric value;
 #'    maximal contamination level assumed when \code{contamination} is \code{NA}
 #'
-#' @param ema_dt single numeric value or \code{NA};
+#' @param ema_dt single numeric value;
 #'    controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
-#'    of the exponential moving average (in elbow detection),
-#'    \eqn{y_i = \alpha x_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = x_1}
+#'    of the exponential moving average (in edge length elbow point detection),
+#'    \eqn{y_i = \alpha w_i + (1-\alpha) w_{i-1}}, \eqn{y_1 = d_1}
 #'
 #' @param max_debris_size single integer value or \code{NA};
 #'     the maximal size of the leftover connected components that
@@ -110,7 +112,8 @@
 #'
 #'
 #' @return
-#' A logical vector of length \eqn{n}, where TRUE denotes outliers.
+#' A logical vector \code{y} of length \eqn{n}, where \code{y[i] == TRUE}
+#' means that the \code{i}-th observation is deemed to be an outlier.
 #'
 #' The \code{mst} attribute gives the computed minimum
 #' spanning tree which can be reused in further calls to the functions

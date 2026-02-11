@@ -40,10 +40,9 @@ from sklearn.base import BaseEstimator
 
 class MSTBase(BaseEstimator):
     """
-    The base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
-    :any:`lumbermark.Lumbermark`, :any:`deadwood.Deadwood`, and other
-    Euclidean and mutual reachability minimum spanning tree-based
-    clustering and outlier detection algorithms.
+    A base class for :any:`genieclust.Genie`, :any:`lumbermark.Lumbermark`,
+    :any:`deadwood.Deadwood`, and other Euclidean and mutual reachability
+    minimum spanning tree-based clustering and outlier detection algorithms.
 
     A Euclidean minimum spanning tree (MST) provides a computationally
     convenient representation of a dataset: the `n` points are connected
@@ -138,19 +137,19 @@ class MSTBase(BaseEstimator):
     ----------
 
     .. [1]
-        R.J.G.B. Campello, D. Moulavi, J. Sander,
+        R.J.G.B. Campello, D. Moulavi, J. Sander,
         Density-based clustering based on hierarchical density estimates,
         *Lecture Notes in Computer Science* 7819, 2013, 160-172,
         https://doi.org/10.1007/978-3-642-37456-2_14
 
     .. [2]
-        M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
+        M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
         Clustering with minimum spanning trees: How good can it be?,
         *Journal of Classification* 42, 2025, 90-112,
         https://doi.org/10.1007/s00357-024-09483-1
 
     .. [3]
-        M. Gagolewski, *quitefastmst*, in preparation, 2026, TODO
+        M. Gagolewski, *quitefastmst*, in preparation, 2026, TODO
     """
 
     def __init__(
@@ -363,7 +362,7 @@ class MSTBase(BaseEstimator):
         Performs cluster or anomaly analysis of a dataset and returns
         the predicted labels.
 
-        Refer to :any:`fit` for a mode detailed description.
+        Refer to :any:`fit` for a more detailed description.
 
 
         Parameters
@@ -399,7 +398,7 @@ class MSTBase(BaseEstimator):
         If `X` is an instance of ``MSTBase`` (or its descendant), all
         its attributes are copied into the current object (including its MST).
 
-        For ``metric=="precomputed"``, `X` should either
+        For `metric` is 'precomputed', `X` should either
         be a distance vector of length ``n_samples*(n_samples-1)/2``
         (see :any:`scipy.spatial.distance.pdist`) or a square distance matrix
         of shape ``(n_samples, n_samples)``
@@ -408,11 +407,6 @@ class MSTBase(BaseEstimator):
         Otherwise, `X` should be real-valued matrix
         (dense ``numpy.ndarray`` or an object coercible to)
         with ``n_samples`` rows and ``n_features`` columns.
-
-        As with all distance-based methods (this includes k-means and DBSCAN
-        as well), applying data preprocessing and feature engineering techniques
-        (e.g., feature scaling, feature selection, dimensionality reduction)
-        might lead to more meaningful results.
         """
         if y is not None:  # it is not a transductive classifier
             raise ValueError("y should be None")
@@ -424,9 +418,8 @@ class MSTBase(BaseEstimator):
 
 class MSTClusterer(MSTBase):
     """
-    A base class for :any:`genieclust.Genie`, :any:`genieclust.GIc`,
-    :any:`lumbermark.Lumbermark`, and other spanning tree-based clustering
-    algorithms [1]_.
+    A base class for :any:`genieclust.Genie`, :any:`lumbermark.Lumbermark`,
+    and other spanning tree-based clustering algorithms [1]_.
 
     By removing `k-1` edges from a spanning tree, we form `k` connected
     components which can be conceived as clusters.
@@ -470,7 +463,7 @@ class MSTClusterer(MSTBase):
     ----------
 
     .. [1]
-        M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
+        M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
         Clustering with minimum spanning trees: How good can it be?,
         *Journal of Classification* 42, 2025, 90-112,
         https://doi.org/10.1007/s00357-024-09483-1
@@ -564,7 +557,7 @@ class MSTOutlierDetector(MSTBase):
 
 class Deadwood(MSTOutlierDetector):
     """
-    Deadwood is an anomaly detection algorithm based on Mutual
+    Deadwood [1]_ is an anomaly detection algorithm based on Mutual
     Reachability Minimum Spanning Trees.  It trims protruding tree segments
     and marks small debris as outliers.
 
@@ -586,15 +579,25 @@ class Deadwood(MSTOutlierDetector):
         see :any:`deadwood.MSTBase`
 
     contamination : 'auto' or float, default='auto'
-        The estimated (approximate) proportion of outliers in the data set.
+        The estimated (approximate) proportion of outliers in the dataset.
         If ``"auto"``, the contamination amount will be determined
         by identifying the most significant elbow point of the curve
-        comprised of increasingly ordered tree edge weights.
+        comprised of increasingly ordered tree edge weights
+        smoothened with an exponential moving average
 
     max_debris_size : 'auto' or int, default='auto'
-        The maximal size of the leftover connected components that
+        The maximal size of leftover connected components that
         will be considered outliers.  If ``"auto"``, ``sqrt(n_samples)``
         is assumed.
+
+
+    max_contamination : float, default=0.5
+       maximal contamination level assumed when `contamination` is 'auto'
+
+    ema_dt : float, default=0.01
+       controls the smoothing parameter :math:`\\alpha = 1-\\exp(-dt)`
+       of the exponential moving average (in edge length elbow point detection),
+       :math:`y_i = \\alpha w_i + (1-\\alpha) w_{i-1}`, :math:`y_1 = d_1`
 
 
     Attributes
@@ -610,7 +613,7 @@ class Deadwood(MSTOutlierDetector):
     contamination_ : float or ndarray of shape (n_clusters_,)
         Detected contamination threshold(s) (elbow point(s)).
         For the actual number of outliers detected, compute
-        ``np.mean(labels_<0)``.
+        ``numpy.mean(labels_<0)``.
 
     max_debris_size_ : float
         Computed max debris size.
@@ -625,7 +628,7 @@ class Deadwood(MSTOutlierDetector):
     ----------
 
     .. [1]
-        M. Gagolewski, *deadwood*, in preparation, 2026, TODO
+        M. Gagolewski, *deadwood*, in preparation, 2026, TODO
 
     .. [2]
         V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
@@ -645,6 +648,8 @@ class Deadwood(MSTOutlierDetector):
             contamination="auto",
             max_debris_size="auto",
             M=5,  #TODO: set default
+            max_contamination=0.5,
+            ema_dt=0.01,
             metric="l2",
             quitefastmst_params=None,  # TODO: set default ?dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
             verbose=False
@@ -663,8 +668,8 @@ class Deadwood(MSTOutlierDetector):
         self.contamination_     = None
         self.max_debris_size_   = None
 
-        self._max_contamination = 0.5
-        self._ema_dt            = 0.01  # controls the exponential moving average smoothing parameter alpha = 1-exp(-dt) (in elbow detection)
+        self.max_contamination  = max_contamination
+        self.ema_dt             = ema_dt
 
         self._cut_edges_        = None  # actually, _cut_edges
 
@@ -672,20 +677,20 @@ class Deadwood(MSTOutlierDetector):
     def _check_params(self):
         super()._check_params()
 
-        self._max_contamination = float(self._max_contamination)
-        if not 0.0 <= self._max_contamination <= 1.0:
-            raise ValueError("_max_contamination must be in [0, 1]")
+        self.max_contamination = float(self.max_contamination)
+        if not 0.0 <= self.max_contamination <= 1.0:
+            raise ValueError("max_contamination must be in [0, 1]")
 
-        self._ema_dt = float(self._ema_dt)
-        if self._ema_dt <= 0.0:
-            raise ValueError("_ema_dt must be > 0")
+        self.ema_dt = float(self.ema_dt)
+        if self.ema_dt <= 0.0:
+            raise ValueError("ema_dt must be > 0")
 
         if self.contamination == "auto":
             pass
         else:
             self.contamination = float(self.contamination)
-            if not 0 <= self.contamination <= self._max_contamination:
-                raise ValueError("contamination must be 'auto' or in [0, %g]" % self._max_contamination)
+            if not 0 <= self.contamination <= self.max_contamination:
+                raise ValueError("contamination must be 'auto' or in [0, %g]" % self.max_contamination)
 
         if self.max_debris_size == "auto":
             pass
@@ -742,7 +747,7 @@ class Deadwood(MSTOutlierDetector):
     # def _fit_single(self):
     #     if self.contamination == "auto":
     #         self.contamination_ = Deadwood._get_contamination(
-    #             self._tree_d_, self._max_contamination, self._ema_dt
+    #             self._tree_d_, self.max_contamination, self.ema_dt
     #         )
     #     else:
     #         self.contamination_ = self.contamination
@@ -779,7 +784,7 @@ class Deadwood(MSTOutlierDetector):
     #         if self.contamination == "auto":
     #             contamination = Deadwood._get_contamination(
     #                 tree_d_grp[ind[i]:ind[i+1]],
-    #                 self._max_contamination, self._ema_dt
+    #                 self.max_contamination, self.ema_dt
     #             )
     #         else:
     #             contamination = self.contamination
@@ -862,8 +867,8 @@ class Deadwood(MSTOutlierDetector):
             self._cut_edges_ if self._cut_edges_ is not None else np.empty(0, np.intp),
             self._tree_cumdeg_,
             self._tree_inc_,
-            max_contamination=self._max_contamination if self.contamination == "auto" else -self.contamination,
-            ema_dt=self._ema_dt,
+            max_contamination=self.max_contamination if self.contamination == "auto" else -self.contamination,
+            ema_dt=self.ema_dt,
             max_debris_size=self.max_debris_size_
         )
 
@@ -912,23 +917,6 @@ class Deadwood(MSTOutlierDetector):
 #
 #     verbose
 #         See :any:`deadwood.MSTClusterMixin`.
-#
-#     preprocess : TODO
-#         TODO
-#
-#     postprocess : {``"midliers"``, ``"none"``, ``"all"``}
-#         Controls the treatment of outliers after the clusters once identified.
-#
-#         TODO In effect only if *M > 0*. Each leaf in the spanning tree
-#         is omitted from the clustering process.  We call it a *midlier*
-#         if it is amongst its adjacent vertex's `M` nearest neighbours.
-#         By default, only midliers are merged with their nearest
-#         clusters, and the remaining leaves are considered outliers.
-#
-#         To force a classical `n_clusters`-partition of a data set (one that
-#         marks no points as outliers), choose ``"all"``.
-#
-#         Furthermore, ``"none"`` leaves all leaves marked as outliers.
 #
 #
 #     Attributes

@@ -101,9 +101,7 @@ def test_deadwood_single():
     assert D.contamination_ == 0.0
     assert np.all(y_pred == np.repeat(1, X.shape[0]))
 
-    D = deadwood.Deadwood()
-    D._ema_dt = 0.01
-    D._max_contamination = 0.37
+    D = deadwood.Deadwood(ema_dt = 0.01, max_contamination = 0.37)
     y_pred = D.fit_predict(X)
     # print(y_pred)
     assert np.abs(D.contamination_ - m/(n+m))<1e-6

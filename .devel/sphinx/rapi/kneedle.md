@@ -16,7 +16,7 @@ kneedle_increasing(x, convex = TRUE, dt = 0.01)
 |----|----|
 | `x` | data vector (increasing) |
 | `convex` | whether the data in `x` are convex-ish (elbow detection) or not (knee lookup) |
-| `dt` | controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average, $y_i = \alpha x_i + (1-\alpha) y_{i-1}$, $y_1 = x_1$ |
+| `dt` | controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average, $y_i = \alpha x_i + (1-\alpha) x_{i-1}$, $y_1 = x_1$ |
 
 ## Value
 

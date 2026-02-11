@@ -14,7 +14,7 @@ deadwood(d, ...)
 ## Default S3 method:
 deadwood(
   d,
-  M = 0L,
+  M = 5L,
   contamination = NA_real_,
   max_debris_size = NA_real_,
   max_contamination = 0.5,
@@ -27,7 +27,7 @@ deadwood(
 ## S3 method for class 'dist'
 deadwood(
   d,
-  M = 0L,
+  M = 5L,
   contamination = NA_real_,
   max_debris_size = NA_real_,
   max_contamination = 0.5,
@@ -66,11 +66,11 @@ deadwood(
 |----|----|
 | `d` | a numeric matrix with $n$ rows and $p$ columns (or an object coercible to one, e.g., a data frame with numeric-like columns), an object of class `dist` (see [`dist`](https://stat.ethz.ch/R-manual/R-devel/library/stats/help/dist.html)), an object of class `mstclust` (see <span class="pkg">genieclust</span> and <span class="pkg">lumbermark</span>), or an object of class `mst` (see [`mst`](mst.md)) |
 | `...` | further arguments passed to [`mst`](mst.md) |
-| `M` | smoothing factor; $M \leq 1$ gives the selected `distance`; otherwise, the corresponding mutual reachability distance is used |
-| `contamination` | single numeric value or `NA`; the estimated (approximate) proportion of outliers in the data set; if `NA`, the contamination amount will be determined by identifying the most significant elbow point of the curve comprised of increasingly ordered tree edge weights |
+| `M` | smoothing factor; $M \leq 1$ gives the selected `distance`; otherwise, the mutual reachability distance based on the $M$-th nearest neighbours is used |
+| `contamination` | single numeric value or `NA`; the estimated (approximate) proportion of outliers in the dataset; if `NA`, the contamination amount will be determined by identifying the most significant elbow point of the curve comprised of increasingly ordered tree edge weights smoothened with an exponential moving average |
 | `max_debris_size` | single integer value or `NA`; the maximal size of the leftover connected components that will be considered outliers; if `NA`, $\sqrt{n}$ is assumed |
-| `max_contamination` | single numeric value or `NA`; maximal contamination level assumed when `contamination` is `NA` |
-| `ema_dt` | single numeric value or `NA`; controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average (in elbow detection), $y_i = \alpha x_i + (1-\alpha) y_{i-1}$, $y_1 = x_1$ |
+| `max_contamination` | single numeric value; maximal contamination level assumed when `contamination` is `NA` |
+| `ema_dt` | single numeric value; controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average (in edge length elbow point detection), $y_i = \alpha w_i + (1-\alpha) w_{i-1}$, $y_1 = d_1$ |
 | `distance` | metric used in the case where `d` is a matrix; one of: `"euclidean"` (synonym: `"l2"`), `"manhattan"` (a.k.a. `"l1"` and `"cityblock"`), `"cosine"` |
 | `verbose` | logical; whether to print diagnostic messages and progress information |
 | `cut_edges` | numeric vector or `NULL`; $k-1$ indexes of the tree edges whose omission lead to $k$ connected components (clusters), where the outliers are to be sought independently; most frequently this is generated via <span class="pkg">genieclust</span> or <span class="pkg">lumbermark</span>. |
@@ -85,7 +85,7 @@ Once the spanning tree is determined ($\Omega(n \log n)$-$O(n^2)$), the Deadwood
 
 ## Value
 
-A logical vector of length $n$, where TRUE denotes outliers.
+A logical vector `y` of length $n$, where `y[i] == TRUE` means that the `i`-th observation is deemed to be an outlier.
 
 The `mst` attribute gives the computed minimum spanning tree which can be reused in further calls to the functions from <span class="pkg">genieclust</span>, <span class="pkg">lumbermark</span>, and <span class="pkg">deadwood</span>. `cut_edges` gives the `cut_edges` passed as argument. `contamination` gives the detected contamination levels in each cluster (which can be different from the observed proportion of outliers detected).
 

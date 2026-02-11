@@ -93,8 +93,7 @@
 #'
 #' @param M smoothing factor; \eqn{M=0} selects the requested
 #'      \code{distance}; otherwise, the corresponding degree-\code{M} mutual
-#'      reachability distance is used; \code{M} should be rather small,
-#'      say, \eqn{\leq 20}
+#'      reachability distance is used
 #'
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information
@@ -108,7 +107,7 @@
 #' three columns: \code{from}, \code{to}, and \code{dist}.
 #' Its \eqn{i}-th row specifies the \eqn{i}-th edge of the MST
 #' which is incident to the vertices \code{from[i]} and \code{to[i]} with
-#' \code{from[i] < to[i]}  (in 1,...,n) and \code{dist[i]} gives
+#' \code{from[i] < to[i]}  (in \eqn{1,...,n}) and \code{dist[i]} gives
 #' the corresponding weight, i.e., the distance between the point pair.
 #' Edges are ordered increasingly with respect to their weights.
 #'

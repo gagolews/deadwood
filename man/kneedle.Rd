@@ -15,7 +15,7 @@ or not (knee lookup)}
 
 \item{dt}{controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
 of the exponential moving average,
-\eqn{y_i = \alpha x_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = x_1}}
+\eqn{y_i = \alpha x_i + (1-\alpha) x_{i-1}}, \eqn{y_1 = x_1}}
 }
 \value{
 Returns the index of the knee/elbow point; 1 if not found.

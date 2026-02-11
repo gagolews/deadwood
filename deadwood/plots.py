@@ -99,10 +99,10 @@ def plot_scatter(
         See `matplotlib.axes.Axes.set_aspect`.
 
     colors : list
-        list of colours corresponding to different labels
+        List of colours corresponding to different labels.
 
     markers : list
-        list of point markers corresponding to different labels
+        List of point markers corresponding to different labels.
 
     **kwargs : Collection properties
         Further arguments to `matplotlib.pyplot.scatter`.
@@ -114,11 +114,11 @@ def plot_scatter(
     If `X` is a two-column matrix, then ``plot_scatter(X)``
     is equivalent to ``plot_scatter(X[:,0], X[:,1])``.
 
-    Unlike in `matplotlib.pyplot.scatter`,
-    for any fixed ``j``, all points ``X[i,:]`` such that ``labels[i] == j``
-    are always drawn in the same way, no matter the ``max(labels)``.
-    In particular, labels 0, 1, 2, and 3 correspond to
-    black, red, green, and blue, respectively.
+    Unlike in `matplotlib.pyplot.scatter`, for any fixed ``j``,
+    all points ``X[i,:]`` such that ``labels[i] == j`` are always drawn
+    in the same way, no matter the ``max(labels)``.  In particular,
+    labels 0, 1, 2, and 3 correspond to black, red, green, and blue,
+    respectively.
 
     This function was inspired by the ``plot()`` function
     from the R package ``graphics``.
@@ -135,7 +135,7 @@ def plot_scatter(
         >>> n = np.r_[100, 50]
         >>> X = np.r_[np.random.randn(n[0], 2), np.random.randn(n[1], 2)+2.0]
         >>> l = np.repeat([0, 1], n)
-        >>> deadwood.plot_scatter(X, labels=l)
+        >>> deadwood.plot_scatter(X, labels=l, asp='equal')
         >>> plt.show()                                   # doctest: +SKIP
 
 
@@ -242,7 +242,7 @@ def plot_segments(pairs, X, y=None, style="k-", **kwargs):
     for all ``i`` from ``0`` to ``pairs.shape[0]-1``.
 
     `matplotlib.pyplot.plot` is called only once.
-    Therefore, you can expect it to be pretty pretty fast.
+    Therefore, you can expect it to be pretty fast.
 
 
     Examples
