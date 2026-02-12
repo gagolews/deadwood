@@ -16,7 +16,7 @@ jobs:
         sudo apt-get update
         #sudo apt-get -y upgrade
         sudo apt-get -y install libcurl4-openssl-dev python3-rpy2 libmlpack-dev r-base-dev
-        sudo Rscript -e "install.packages(c('quitefastmst', 'Rcpp', 'tinytest'))"
+        sudo Rscript -e "install.packages(c('quitefastmst', 'Rcpp', 'tinytest', 'ade4'))"
     - name: Install and Test R package
       run: |
         sudo R CMD INSTALL .
