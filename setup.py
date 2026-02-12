@@ -137,6 +137,7 @@ setuptools.setup(
         "numpy>=2.0.0",
         "Cython",  # not: cython
         "scikit-learn",
+        "matplotlib",
         "quitefastmst>=0.9.1",
     ],
     python_requires=">=3.9",
