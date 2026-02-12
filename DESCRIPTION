@@ -10,9 +10,9 @@ Authors@R:
         comment = c(ORCID = "0000-0003-0637-6028")
     )
 Description:
-    Deadwood is an anomaly detection algorithm based on Mutual Reachability
-    Minimum Spanning Trees.  It trims protruding tree segments and marks small
-    debris as outliers.  More precisely, the use of a mutual reachability
+    Implements an anomaly detection algorithm based on Mutual Reachability
+    Minimum Spanning Trees.  Deadwood trims protruding tree segments and marks
+    small debris as outliers.  More precisely, the use of a mutual reachability
     distance pulls peripheral points farther away from each other.  Tree edges
     with weights beyond the detected elbow point are removed.  All the resulting
     connected components whose sizes are smaller than a given threshold are

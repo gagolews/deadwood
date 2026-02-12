@@ -12,6 +12,7 @@ pip3 install deadwood  # python3 -m pip install deadwood
 
 <!-- TODO: for best performance, install quitefastmst from sources -->
 
+<!-- TODO: change to lumbermark -->
 
 ## Basic Use
 
@@ -39,3 +40,65 @@ pd.set_option("min_rows", 200)
 
 
 
+Example noisy dataset[^datasetsource]:
+
+[^datasetsource]: The discussed datasets come from
+G. Karypis, E.H. Han, V. Kumar,
+CHAMELEON: A hierarchical clustering algorithm using dynamic modeling,
+*IEEE Transactions on Computers* **32**(8), 68-75, 1999
+and are available for download from
+[the clustering benchmarks repository](https://clustering-benchmarks.gagolewski.com/).
+
+```{python py_chameleon_t7_10k_dataset,fig.cap="The chameleon_t7_10k dataset",results="hide"}
+X1 = np.loadtxt("chameleon_t7_10k.data.gz", ndmin=2)
+deadwood.plot_scatter(X1, asp=1, alpha=0.3)
+plt.show()
+```
+
+
+Detect outliers with *Deadwood* (default settings):
+
+
+```{python py_chameleon_t7_10k_deadwood,fig.cap="Outlier detection on chameleon_t7_10k"}
+is_outlier = deadwood.Deadwood().fit_predict(X1)
+deadwood.plot_scatter(X1, asp=1, labels=(is_outlier<0), alpha=0.3)
+plt.show()
+```
+
+Fraction of detected outliers:
+
+```{python}
+np.mean(is_outlier<0)
+```
+
+
+## Clusters of Unequal Densities
+
+The above dataset consists of clusters of relatively equal densities.
+Here is another one, where it is clearly not the case.
+
+```{python py_chameleon_t8_8k_dataset,fig.cap="The chameleon_t8_8k dataset"}
+X2 = np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2)
+deadwood.plot_scatter(X2, asp=1, alpha=0.3)
+plt.show()
+```
+
+Detect outliers with *Deadwood* (default settings):
+
+```{python py_chameleon_t8_8k_deadwood,fig.cap="Outlier detection on chameleon_t8_8k"}
+is_outlier = deadwood.Deadwood().fit_predict(X2)
+deadwood.plot_scatter(X2, asp=1, labels=(is_outlier<0), alpha=0.3)
+plt.show()
+```
+
+Detect outliers with *Deadwood*, separately in each cluster
+detected by [*Genie*](https://genieclust.gagolewski.com/):
+
+
+```{python py_chameleon_t8_8k_lumbermark,fig.cap="Outlier detection on clusters of chameleon_t8_8k"}
+import genieclust
+clusters = genieclust.Genie(n_clusters=10, M=5).fit(X2)
+is_outlier = deadwood.Deadwood().fit_predict(clusters)
+deadwood.plot_scatter(X2, asp=1, labels=(is_outlier<0), alpha=0.3)
+plt.show()
+```
