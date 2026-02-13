@@ -96,7 +96,7 @@ Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT 
 
     if (convex) {
         for (Py_ssize_t i=1; i<n-1; ++i) {
-            if (y[i-1] > y[i] and y[i] < y[i+1]) {
+            if (y[i-1] > y[i] && y[i] < y[i+1]) {
                 if (y[i] >= peak_y) {
                     peak_y = y[i];
                     peak_i = i;
@@ -106,7 +106,7 @@ Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT 
     }
     else {
         for (Py_ssize_t i=1; i<n-1; ++i) {
-            if (y[i-1] < y[i] and y[i] > y[i+1]) {
+            if (y[i-1] < y[i] && y[i] > y[i+1]) {
                 if (y[i] >= peak_y) {
                     peak_y = y[i];
                     peak_i = i;
