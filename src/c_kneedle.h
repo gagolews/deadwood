@@ -34,7 +34,7 @@
  * smoothing parameter alpha = 1-exp(-dt)
  *
  * y[0] = x[0],
- * y[i] = alpha*x[i]+(1-alpha)*y[i-1]
+ * y[i] = alpha*x[i]+(1-alpha)*x[i-1]
  *
  * @param x [in] input array of length n
  * @param y [out] output array of length n

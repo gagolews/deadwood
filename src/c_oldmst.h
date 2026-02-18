@@ -394,15 +394,15 @@ struct CDistanceMutualReachability : public CDistance<T>
                 // if (d_core[w] > __buf[w]) __buf[w] = d_core[w];
 
                 T d_core_max;
-                T d_core_min;
+                // T d_core_min;
 
                 if (d_core[i] >= d_core[w]) {
                     d_core_max = d_core[i];
-                    d_core_min = d_core[w];
+                    // d_core_min = d_core[w];
                 }
                 else {
                     d_core_max = d_core[w];
-                    d_core_min = d_core[i];
+                    // d_core_min = d_core[i];
                 }
 
                 if (d[w] > d_core_max) {
