@@ -46,6 +46,7 @@ ctypedef fused T:
     float
     double
 
+
 ctypedef fused floatT:
     float
     double

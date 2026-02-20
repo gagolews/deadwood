@@ -1,8 +1,8 @@
 Package: deadwood
 Type: Package
 Title: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
-Version: 0.9.0-2
-Date: 2026-02-18
+Version: 0.9.0-3
+Date: 2026-02-20
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),
