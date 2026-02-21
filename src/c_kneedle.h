@@ -26,7 +26,7 @@
 
 #include "c_common.h"
 #include <cmath>
-#include <vector>
+#include <memory>
 
 
 /**
@@ -75,10 +75,9 @@ Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT 
 {
     if (n < 1) return 0;
 
-    std::vector<FLOAT> _y(n);
-    FLOAT* y = _y.data();
+    std::unique_ptr<FLOAT[]> y(new FLOAT[n]);
 
-    Cema(x, n, dt, y);  // sets y
+    Cema(x, n, dt, y.get());  // sets y
 
     // normalise to [0,1], subtract i/(n-1)
     FLOAT miny = y[0], maxy = y[0];

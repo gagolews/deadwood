@@ -21,41 +21,8 @@
 #include "c_common.h"
 #include "c_kneedle.h"
 #include <stdexcept>
+#include <memory>
 
-
-/** because std::vector<bool> has no data().... */
-template <class T>
-class cvector {
-private:
-    T* x;
-    size_t n;
-
-public:
-    cvector(size_t n) : x(nullptr), n(n) {
-        DEADWOOD_ASSERT(n>0);
-        x = new T[n];
-        DEADWOOD_ASSERT(x);
-    }
-
-    cvector(size_t n, T v) : x(nullptr), n(n) {
-        DEADWOOD_ASSERT(n>0);
-        x = new T[n];
-        DEADWOOD_ASSERT(x);
-        for (size_t i=0; i<n; ++i)
-            x[i] = v;
-    }
-
-    ~cvector() {
-        if (x) delete [] x;
-        x = nullptr;
-        n = 0;
-    }
-
-    inline T* data() { return x; }
-    inline size_t size() const { return n; }
-    inline T operator[](int i) const { return x[i]; }
-    inline T& operator[](int i) { return x[i]; }
-};
 
 
 /*! Reorders x w.r.t. a factor c
@@ -179,7 +146,7 @@ void Cunskip_indexes(
     if (m <= 0) return;
     DEADWOOD_ASSERT(n > 0);
 
-    cvector<Py_ssize_t> o(n);  // actually, k needed
+    std::unique_ptr<Py_ssize_t[]> o(new Py_ssize_t[n]);  // actually, k elems needed
     Py_ssize_t k = 0;
     for (Py_ssize_t i=0; i<n; ++i) {
         if (!skip[i]) o[k++] = i;
@@ -239,7 +206,8 @@ void Cskip_indexes(
     if (m <= 0) return;
     DEADWOOD_ASSERT(n > 0);
 
-    cvector<Py_ssize_t> o(n);
+    std::unique_ptr<Py_ssize_t[]> o(new Py_ssize_t[n]);
+
     Py_ssize_t k = 0;
     for (Py_ssize_t i=0; i<n; ++i) {
         if (skip[i]) o[i] = -1;
@@ -374,8 +342,8 @@ protected:
     const Py_ssize_t* inc;     // nullable or length 2*m
     const bool* skip_edges;    // nullable or length m
 
-    std::vector<Py_ssize_t> _cumdeg;  // data buffer for cumdeg (optional)
-    std::vector<Py_ssize_t> _inc;     // data buffer for inc (optional)
+    std::unique_ptr<Py_ssize_t[]> _cumdeg;  // data buffer for cumdeg (optional)
+    std::unique_ptr<Py_ssize_t[]> _inc;     // data buffer for inc (optional)
 
 
 public:
@@ -394,11 +362,11 @@ public:
     {
         if (!cumdeg) {
             DEADWOOD_ASSERT(!inc);
-            _cumdeg.resize(n+1);
-            _inc.resize(2*m);
-            Cgraph_vertex_incidences(mst_i, m, n, _cumdeg.data(), _inc.data());
-            this->cumdeg = _cumdeg.data();
-            this->inc = _inc.data();
+            _cumdeg.reset(new Py_ssize_t[n+1]);
+            _inc.reset(new Py_ssize_t[2*m]);
+            Cgraph_vertex_incidences(mst_i, m, n, _cumdeg.get(), _inc.get());
+            this->cumdeg = _cumdeg.get();
+            this->inc = _inc.get();
         }
         else {
             DEADWOOD_ASSERT(inc);
@@ -421,7 +389,6 @@ private:
     Py_ssize_t max_k;
     Py_ssize_t* s;  // NULL or of size max_k >= k, where k is the number of clusters
     Py_ssize_t k;   // the number of connected components identified
-
 
     Py_ssize_t visit(Py_ssize_t v, Py_ssize_t e)
     {
@@ -703,10 +670,11 @@ void Cdeadwood(
     DEADWOOD_ASSERT(m == n-1);
     DEADWOOD_ASSERT(n > 1);
 
-    cvector<Py_ssize_t> sizes(n);  // upper bound for the number of clusters
-    cvector<bool> mst_skip(m, false);  // std::vector<bool> has no data()
+    std::unique_ptr<Py_ssize_t[]> sizes(new Py_ssize_t[n]);  // upper bound for the number of clusters
+    std::unique_ptr<bool[]> mst_skip(new bool[m]);  // std::vector<bool> has no data()
+    for (Py_ssize_t i=0; i<m; ++i) mst_skip[i] = false;
 
-    CMSTClusterSizeGetter size_getter(mst_i, m, n, c, n, sizes.data(), mst_cumdeg, mst_inc, mst_skip.data());
+    CMSTClusterSizeGetter size_getter(mst_i, m, n, c, n, sizes.get(), mst_cumdeg, mst_inc, mst_skip.get());
 
     DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
 
@@ -732,7 +700,7 @@ void Cdeadwood(
         Py_ssize_t _k = size_getter.process();  // sets c and sizes based on the current mst_skip
         DEADWOOD_ASSERT(_k == k);
 
-        cvector<Py_ssize_t> edge_labels(m);
+        std::unique_ptr<Py_ssize_t[]> edge_labels(new Py_ssize_t[m]);
         for (Py_ssize_t i=0; i<m; ++i) {
             if (c[mst_i[2*i+0]]>=0 && c[mst_i[2*i+0]] == c[mst_i[2*i+1]])
                 edge_labels[i] = c[mst_i[2*i+0]];
@@ -740,16 +708,16 @@ void Cdeadwood(
                 edge_labels[i] = -1;
         }
 
-        cvector<FLOAT> mst_d_grp(n);
-        cvector<Py_ssize_t> ind_grp(k+1);
-        Csort_groups(mst_d, m, edge_labels.data(), k, mst_d_grp.data(), ind_grp.data());
+        std::unique_ptr<FLOAT[]> mst_d_grp(new FLOAT[n]);
+        std::unique_ptr<Py_ssize_t[]> ind_grp(new Py_ssize_t[k+1]);
+        Csort_groups(mst_d, m, edge_labels.get(), k, mst_d_grp.get(), ind_grp.get());
 
-        cvector<FLOAT> weight_thresholds(k);
+        std::unique_ptr<FLOAT[]> weight_thresholds(new FLOAT[k]);
         for (Py_ssize_t i=0; i<k; ++i) {
             Py_ssize_t mi = sizes[i]-1;
             Py_ssize_t threshold_index;
             Cget_contamination(
-                mst_d_grp.data()+ind_grp[i], mi, max_contamination, ema_dt,
+                mst_d_grp.get()+ind_grp[i], mi, max_contamination, ema_dt,
                 /*out*/contamination[i], /*out*/threshold_index
             );
             DEADWOOD_ASSERT(threshold_index>=0);
