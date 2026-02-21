@@ -108,7 +108,7 @@ detected by [*Genie*](https://genieclust.gagolewski.com/):
 
 ``` r
 library("genieclust")
-clusters <- genie(X2, 10, M=5)
+clusters <- genie(X2, 8, gini_threshold=0.5, M=5)
 is_outlier <- deadwood(clusters)
 plot(X2, asp=1, ann=FALSE, col=c("#00000055","#ff333333")[is_outlier+1])
 ```

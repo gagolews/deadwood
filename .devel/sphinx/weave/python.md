@@ -33,6 +33,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import deadwood
+
+def permute_rows(X):
+    return X[np.random.choice(len(X), len(X), replace=False), :]
+
+def plot_scatter(X, labels=None):
+    deadwood.plot_scatter(X, asp=1, labels=labels, alpha=0.3, markers='o', s=5)
 ```
 
 
@@ -51,8 +57,8 @@ and are available for download from
 
 
 ``` python
-X1 = np.loadtxt("chameleon_t7_10k.data.gz", ndmin=2)
-deadwood.plot_scatter(X1, asp=1, alpha=0.3)
+X1 = permute_rows(np.loadtxt("chameleon_t7_10k.data.gz", ndmin=2))
+plot_scatter(X1)
 plt.show()
 ```
 
@@ -68,7 +74,7 @@ Detect outliers with *Deadwood* (default settings):
 
 ``` python
 is_outlier = deadwood.Deadwood().fit_predict(X1)
-deadwood.plot_scatter(X1, asp=1, labels=(is_outlier<0), alpha=0.3)
+plot_scatter(X1, (is_outlier<0))
 plt.show()
 ```
 
@@ -93,8 +99,8 @@ Here is another one, where it is clearly not the case.
 
 
 ``` python
-X2 = np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2)
-deadwood.plot_scatter(X2, asp=1, alpha=0.3)
+X2 = permute_rows(np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2))
+plot_scatter(X2)
 plt.show()
 ```
 
@@ -108,7 +114,7 @@ Detect outliers with *Deadwood* (default settings):
 
 ``` python
 is_outlier = deadwood.Deadwood().fit_predict(X2)
-deadwood.plot_scatter(X2, asp=1, labels=(is_outlier<0), alpha=0.3)
+plot_scatter(X2, (is_outlier<0))
 plt.show()
 ```
 
@@ -118,19 +124,30 @@ Outlier detection on chameleon_t8_8k
 ```
 
 Detect outliers with *Deadwood*, separately in each cluster
-detected by [*Genie*](https://genieclust.gagolewski.com/):
+determined by [*Genie*](https://genieclust.gagolewski.com/):
 
 
 
 ``` python
 import genieclust
-clusters = genieclust.Genie(n_clusters=10, M=5).fit(X2)
-is_outlier = deadwood.Deadwood().fit_predict(clusters)
-deadwood.plot_scatter(X2, asp=1, labels=(is_outlier<0), alpha=0.3)
+clusters = genieclust.Genie(n_clusters=8, gini_threshold=0.5, M=5).fit(X2)
+plot_scatter(X2, clusters.labels_)
 plt.show()
 ```
 
 (fig:py_chameleon_t8_8k_lumbermark)=
 ```{figure} python-figures/py_chameleon_t8_8k_lumbermark-9.*
+Detected clusters of chameleon_t8_8k
+```
+
+
+``` python
+is_outlier = deadwood.Deadwood().fit_predict(clusters)
+plot_scatter(X2, (is_outlier<0))
+plt.show()
+```
+
+(fig:py_chameleon_t8_8k_lumbermark_deadwood)=
+```{figure} python-figures/py_chameleon_t8_8k_lumbermark_deadwood-11.*
 Outlier detection on clusters of chameleon_t8_8k
 ```

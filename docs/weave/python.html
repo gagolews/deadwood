@@ -1,19 +1,18 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../">
-  <head><meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Comparing Algorithms on Toy Datasets" href="sklearn_toy_example.html"><link rel="prev" title="Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees" href="../index.html">
-        <link rel="canonical" href="https://deadwood.gagolewski.com/weave/python.html">
-        <link rel="prefetch" href="https://www.gagolewski.com/_static/img/deadwood.png" as="image">
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Comparing Algorithms on Toy Datasets" href="sklearn_toy_example.html" /><link rel="prev" title="Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees" href="../index.html" />
+        <link rel="canonical" href="https://deadwood.gagolewski.com/weave/python.html" />
 
-    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
         <title>Python Examples - Python and R Package deadwood</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c484f746" />
     
     
@@ -236,7 +235,7 @@
 <p class="caption" role="heading"><span class="caption-text">R API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="r.html">R Examples</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../rapi.html">R Package <em>deadwood</em> Reference</a><input aria-label="Toggle navigation of R Package deadwood Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rapi.html">R Package <em>deadwood</em> Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of R Package deadwood Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../rapi/deadwood-package.html">deadwood-package: The Deadwood Outlier Detection Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../rapi/deadwood.html">deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../rapi/kneedle.html">kneedle: Knee/Elbow Point Detection</a></li>
@@ -273,7 +272,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" rel="edit" title="Edit this page">
+  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -313,11 +312,17 @@ In the meantime, take a look at the examples in the <a class="reference internal
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deadwood</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">permute_rows</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="p">:]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">markers</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Example noisy dataset<a class="footnote-reference brackets" href="#datasetsource" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;chameleon_t7_10k.data.gz&quot;</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X1</span> <span class="o">=</span> <span class="n">permute_rows</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;chameleon_t7_10k.data.gz&quot;</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -329,7 +334,7 @@ In the meantime, take a look at the examples in the <a class="reference internal
 </figure>
 <p>Detect outliers with <em>Deadwood</em> (default settings):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">is_outlier</span> <span class="o">=</span> <span class="n">deadwood</span><span class="o">.</span><span class="n">Deadwood</span><span class="p">()</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
-<span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="n">is_outlier</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="p">(</span><span class="n">is_outlier</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -349,8 +354,8 @@ In the meantime, take a look at the examples in the <a class="reference internal
 <h2>Clusters of Unequal Densities<a class="headerlink" href="#clusters-of-unequal-densities" title="Link to this heading">¶</a></h2>
 <p>The above dataset consists of clusters of relatively equal densities.
 Here is another one, where it is clearly not the case.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;chameleon_t8_8k.data.gz&quot;</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X2</span> <span class="o">=</span> <span class="n">permute_rows</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;chameleon_t8_8k.data.gz&quot;</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -362,7 +367,7 @@ Here is another one, where it is clearly not the case.</p>
 </figure>
 <p>Detect outliers with <em>Deadwood</em> (default settings):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">is_outlier</span> <span class="o">=</span> <span class="n">deadwood</span><span class="o">.</span><span class="n">Deadwood</span><span class="p">()</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
-<span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="n">is_outlier</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="p">(</span><span class="n">is_outlier</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -373,18 +378,28 @@ Here is another one, where it is clearly not the case.</p>
 </figcaption>
 </figure>
 <p>Detect outliers with <em>Deadwood</em>, separately in each cluster
-detected by <a class="reference external" href="https://genieclust.gagolewski.com/"><em>Genie</em></a>:</p>
+determined by <a class="reference external" href="https://genieclust.gagolewski.com/"><em>Genie</em></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">genieclust</span>
-<span class="n">clusters</span> <span class="o">=</span> <span class="n">genieclust</span><span class="o">.</span><span class="n">Genie</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
-<span class="n">is_outlier</span> <span class="o">=</span> <span class="n">deadwood</span><span class="o">.</span><span class="n">Deadwood</span><span class="p">()</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">clusters</span><span class="p">)</span>
-<span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">(</span><span class="n">is_outlier</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">clusters</span> <span class="o">=</span> <span class="n">genieclust</span><span class="o">.</span><span class="n">Genie</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">gini_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
+<span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="n">clusters</span><span class="o">.</span><span class="n">labels_</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <figure class="align-default" id="id6">
 <span id="fig-py-chameleon-t8-8k-lumbermark"></span><img alt="../_images/py_chameleon_t8_8k_lumbermark-9.png" src="../_images/py_chameleon_t8_8k_lumbermark-9.png" />
 <figcaption>
-<p><span class="caption-number">Figure 5 </span><span class="caption-text">Outlier detection on clusters of chameleon_t8_8k</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 5 </span><span class="caption-text">Detected clusters of chameleon_t8_8k</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">is_outlier</span> <span class="o">=</span> <span class="n">deadwood</span><span class="o">.</span><span class="n">Deadwood</span><span class="p">()</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">clusters</span><span class="p">)</span>
+<span class="n">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="p">(</span><span class="n">is_outlier</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-default" id="id7">
+<span id="fig-py-chameleon-t8-8k-lumbermark-deadwood"></span><img alt="../_images/py_chameleon_t8_8k_lumbermark_deadwood-11.png" src="../_images/py_chameleon_t8_8k_lumbermark_deadwood-11.png" />
+<figcaption>
+<p><span class="caption-number">Figure 6 </span><span class="caption-text">Outlier detection on clusters of chameleon_t8_8k</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
@@ -437,7 +452,7 @@ and are available for download from
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-02-13T10:01:36+0100.
+              Last updated on 2026-02-21T13:53:08+0100.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>
@@ -476,6 +491,6 @@ and are available for download from
 </div><script src="../_static/documentation_options.js?v=39bb1c6d"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
     </body>
 </html>

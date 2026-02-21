@@ -83,7 +83,7 @@ detected by [*Genie*](https://genieclust.gagolewski.com/):
 ```{r r_chameleon_t8_8k_lumbermark,fig.cap="Outlier detection on clusters of chameleon_t8_8k",echo=-1}
 par(mar=c(2, 2, 0.5, 0.5))
 library("genieclust")
-clusters <- genie(X2, 10, M=5)
+clusters <- genie(X2, 8, gini_threshold=0.5, M=5)
 is_outlier <- deadwood(clusters)
 plot(X2, asp=1, ann=FALSE, col=c("#00000055","#ff333333")[is_outlier+1])
 ```

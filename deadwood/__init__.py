@@ -2,7 +2,6 @@
 deadwood Python Package
 """
 
-
 # ############################################################################ #
 #                                                                              #
 #   Copyleft (C) 2025-2026, Marek Gagolewski <https://www.gagolewski.com/>     #
@@ -19,6 +18,7 @@ deadwood Python Package
 #   If this is not the case, refer to <https://www.gnu.org/licenses/>.         #
 #                                                                              #
 # ############################################################################ #
+
 
 # version string, e.g., "1.0.0.9001" or "1.1.1"
 __version__ = "0.9.0"
