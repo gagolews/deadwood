@@ -33,8 +33,8 @@ kneedle_increasing <- function(x, convex = TRUE, dt = 0.01) {
     .Call(`_deadwood_kneedle_increasing`, x, convex, dt)
 }
 
-.deadwood <- function(mst, cut_edges, max_contamination, ema_dt, max_debris_size, verbose) {
-    .Call(`_deadwood_dot_deadwood`, mst, cut_edges, max_contamination, ema_dt, max_debris_size, verbose)
+.deadwood <- function(mst, cut_edges, max_contamination, ema_dt, max_debris_size, connected, verbose) {
+    .Call(`_deadwood_dot_deadwood`, mst, cut_edges, max_contamination, ema_dt, max_debris_size, connected, verbose)
 }
 
 .oldmst.matrix <- function(X, distance = "euclidean", M = 0L, cast_float32 = FALSE, verbose = FALSE) {

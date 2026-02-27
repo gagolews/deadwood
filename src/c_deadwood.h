@@ -79,7 +79,7 @@ void Csort_groups(
  *  This is as easy as finding all MST edges {u,v} for which c[u]≠c[v].
  *
  *  @param mst_i c_contiguous matrix of size m*2,
- *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
+ *     where {mst_i[i,0], mst_i[i,1]} specifies the i-th (undirected) edge
  *     in the spanning tree
  *  @param m number of rows in mst_i (edges)
  *  @param n length of c and the number of vertices in the spanning tree
@@ -465,7 +465,7 @@ public:
  *  designate the edges omitted from the tree) and fetch their sizes
  *
  *  @param mst_i c_contiguous matrix of size m*2,
- *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
+ *     where {mst_i[i,0], mst_i[i,1]} specifies the i-th (undirected) edge
  *     in the spanning tree
  *  @param m number of rows in mst_i (edges)
  *  @param n length of c and the number of vertices in the spanning tree
@@ -568,7 +568,7 @@ public:
  *  All nodes in branches with class ID of -1 will be assigned their parent node's class.
  *
  *  @param mst_i c_contiguous matrix of size m*2,
- *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
+ *     where {mst_i[i,0], mst_i[i,1]} specifies the i-th (undirected) edge
  *     in the spanning tree
  *  @param m number of rows in mst_i (edges)
  *  @param n length of c and the number of vertices in the spanning tree
@@ -597,7 +597,131 @@ void Cmst_label_imputer(
 /* ************************************************************************** */
 
 
+/** Deadwood, connected=true
+ */
+template <class FLOAT> class CMSTBranchTrimmer : public CMSTProcessorBase
+{
+private:
+    const FLOAT* mst_d;
+    const FLOAT trim_d;
+    const Py_ssize_t max_size;
 
+    std::unique_ptr<Py_ssize_t[]> size;  // size (m,2)
+
+
+    Py_ssize_t visit_get_sizes(Py_ssize_t v, Py_ssize_t e)
+    {
+        Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
+        Py_ssize_t w = mst_i[2*e+(1-iv)];
+
+        DEADWOOD_ASSERT(e >= 0 && e < m);
+        DEADWOOD_ASSERT(v >= 0 && v < n);
+        DEADWOOD_ASSERT(w >= 0 && w < n);
+        DEADWOOD_ASSERT(c[w] < 0);
+
+        Py_ssize_t this_size = 1;
+        c[w] = c[v];
+
+        for (const Py_ssize_t* pe = inc+cumdeg[w]; pe != inc+cumdeg[w+1]; pe++) {
+            if (*pe != e) this_size += visit_get_sizes(w, *pe);
+        }
+
+        size[2*e + (1-iv)] = this_size;
+        size[2*e + iv] = -1;
+
+        return this_size;
+    }
+
+
+    void visit_mark(Py_ssize_t v, Py_ssize_t e)
+    {
+        if (skip_edges && skip_edges[e]) return;
+
+        Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
+        Py_ssize_t w = mst_i[2*e+(1-iv)];
+
+        if (c[w] < 0) return;  // already visited
+
+        c[w] = -1;
+
+        for (const Py_ssize_t* pe = inc+cumdeg[w]; pe != inc+cumdeg[w+1]; pe++) {
+            if (*pe != e) visit_mark(w, *pe);
+        }
+    }
+
+
+public:
+    CMSTBranchTrimmer(
+        const FLOAT* mst_d,
+        const Py_ssize_t* mst_i,
+        Py_ssize_t m,
+        Py_ssize_t n,
+        Py_ssize_t* c,
+        FLOAT trim_d,
+        Py_ssize_t max_size,
+        const Py_ssize_t* cumdeg=nullptr,
+        const Py_ssize_t* inc=nullptr
+    ) :
+        CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc),
+        mst_d(mst_d), trim_d(trim_d), max_size(max_size)
+    {
+        DEADWOOD_ASSERT(this->c);
+        DEADWOOD_ASSERT(this->cumdeg);
+        DEADWOOD_ASSERT(this->inc);
+        DEADWOOD_ASSERT(m == n-1);
+
+        size.reset(new Py_ssize_t[2*m]);
+        for (Py_ssize_t i=0; i<2*m; ++i) size[i] = -1;
+    }
+
+
+    void process()
+    {
+        for (Py_ssize_t v=0; v<n; ++v) c[v] = -1;
+
+        Py_ssize_t v = 0;  // any vertex
+        c[v] = 0;
+        for (const Py_ssize_t* pe = inc+cumdeg[v]; pe != inc+cumdeg[v+1]; pe++) {
+            visit_get_sizes(v, *pe);
+        }
+
+        for (Py_ssize_t e=0; e<m; ++e) {
+            DEADWOOD_ASSERT(size[2*e+0] > 0 || size[2*e+1] > 0);
+            if (size[2*e+0] > 0)
+                size[2*e+1] = n - size[2*e+0];
+            else
+                size[2*e+0] = n - size[2*e+1];
+        }
+
+        for (Py_ssize_t e=0; e<m; ++e) {
+            if (mst_d[e] < trim_d) continue;
+
+            Py_ssize_t iv = (size[2*e+0]>=size[2*e+1])?0:1;
+            Py_ssize_t v = mst_i[2*e+iv];
+            if (c[v] < 0) continue;
+            if (size[2*e+(1-iv)] > max_size) continue;
+            visit_mark(v, e);
+        }
+    }
+
+};
+
+
+/* ************************************************************************** */
+
+
+/*! Get elbow point of a shifted array
+ *
+ *  @param mst_d size m - edge weights
+ *  @param m length of mst_d
+ *  @param max_contamination maximal contamination level;
+ *         negative values will be used as actual contamination levels
+ *  @param ema_dt controls the exponential moving average smoothing parameter
+ *         alpha = 1-exp(-dt) (in elbow detection)
+ *  @param contamination [out] array of length k;
+ *         detected contamination levels in each cluster
+ *  @param threshold_index [out] index in mst_d
+ */
 template<class FLOAT>
 void Cget_contamination(
     const FLOAT* mst_d,
@@ -630,7 +754,7 @@ void Cget_contamination(
  *
  *  @param mst_d size m - edge weights
  *  @param mst_i c_contiguous matrix of size m*2,
- *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
+ *     where {mst_i[i,0], mst_i[i,1]} specifies the i-th (undirected) edge
  *     in the spanning tree
  *  @param mst_cut array of size k-1; indexes of cut edges defining a spanning
  *     forest with k connected components
@@ -647,6 +771,7 @@ void Cget_contamination(
  *         alpha = 1-exp(-dt) (in elbow detection)
  *  @param contamination [out] array of length k;
  *         detected contamination levels in each cluster
+ *  @param connected should the output tree be connected? k==1 only
  *  @param mst_cumdeg an array of length n+1 or NULL; see Cgraph_vertex_incidences
  *  @param mst_inc an array of length 2*m or NULL; see Cgraph_vertex_incidences
  */
@@ -661,6 +786,7 @@ void Cdeadwood(
     FLOAT max_contamination,
     FLOAT ema_dt,
     Py_ssize_t max_debris_size,
+    bool connected,
     FLOAT* contamination,  // size k [out]
     Py_ssize_t* c,  // size n [out]
     const Py_ssize_t* mst_cumdeg=nullptr,
@@ -669,14 +795,34 @@ void Cdeadwood(
     DEADWOOD_ASSERT(k >= 1 && k <= n);
     DEADWOOD_ASSERT(m == n-1);
     DEADWOOD_ASSERT(n > 1);
+    DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
+
+    if (connected) {
+        DEADWOOD_ASSERT(k == 1);
+
+        Py_ssize_t threshold_index = -1;
+        Cget_contamination(
+            mst_d, m, max_contamination, ema_dt,
+            /*out*/contamination[0], /*out*/threshold_index
+        );
+
+        DEADWOOD_ASSERT(threshold_index >= 0);
+        FLOAT trim_d = (threshold_index < m)?mst_d[threshold_index]:INFINITY;
+
+        CMSTBranchTrimmer tr(
+            mst_d, mst_i, m, n, c, trim_d,
+            max_debris_size, mst_cumdeg, mst_inc
+        );
+        tr.process();  // modifies c in place
+
+        return;
+    }
 
     std::unique_ptr<Py_ssize_t[]> sizes(new Py_ssize_t[n]);  // upper bound for the number of clusters
     std::unique_ptr<bool[]> mst_skip(new bool[m]);  // std::vector<bool> has no data()
     for (Py_ssize_t i=0; i<m; ++i) mst_skip[i] = false;
 
     CMSTClusterSizeGetter size_getter(mst_i, m, n, c, n, sizes.get(), mst_cumdeg, mst_inc, mst_skip.get());
-
-    DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
 
     if (k == 1) {
         Py_ssize_t threshold_index = -1;
@@ -746,192 +892,6 @@ void Cdeadwood(
             c[i] = 0;
     }
 }
-
-
-#if 0  /* /remove deprecated Cmst_trim_branches */
-
-/** See Cmst_trim_branches below.  [DEPRECATED]
- */
-template <class FLOAT> class CMSTBranchTrimmer : public CMSTProcessorBase
-{
-private:
-    const FLOAT* mst_d;
-    const FLOAT min_d;
-    const Py_ssize_t max_size;
-
-
-    std::vector<Py_ssize_t> size;
-
-    Py_ssize_t clk;   // the number of connected components
-    std::vector<Py_ssize_t> clsize;
-
-
-    Py_ssize_t visit_get_sizes(Py_ssize_t v, Py_ssize_t e)
-    {
-        if (skip_edges && skip_edges[e]) return 0;
-
-        Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
-        Py_ssize_t w = mst_i[2*e+(1-iv)];
-
-        DEADWOOD_ASSERT(e >= 0 && e < m);
-        DEADWOOD_ASSERT(v >= 0 && v < n);
-        DEADWOOD_ASSERT(w >= 0 && w < n);
-        DEADWOOD_ASSERT(c[w] < 0);
-
-        Py_ssize_t this_size = 1;
-        c[w] = c[v];
-
-        for (const Py_ssize_t* pe = inc+cumdeg[w]; pe != inc+cumdeg[w+1]; pe++) {
-            if (*pe != e) this_size += visit_get_sizes(w, *pe);
-        }
-
-        size[2*e + (1-iv)] = this_size;
-        size[2*e + iv] = -1;
-
-        return this_size;
-    }
-
-
-    void visit_mark(Py_ssize_t v, Py_ssize_t e)
-    {
-        if (skip_edges && skip_edges[e]) return;
-
-        Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
-        Py_ssize_t w = mst_i[2*e+(1-iv)];
-
-        if (c[w] < 0) return;  // already visited
-
-        c[w] = -1;
-
-        for (const Py_ssize_t* pe = inc+cumdeg[w]; pe != inc+cumdeg[w+1]; pe++) {
-            if (*pe != e) visit_mark(w, *pe);
-        }
-    }
-
-
-public:
-    CMSTBranchTrimmer(
-        const FLOAT* mst_d,
-        FLOAT min_d,
-        Py_ssize_t max_size,
-        const Py_ssize_t* mst_i,
-        Py_ssize_t m,
-        Py_ssize_t n,
-        Py_ssize_t* c,
-        const Py_ssize_t* cumdeg=nullptr,
-        const Py_ssize_t* inc=nullptr,
-        const bool* skip_edges=nullptr
-    ) :
-        CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc, skip_edges),
-        mst_d(mst_d), min_d(min_d), max_size(max_size),
-        size(2*m, -1)
-    {
-        DEADWOOD_ASSERT(this->c);
-        DEADWOOD_ASSERT(this->cumdeg);
-        DEADWOOD_ASSERT(this->inc);
-
-        DEADWOOD_ASSERT(m == n-1);
-
-        // the number of connected components:
-        clk = 1;
-        if (skip_edges) {
-            for (Py_ssize_t e = 0; e < m; ++e)
-                if (skip_edges[e]) clk++;
-        }
-        clsize.resize(clk);
-    }
-
-
-    void process()
-    {
-        for (Py_ssize_t v=0; v<n; ++v) c[v] = -1;
-        for (Py_ssize_t i=0; i<clk; ++i) clsize[i] = 0;
-
-        Py_ssize_t lastc = 0;
-        for (Py_ssize_t v=0; v<n; ++v) {
-            if (c[v] >= 0) continue;
-
-            c[v] = lastc;
-            Py_ssize_t this_size = 1;
-
-            for (const Py_ssize_t* pe = inc+cumdeg[v]; pe != inc+cumdeg[v+1]; pe++) {
-                if (skip_edges && skip_edges[*pe]) continue;
-                this_size += visit_get_sizes(v, *pe);
-            }
-            clsize[lastc] = this_size;
-
-            lastc++;
-            if (lastc == clk) break;
-        }
-
-        DEADWOOD_ASSERT(lastc == clk);
-        DEADWOOD_ASSERT(clk > 1 || clsize[0] == n);
-
-        for (Py_ssize_t e=0; e<m; ++e) {
-            if (skip_edges && skip_edges[e]) continue;
-            DEADWOOD_ASSERT(size[2*e+0] > 0 || size[2*e+1] > 0);
-            DEADWOOD_ASSERT(clsize[c[mst_i[2*e+0]]] == clsize[c[mst_i[2*e+1]]]);
-            if (size[2*e+0] > 0)
-                size[2*e+1] = clsize[c[mst_i[2*e+0]]] - size[2*e+0];
-            else
-                size[2*e+0] = clsize[c[mst_i[2*e+1]]] - size[2*e+1];
-        }
-
-
-        for (Py_ssize_t e=0; e<m; ++e) {
-            if (skip_edges && skip_edges[e]) continue;
-            if (mst_d[e] <= min_d) continue;
-
-            Py_ssize_t iv = (size[2*e+0]>=size[2*e+1])?0:1;
-            Py_ssize_t v = mst_i[2*e+iv];
-            if (c[v] < 0) continue;
-            if (size[2*e+(1-iv)] > max_size) continue;
-            visit_mark(v, e);
-        }
-    }
-
-};
-
-
-/*! Trim tree branches of size <= max_size connected by an edge > min_d  [DEPRECATED]
- *
- *
- *  @param mst_d m edge weights
- *  @param mst_i c_contiguous matrix of size m*2,
- *     where {mst_i[k,0], mst_i[k,1]} specifies the k-th (undirected) edge
- *     in the spanning tree
- *  @param m number of rows in mst_i (edges)
- *  @param c [out] vector of length n; c[i] == -1 marks a trimmed-out point,
- *     whereas c[i] >= 0 denotes a retained one
- *  @param n length of c and the number of vertices in the spanning tree, n == m+1
- *  @param min_d minimal edge weight to be considered trimmable
- *  @param max_size maximal allowable size of a branch to cut
- *  @param mst_cumdeg an array of length n+1 or NULL; see Cgraph_vertex_incidences
- *  @param mst_inc an array of length 2*m or NULL; see Cgraph_vertex_incidences
- *  @param mst_skip Boolean array of length m or NULL; indicates the edges to skip
- */
-template <class FLOAT>
-void Cmst_trim_branches(
-    const FLOAT* mst_d,
-    FLOAT min_d,
-    Py_ssize_t max_size,
-    const Py_ssize_t* mst_i,
-    Py_ssize_t m,
-    Py_ssize_t n,
-    Py_ssize_t* c,
-    const Py_ssize_t* mst_cumdeg=nullptr,
-    const Py_ssize_t* mst_inc=nullptr,
-    const bool* mst_skip=nullptr
-) {
-    CMSTBranchTrimmer tr(mst_d, min_d, max_size, mst_i, m, n, c, cumdeg, inc, skip_edges);
-    tr.process();  // modifies c in place
-}
-
-
-#endif  /* /remove deprecated Cmst_trim_branches */
-
-
-/* ************************************************************************** */
 
 
 #endif

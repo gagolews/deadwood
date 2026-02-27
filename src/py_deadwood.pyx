@@ -400,6 +400,15 @@ cdef extern from "c_deadwood.h":
         const bool* mst_skip
     ) except+
 
+    void Cget_contamination[floatT](
+        const floatT* mst_d,
+        Py_ssize_t m,
+        floatT max_contamination,
+        floatT ema_dt,
+        floatT& contamination,
+        Py_ssize_t& threshold_index
+    )
+
     void Cmst_label_imputer(
         const Py_ssize_t* mst_i,
         Py_ssize_t m,
@@ -420,6 +429,7 @@ cdef extern from "c_deadwood.h":
         floatT max_contamination,
         floatT ema_dt,
         Py_ssize_t max_debris_size,
+        bool connected,
         floatT* contamination,
         Py_ssize_t* c,
         const Py_ssize_t* mst_cumdeg,
@@ -796,6 +806,54 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
     return ret
 
 
+cpdef tuple get_contamination(
+        floatT[::1] mst_d,
+        floatT max_contamination=0.5,
+        floatT ema_dt=0.01
+    ):
+    """
+    deadwood.get_contamination(mst_d, max_contamination=0.5, ema_dt=0.01)
+
+    Detects an elbow point in a subset of a given array.
+
+
+    Parameters
+    ----------
+
+    mst_d : ndarray
+        sorted weights of the edges of a spanning tree with `m=n-1` edges
+
+    max_contamination : float
+        maximal contamination level used in elbow detection in the edge weight
+        quantile function; negative values will be used as actual (target)
+        contamination levels
+
+    ema_dt : float
+        controls the exponential moving average smoothing parameter
+        :math:`\\alpha = 1-\\exp(-dt)` (in elbow detection)
+
+
+    Returns
+    -------
+
+    contamination : float
+        detected contamination level
+
+    index : int
+        an index in `mst_d` with the detected contamination level
+    """
+    cdef Py_ssize_t m = mst_d.shape[0]
+    cdef Py_ssize_t n = m+1
+    cdef floatT contamination
+    cdef Py_ssize_t index
+
+    Cget_contamination(
+        &mst_d[0], m, max_contamination, ema_dt, contamination, index
+    )
+
+    return contamination, index
+
+
 cpdef tuple mst_cluster_sizes(
         Py_ssize_t[:,::1] mst_i,
         mst_skip=None,
@@ -887,8 +945,6 @@ cpdef tuple mst_cluster_sizes(
     return labels, sizes
 
 
-
-
 cpdef tuple deadwood_from_mst(
         floatT[::1] mst_d,
         Py_ssize_t[:,::1] mst_i,
@@ -897,7 +953,8 @@ cpdef tuple deadwood_from_mst(
         Py_ssize_t[::1] mst_inc,
         floatT max_contamination=0.5,
         floatT ema_dt=0.01,
-        Py_ssize_t max_debris_size=50
+        Py_ssize_t max_debris_size=50,
+        bool connected=False
     ):
     """
     deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
@@ -934,6 +991,10 @@ cpdef tuple deadwood_from_mst(
     max_debris_size : int
         connected components of size ≤ `max_debris_size` will be treated as outliers
 
+    connected : bool, default=False
+        should the output tree be connected? k=1 only;
+        trims branches instead of chopping the tree into pieces
+
 
     Returns
     -------
@@ -964,75 +1025,20 @@ cpdef tuple deadwood_from_mst(
     if mst_inc.shape[0] != 2*m:
         raise ValueError("mst_inc should be of length 2*m")
 
+    if connected and k != 1:
+        raise ValueError("(connected) tree can only be requested if k==1")
+
     cdef np.ndarray[Py_ssize_t] is_outlier_ = np.empty(n, dtype=np.intp)
     cdef np.ndarray[floatT] contamination_ = np.empty(k,
-        dtype=np.float32 if floatT is float else np.float64)
+        dtype=np.float32 if floatT is float else np.float64
+    )
 
     Cdeadwood(
         &mst_d[0], &mst_i[0,0], &mst_cut[0], m, n, k,
-        max_contamination, ema_dt, max_debris_size,
+        max_contamination, ema_dt, max_debris_size, connected,
         &contamination_[0],
         &is_outlier_[0],
         &mst_cumdeg[0], &mst_inc[0]
     )
 
     return is_outlier_, contamination_
-
-
-# cpdef np.ndarray[Py_ssize_t] trim_branches(
-#         floatT[::1] mst_d,
-#         Py_ssize_t[:,::1] mst_i,
-#         floatT min_d,
-#         Py_ssize_t max_size,
-#         bool[::1] mst_skip
-#         TODO: mst_cumdeg
-#         TODO: mst_inc
-#     ):
-#     """
-#     deadwood.trim_branches(mst_d, mst_i, min_d, max_size)
-#
-#     [DEPRECATED]
-#
-#     Mark points in certain ("long and small") tree branches.
-#
-#
-#     Parameters
-#     ----------
-#
-#     mst_d, mst_i : ndarray
-#         Minimal spanning tree defined by a pair (mst_i, mst_d),
-#         with mst_i of shape (n-1,2) giving the edges and mst_d providing the
-#         corresponding edge weights
-#     min_d
-#         Minimal weight of an edge to consider for trimming
-#     max_size
-#         Maximal size of a tree branch to consider for trimming
-#     mst_skip : c_contiguous array, length m or 0
-#         mst_skip[i] == True marks the i-th edge as non-existent (ignorable)
-#
-#     Returns
-#     -------
-#
-#     c : ndarray, shape (n,)
-#         A new integer vector c with c[i]==-1 denoting a trimmed-out point
-#         and c[i]>=0 indicating a left-out one
-#     """
-#     cdef Py_ssize_t m = mst_i.shape[0]
-#     cdef Py_ssize_t n = m+1
-#
-#     if mst_i.shape[1] != 2: raise ValueError("mst_i must have two columns")
-#
-#     cdef bool* mst_skip_ptr = NULL
-#     if mst_skip.shape[0] == 0:
-#         pass
-#     elif mst_skip.shape[0] == m:
-#         mst_skip_ptr = &mst_skip[0]
-#     else:
-#         raise ValueError("mst_skip should be either of size 0 or m")
-#
-#     cdef np.ndarray[Py_ssize_t] c = np.empty(n, dtype=np.intp)
-#
-#     Cmst_trim_branches(&mst_d[0], min_d, max_size, &mst_i[0,0], m, n, &c[0], NULL, NULL, mst_skip_ptr)
-#
-#     return c
-

@@ -1,5 +1,7 @@
 # *Deadwood*: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
 
+<!-- via chopping trees into chunks -->
+
 ::::{image} _static/img/deadwood_toy_example.png
 :class: img-right-align-always
 :alt: Deadwood
@@ -11,7 +13,7 @@
 minimum spanning tree, MST, density estimation, mutual reachability distance.
 
 *Deadwood* is an anomaly detection algorithm based on mutual reachability
-minimum spanning trees.  It trims protruding tree segments and marks small
+minimum spanning trees.  It chops off protruding tree segments and marks small
 debris as outliers.
 
 More precisely:

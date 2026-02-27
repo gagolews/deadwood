@@ -22,7 +22,7 @@
 #'
 #' @description
 #' Deadwood is an anomaly detection algorithm based on Mutual Reachability
-#' Minimum Spanning Trees.  It trims protruding tree segments and marks small
+#' Minimum Spanning Trees.  It chops off protruding tree segments and marks small
 #' debris as outliers.
 #'
 #' More precisely, the use of a mutual reachability distance
@@ -103,7 +103,10 @@
 #'     \eqn{k-1} indexes of the tree edges whose omission lead to
 #'     \eqn{k} connected components (clusters), where the outliers are to
 #'     be sought independently; most frequently this is generated
-#'     via \pkg{genieclust} or \pkg{lumbermark}.
+#'     via \pkg{genieclust} or \pkg{lumbermark}
+#'
+#' @param connected should the output tree be connected? \eqn{k=1} only;
+#'     trims branches instead of chopping the tree into pieces
 #'
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information
@@ -150,6 +153,7 @@ deadwood.default <- function(
     max_debris_size=NA_real_,
     max_contamination=0.5,
     ema_dt=0.01,
+    connected=FALSE,
     distance=c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
     verbose=FALSE,
     ...
@@ -162,6 +166,7 @@ deadwood.default <- function(
         max_debris_size=max_debris_size,
         max_contamination=max_contamination,
         ema_dt=ema_dt,
+        connected=connected,
         verbose=verbose
     )
 }
@@ -177,6 +182,7 @@ deadwood.dist <- function(
     max_debris_size=NA_real_,
     max_contamination=0.5,
     ema_dt=0.01,
+    connected=FALSE,
     verbose=FALSE,
     ...
 ) {
@@ -186,6 +192,7 @@ deadwood.dist <- function(
         max_debris_size=max_debris_size,
         max_contamination=max_contamination,
         ema_dt=ema_dt,
+        connected=connected,
         verbose=verbose
     )
 }
@@ -200,6 +207,7 @@ deadwood.mstclust <- function(
     max_debris_size=NA_real_,
     max_contamination=0.5,
     ema_dt=0.01,
+    # connected unavailable as cut_edges given and so k>1 is most likely
     verbose=FALSE,
     ...
 ) {
@@ -216,6 +224,7 @@ deadwood.mstclust <- function(
         max_contamination=max_contamination,
         ema_dt=ema_dt,
         cut_edges=cut_edges,
+        connected=FALSE,
         verbose=verbose
     )
 }
@@ -230,6 +239,7 @@ deadwood.mst <- function(
     max_debris_size=NA_real_,
     max_contamination=0.5,
     ema_dt=0.01,
+    connected=FALSE,
     cut_edges=NULL,
     verbose=FALSE,
     ...
@@ -243,6 +253,9 @@ deadwood.mst <- function(
 
     stopifnot(ema_dt > 0.0)
 
+    if (connected && length(cut_edges) > 0)
+        stop("cut_edges must be of length 0 if a (connected) tree is requested")
+
     n <- NROW(d)+1
     if (is.na(max_debris_size))
         max_debris_size <- as.integer(sqrt(n))
@@ -255,7 +268,7 @@ deadwood.mst <- function(
     }
 
     is_outlier <- .deadwood(
-        d, cut_edges, max_contamination, ema_dt, max_debris_size, verbose
+        d, cut_edges, max_contamination, ema_dt, max_debris_size, connected, verbose
     )
 
     stopifnot(attr(is_outlier, "contamination") >= 0)

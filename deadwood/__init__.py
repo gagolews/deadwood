@@ -21,7 +21,7 @@ deadwood Python Package
 
 
 # version string, e.g., "1.0.0.9001" or "1.1.1"
-__version__ = "0.9.0"
+__version__ = "0.9.0.9001"
 
 from .core import *
 from .classes import MSTBase, MSTClusterer, MSTOutlierDetector, Deadwood

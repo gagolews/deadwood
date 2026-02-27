@@ -226,7 +226,7 @@ NumericMatrix internal_oldmst_matrix(
     T* _X2 = X2.data();
     for (Py_ssize_t i=0; i<n*d; i++) {
         if (!std::isfinite(_X2[i]))
-            Rf_error("All elements in the input matrix must be finite and non-missing.");
+            Rcpp::stop("All elements in the input matrix must be finite and non-missing.");
     }
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.x (under development)
+
+*   The internal `Cdeadwood` function gained a new argument: `connected`.
+    Allows choosing between chopping trees into chunks (false, the default)
+    and branch trimming (true).
+
+
 ## 0.9.0 (2026-02-13)
 
 *   [Python] Initial PyPI release.

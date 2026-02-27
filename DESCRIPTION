@@ -1,8 +1,8 @@
 Package: deadwood
 Type: Package
 Title: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
-Version: 0.9.0
-Date: 2026-02-21
+Version: 0.9.0.9001
+Date: 2026-02-27
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),
@@ -11,7 +11,7 @@ Authors@R:
     )
 Description:
     Implements an anomaly detection algorithm based on
-    mutual reachability minimum spanning trees: 'deadwood' trims
+    mutual reachability minimum spanning trees: 'deadwood' chops off
     protruding tree segments and marks small debris as outliers;
     see Gagolewski (2026) <https://deadwood.gagolewski.com/>.
     More precisely, the use of a mutual reachability distance pulls
