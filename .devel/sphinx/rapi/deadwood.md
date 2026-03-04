@@ -1,8 +1,8 @@
-# deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
+# deadwood: Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees
 
 ## Description
 
-Deadwood is an anomaly detection algorithm based on Mutual Reachability Minimum Spanning Trees. It trims protruding tree segments and marks small debris as outliers.
+Deadwood is an anomaly detection algorithm based on Mutual Reachability Minimum Spanning Trees. It chops off protruding tree segments and marks small debris as outliers.
 
 More precisely, the use of a mutual reachability distance pulls peripheral points farther away from each other. Tree edges with weights beyond the detected elbow point are removed. All the resulting connected components whose sizes are smaller than a given threshold are deemed anomalous.
 
@@ -19,6 +19,7 @@ deadwood(
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
+  connected = FALSE,
   distance = c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
   verbose = FALSE,
   ...
@@ -32,6 +33,7 @@ deadwood(
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
+  connected = FALSE,
   verbose = FALSE,
   ...
 )
@@ -54,6 +56,7 @@ deadwood(
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
+  connected = FALSE,
   cut_edges = NULL,
   verbose = FALSE,
   ...
@@ -71,9 +74,10 @@ deadwood(
 | `max_debris_size` | single integer value or `NA`; the maximal size of the leftover connected components that will be considered outliers; if `NA`, $\sqrt{n}$ is assumed |
 | `max_contamination` | single numeric value; maximal contamination level assumed when `contamination` is `NA` |
 | `ema_dt` | single numeric value; controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average (in edge length elbow point detection), $y_i = \alpha w_i + (1-\alpha) w_{i-1}$, $y_1 = d_1$ |
+| `connected` | should the output tree be connected? $k=1$ only; prunes branches instead of chopping the tree into pieces |
 | `distance` | metric used in the case where `d` is a matrix; one of: `"euclidean"` (synonym: `"l2"`), `"manhattan"` (a.k.a. `"l1"` and `"cityblock"`), `"cosine"` |
 | `verbose` | logical; whether to print diagnostic messages and progress information |
-| `cut_edges` | numeric vector or `NULL`; $k-1$ indexes of the tree edges whose omission lead to $k$ connected components (clusters), where the outliers are to be sought independently; most frequently this is generated via <span class="pkg">genieclust</span> or <span class="pkg">lumbermark</span>. |
+| `cut_edges` | numeric vector or `NULL`; $k-1$ indexes of the tree edges whose omission lead to $k$ connected components (clusters), where the outliers are to be sought independently; most frequently this is generated via <span class="pkg">genieclust</span> or <span class="pkg">lumbermark</span> |
 
 ## Details
 

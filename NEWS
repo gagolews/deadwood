@@ -3,7 +3,7 @@
 ## 0.9.x (under development)
 
 *   The internal `Cdeadwood` function gained a new argument: `connected`.
-    Allows choosing between chopping trees into chunks (false, the default)
+    It allows for choosing between chopping trees into chunks (default=false)
     and branch pruning (true).
 
 
