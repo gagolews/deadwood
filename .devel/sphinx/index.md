@@ -1,4 +1,4 @@
-# *Deadwood*: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
+# *Deadwood*: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees
 
 <!-- via chopping trees into chunks -->
 

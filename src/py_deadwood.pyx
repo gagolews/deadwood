@@ -959,7 +959,7 @@ cpdef tuple deadwood_from_mst(
     """
     deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
 
-    Deadwood is an outlier detection algorithm via trimming
+    Deadwood is an outlier detection algorithm that prunes
     mutual reachability minimum spanning trees.
 
 
@@ -993,7 +993,7 @@ cpdef tuple deadwood_from_mst(
 
     connected : bool, default=False
         should the output tree be connected? k=1 only;
-        trims branches instead of chopping the tree into pieces
+        prunes branches instead of chopping the tree into pieces
 
 
     Returns

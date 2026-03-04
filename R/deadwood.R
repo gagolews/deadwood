@@ -18,7 +18,7 @@
 # ############################################################################ #
 
 
-#' @title Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
+#' @title Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees
 #'
 #' @description
 #' Deadwood is an anomaly detection algorithm based on Mutual Reachability
@@ -106,7 +106,7 @@
 #'     via \pkg{genieclust} or \pkg{lumbermark}
 #'
 #' @param connected should the output tree be connected? \eqn{k=1} only;
-#'     trims branches instead of chopping the tree into pieces
+#'     prunes branches instead of chopping the tree into pieces
 #'
 #' @param verbose logical; whether to print diagnostic messages
 #'     and progress information

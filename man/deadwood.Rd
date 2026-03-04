@@ -6,7 +6,7 @@
 \alias{deadwood.dist}
 \alias{deadwood.mstclust}
 \alias{deadwood.mst}
-\title{Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees}
+\title{Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees}
 \usage{
 deadwood(d, ...)
 
@@ -91,7 +91,7 @@ of the exponential moving average (in edge length elbow point detection),
 \eqn{y_i = \alpha w_i + (1-\alpha) w_{i-1}}, \eqn{y_1 = d_1}}
 
 \item{connected}{should the output tree be connected? \eqn{k=1} only;
-trims branches instead of chopping the tree into pieces}
+prunes branches instead of chopping the tree into pieces}
 
 \item{distance}{metric used in the case where \code{d} is a matrix; one of:
 \code{"euclidean"} (synonym: \code{"l2"}),

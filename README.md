@@ -1,7 +1,7 @@
 <a href="https://deadwood.gagolewski.com/"><img src="https://www.gagolewski.com/_static/img/deadwood.png" align="right" height="128" width="128" /></a>
 # [**deadwood**](https://deadwood.gagolewski.com/) Package for R and Python
 
-### *Deadwood*: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees
+### *Deadwood*: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees
 
 ![deadwood for Python](https://github.com/gagolews/deadwood/workflows/deadwood%20for%20Python/badge.svg)
 ![deadwood for R](https://github.com/gagolews/deadwood/workflows/deadwood%20for%20R/badge.svg)
