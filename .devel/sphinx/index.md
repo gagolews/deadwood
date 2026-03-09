@@ -12,9 +12,9 @@
 **Keywords**: Deadwood, outlier detection, anomaly detection, HDBSCAN\*, DBSCAN,
 minimum spanning tree, MST, density estimation, mutual reachability distance.
 
-*Deadwood* is an anomaly detection algorithm based on mutual reachability
-minimum spanning trees.  It chops off protruding tree segments and marks small
-debris as outliers.
+*Deadwood* is an anomaly detection algorithm based on a dataset's mutual
+reachability minimum spanning tree.  It chops protruding tree segments and
+marks small debris as outliers.
 
 More precisely:
 

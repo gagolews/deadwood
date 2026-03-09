@@ -120,9 +120,9 @@ in each cluster (which can be different from the observed proportion
 of outliers detected).
 }
 \description{
-Deadwood is an anomaly detection algorithm based on Mutual Reachability
-Minimum Spanning Trees.  It chops off protruding tree segments and marks small
-debris as outliers.
+Deadwood is an anomaly detection algorithm based on a dataset's mutual
+reachability minimum spanning tree.  It chops protruding tree segments
+and marks small debris as outliers.
 
 More precisely, the use of a mutual reachability distance
 pulls peripheral points farther away from each other.
