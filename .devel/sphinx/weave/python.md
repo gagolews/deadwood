@@ -82,7 +82,9 @@ plt.show()
 Outlier detection on chameleon_t7_10k
 ```
 
-Fraction of detected outliers:
+Note the [**scikit-learn**](https://scikit-learn.org/)-compatible API.
+
+Here is the fraction of detected outliers:
 
 
 ``` python

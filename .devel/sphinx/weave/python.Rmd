@@ -69,7 +69,9 @@ plot_scatter(X1, (is_outlier<0))
 plt.show()
 ```
 
-Fraction of detected outliers:
+Note the [**scikit-learn**](https://scikit-learn.org/)-compatible API.
+
+Here is the fraction of detected outliers:
 
 ```{python}
 np.mean(is_outlier<0)
