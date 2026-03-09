@@ -17,7 +17,6 @@
 #include "c_common.h"
 #include "c_kneedle.h"
 #include "c_deadwood.h"
-#include <cmath>
 
 using namespace Rcpp;
 

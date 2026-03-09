@@ -33,9 +33,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import deadwood
 
-def permute_rows(X):
-    return X[np.random.choice(len(X), len(X), replace=False), :]
-
 def plot_scatter(X, labels=None):
     deadwood.plot_scatter(X, asp=1, labels=labels, alpha=0.75, markers='o', s=10)
 ```
@@ -56,7 +53,7 @@ and are available for download from
 
 
 ``` python
-X1 = permute_rows(np.loadtxt("chameleon_t7_10k.data.gz", ndmin=2))
+X1 = np.loadtxt("chameleon_t7_10k.data.gz", ndmin=2)
 plot_scatter(X1)
 plt.show()
 ```
@@ -100,7 +97,7 @@ Here is another one, where it is clearly not the case.
 
 
 ``` python
-X2 = permute_rows(np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2))
+X2 = np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2)
 plot_scatter(X2)
 plt.show()
 ```
@@ -126,7 +123,6 @@ Outlier detection on chameleon_t8_8k
 
 Detect outliers with *Deadwood*, separately in each cluster
 determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):
-
 
 
 ``` python

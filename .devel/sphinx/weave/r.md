@@ -102,13 +102,13 @@ Outlier detection on chameleon_t8_8k
 ```
 
 Detect outliers with *Deadwood*, separately in each cluster
-detected by [*Genie*](https://genieclust.gagolewski.com/):
+detected by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
 
 
 ``` r
-library("genieclust")
-clusters <- genie(X2, 8, gini_threshold=0.5, M=5)
+library("lumbermark")
+clusters <- lumbermark(X2, 6)
 is_outlier <- deadwood(clusters)
 plot(X2, asp=1, ann=FALSE, col=c("#00000055","#ff333333")[is_outlier+1])
 ```
