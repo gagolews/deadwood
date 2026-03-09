@@ -5,7 +5,6 @@
 # Python Examples
 
 
-
 ## How to Install
 
 To install the package from [PyPI](https://pypi.org/project/deadwood), call:
@@ -38,7 +37,7 @@ def permute_rows(X):
     return X[np.random.choice(len(X), len(X), replace=False), :]
 
 def plot_scatter(X, labels=None):
-    deadwood.plot_scatter(X, asp=1, labels=labels, alpha=0.3, markers='o', s=5)
+    deadwood.plot_scatter(X, asp=1, labels=labels, alpha=0.75, markers='o', s=10)
 ```
 
 
@@ -124,13 +123,13 @@ Outlier detection on chameleon_t8_8k
 ```
 
 Detect outliers with *Deadwood*, separately in each cluster
-determined by [*Genie*](https://genieclust.gagolewski.com/):
+determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
 
 
 ``` python
-import genieclust
-clusters = genieclust.Genie(n_clusters=8, gini_threshold=0.5, M=5).fit(X2)
+import lumbermark
+clusters = lumbermark.Lumbermark(n_clusters=6).fit(X2)
 plot_scatter(X2, clusters.labels_)
 plt.show()
 ```

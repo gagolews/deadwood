@@ -109,7 +109,7 @@ def test_deadwood_single():
 
 
 def test_deadwood_multi():
-    # more tests in genieclust and deadwood
+    # more tests in genieclust and lumbermark
 
     # two blobs with outlier aureole
     n1, m1 = 140, 19

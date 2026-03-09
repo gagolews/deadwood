@@ -1,7 +1,6 @@
 # Python Examples
 
 
-
 ## How to Install
 
 To install the package from [PyPI](https://pypi.org/project/deadwood), call:
@@ -12,7 +11,6 @@ pip3 install deadwood  # python3 -m pip install deadwood
 
 <!-- TODO: for best performance, install quitefastmst from sources -->
 
-<!-- TODO: change to lumbermark -->
 
 ## Basic Use
 
@@ -34,7 +32,7 @@ def permute_rows(X):
     return X[np.random.choice(len(X), len(X), replace=False), :]
 
 def plot_scatter(X, labels=None):
-    deadwood.plot_scatter(X, asp=1, labels=labels, alpha=0.3, markers='o', s=5)
+    deadwood.plot_scatter(X, asp=1, labels=labels, alpha=0.75, markers='o', s=10)
 ```
 
 
@@ -56,7 +54,6 @@ and are available for download from
 [the clustering benchmarks repository](https://clustering-benchmarks.gagolewski.com/).
 
 ```{python py_chameleon_t7_10k_dataset,fig.cap="The chameleon_t7_10k dataset",results="hide"}
-
 X1 = permute_rows(np.loadtxt("chameleon_t7_10k.data.gz", ndmin=2))
 plot_scatter(X1)
 plt.show()
@@ -99,12 +96,12 @@ plt.show()
 ```
 
 Detect outliers with *Deadwood*, separately in each cluster
-determined by [*Genie*](https://genieclust.gagolewski.com/):
+determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
 
 ```{python py_chameleon_t8_8k_lumbermark,fig.cap="Detected clusters of chameleon_t8_8k"}
-import genieclust
-clusters = genieclust.Genie(n_clusters=8, gini_threshold=0.5, M=5).fit(X2)
+import lumbermark
+clusters = lumbermark.Lumbermark(n_clusters=6).fit(X2)
 plot_scatter(X2, clusters.labels_)
 plt.show()
 ```
