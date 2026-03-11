@@ -153,7 +153,7 @@ void Cunskip_indexes(
     }
 
     for (Py_ssize_t i=0; i<m; ++i) {
-        DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < k)
+        DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < k);
         ind[i] = o[ind[i]];
     }
 
@@ -215,7 +215,7 @@ void Cskip_indexes(
     }
 
     for (Py_ssize_t i=0; i<m; ++i) {
-        DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < n)
+        DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < n);
         ind[i] = o[ind[i]];
     }
 }

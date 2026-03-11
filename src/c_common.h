@@ -38,10 +38,9 @@
 #ifndef DEADWOOD_ASSERT
 #define __DEADWOOD_STR(x) #x
 #define DEADWOOD_STR(x) __DEADWOOD_STR(x)
-
-#define DEADWOOD_ASSERT(EXPR) { if (!(EXPR)) \
+#define DEADWOOD_ASSERT(EXPR) do if (!(EXPR)) \
     throw std::runtime_error( "[deadwood] Assertion " #EXPR " failed in "\
-        __FILE__ ":" DEADWOOD_STR(__LINE__) ); }
+        __FILE__ ":" DEADWOOD_STR(__LINE__) ); while(0)
 #endif
 
 

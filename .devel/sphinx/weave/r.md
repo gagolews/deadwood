@@ -29,11 +29,11 @@ the documentation of the [deadwood](../rapi/deadwood) function.
 
 Example noisy dataset[^datasetsource]:
 
-[^datasetsource]: The discussed datasets come from
+[^datasetsource]: The discussed dataset comes from
 G. Karypis, E.H. Han, V. Kumar,
 CHAMELEON: A hierarchical clustering algorithm using dynamic modeling,
 *IEEE Transactions on Computers* **32**(8), 68-75, 1999
-and are available for download from
+and is available for download from
 [the clustering benchmarks repository](https://clustering-benchmarks.gagolewski.com/).
 
 
@@ -75,17 +75,18 @@ mean(is_outlier)
 ## Clusters of Unequal Densities
 
 The above dataset consists of clusters of relatively equal densities.
-Here is another one, where it is clearly not the case.
+[wut/z2](https://clustering-benchmarks.gagolewski.com/) is an
+example where there are five clusters of rather non-homogeneous densities.
 
 
 ``` r
-X2 <- as.matrix(read.table("chameleon_t8_8k.data.gz"))
+X2 <- as.matrix(read.table("z2.data.gz"))
 plot(X2, asp=1, ann=FALSE, col="#00000055")
 ```
 
-(fig:r_chameleon_t8_8k_dataset)=
-```{figure} r-figures/r_chameleon_t8_8k_dataset-1.*
-The chameleon_t8_8k dataset
+(fig:r_z2_dataset)=
+```{figure} r-figures/r_z2_dataset-1.*
+The z2 dataset
 ```
 
 Detect outliers with *Deadwood* (default settings):
@@ -96,9 +97,9 @@ is_outlier <- deadwood(X2)
 plot(X2, asp=1, ann=FALSE, col=c("#00000055","#ff333333")[is_outlier+1])
 ```
 
-(fig:r_chameleon_t8_8k_deadwood)=
-```{figure} r-figures/r_chameleon_t8_8k_deadwood-1.*
-Outlier detection on chameleon_t8_8k
+(fig:r_z2_deadwood)=
+```{figure} r-figures/r_z2_deadwood-1.*
+Outlier detection on z2
 ```
 
 Detect outliers with *Deadwood*, separately in each cluster
@@ -108,12 +109,12 @@ detected by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
 ``` r
 library("lumbermark")
-clusters <- lumbermark(X2, 6)
+clusters <- lumbermark(X2, 5)
 is_outlier <- deadwood(clusters)
 plot(X2, asp=1, ann=FALSE, col=c("#00000055","#ff333333")[is_outlier+1])
 ```
 
-(fig:r_chameleon_t8_8k_lumbermark)=
-```{figure} r-figures/r_chameleon_t8_8k_lumbermark-1.*
-Outlier detection on clusters of chameleon_t8_8k
+(fig:r_z2_lumbermark)=
+```{figure} r-figures/r_z2_lumbermark-1.*
+Outlier detection on clusters of z2
 ```

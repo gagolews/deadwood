@@ -43,11 +43,10 @@ pd.set_option("min_rows", 200)
 
 Example noisy dataset[^datasetsource]:
 
-[^datasetsource]: The discussed datasets come from
-G. Karypis, E.H. Han, V. Kumar,
+[^datasetsource]: The discussed dataset comes from G. Karypis, E.H. Han, V. Kumar,
 CHAMELEON: A hierarchical clustering algorithm using dynamic modeling,
 *IEEE Transactions on Computers* **32**(8), 68-75, 1999
-and are available for download from
+and is available for download from
 [the clustering benchmarks repository](https://clustering-benchmarks.gagolewski.com/).
 
 ```{python py_chameleon_t7_10k_dataset,fig.cap="The chameleon_t7_10k dataset",results="hide"}
@@ -78,17 +77,18 @@ np.mean(is_outlier<0)
 ## Clusters of Unequal Densities
 
 The above dataset consists of clusters of relatively equal densities.
-Here is another one, where it is clearly not the case.
+[wut/z2](https://clustering-benchmarks.gagolewski.com/) is an
+example where there are five clusters of rather non-homogeneous densities.
 
-```{python py_chameleon_t8_8k_dataset,fig.cap="The chameleon_t8_8k dataset"}
-X2 = np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2)
+```{python py_z2_dataset,fig.cap="The z2 dataset"}
+X2 = np.loadtxt("z2.data.gz", ndmin=2)
 plot_scatter(X2)
 plt.show()
 ```
 
 Detect outliers with *Deadwood* (default settings):
 
-```{python py_chameleon_t8_8k_deadwood,fig.cap="Outlier detection on chameleon_t8_8k"}
+```{python py_z2_deadwood,fig.cap="Outlier detection on z2"}
 is_outlier = deadwood.Deadwood().fit_predict(X2)
 plot_scatter(X2, (is_outlier<0))
 plt.show()
@@ -97,14 +97,14 @@ plt.show()
 Detect outliers with *Deadwood*, separately in each cluster
 determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
-```{python py_chameleon_t8_8k_lumbermark,fig.cap="Detected clusters of chameleon_t8_8k"}
+```{python py_z2_lumbermark,fig.cap="Detected clusters of z2"}
 import lumbermark
-clusters = lumbermark.Lumbermark(n_clusters=6).fit(X2)
+clusters = lumbermark.Lumbermark(n_clusters=5).fit(X2)
 plot_scatter(X2, clusters.labels_)
 plt.show()
 ```
 
-```{python py_chameleon_t8_8k_lumbermark_deadwood,fig.cap="Outlier detection on clusters of chameleon_t8_8k"}
+```{python py_z2_lumbermark_deadwood,fig.cap="Outlier detection on clusters of z2"}
 is_outlier = deadwood.Deadwood().fit_predict(clusters)
 plot_scatter(X2, (is_outlier<0))
 plt.show()
