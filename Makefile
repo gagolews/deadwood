@@ -95,7 +95,6 @@ clean:
 	python3 setup.py clean
 	rm -rf deadwood/__pycache__/
 	rm -rf deadwood.egg-info/
-	rm -rf ../deadwood/
 	rm -rf dist/
 	rm -rf build/
 	rm -rf .devel/pytest/__pycache__/
