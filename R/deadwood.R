@@ -46,8 +46,8 @@
 #' the \pkg{quitefastmst} package.
 #'
 #' Once the spanning tree is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
-#' the Deadwood algorithm runs in \eqn{O(n)} time.
-#' Memory use is also \eqn{O(n)}.
+#' the Deadwood algorithm runs in \eqn{O(n \log n)} time.
+#' Memory use is \eqn{O(n)}.
 #'
 #'
 #' @references

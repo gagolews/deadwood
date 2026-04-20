@@ -568,8 +568,8 @@ class Deadwood(MSTOutlierDetector):
     sizes are smaller than a given threshold are deemed anomalous.
 
     Once the spanning tree is determined (:math:`\\Omega(n \\log n)` –
-    :math:`O(n^2)`), the Deadwood algorithm runs in :math:`O(n)` time.
-    Memory use is also :math:`O(n)`.
+    :math:`O(n^2)`), the Deadwood algorithm runs in :math:`O(n \\log n)` time.
+    Memory use is :math:`O(n)`.
 
 
     Parameters
