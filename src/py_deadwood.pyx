@@ -83,7 +83,7 @@ cpdef Py_ssize_t kneedle_increasing(
     dt : float
         controls the smoothing parameter :math:`\\alpha = 1-\\exp(-dt)`
         of the exponential moving average,
-        :math:`y_i = \\alpha x_i + (1-\\alpha) x_{i-1}`,
+        :math:`y_i = \\alpha x_i + (1-\\alpha) y_{i-1}`,
         :math:`y_1 = x_1`.
 
 
@@ -829,7 +829,7 @@ cpdef tuple get_contamination(
         contamination levels
 
     ema_dt : float
-        controls the exponential moving average smoothing parameter
+        controls the smoothing parameter of the exponential moving average
         :math:`\\alpha = 1-\\exp(-dt)` (in elbow detection)
 
 
@@ -985,7 +985,7 @@ cpdef tuple deadwood_from_mst(
         contamination levels
 
     ema_dt : float
-        controls the exponential moving average smoothing parameter
+        controls the smoothing parameter of the exponential moving average
         :math:`\\alpha = 1-\\exp(-dt)` (in elbow detection)
 
     max_debris_size : int

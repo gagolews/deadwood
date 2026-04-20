@@ -93,7 +93,7 @@
 #' @param ema_dt single numeric value;
 #'    controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
 #'    of the exponential moving average (in edge length elbow point detection),
-#'    \eqn{y_i = \alpha w_i + (1-\alpha) w_{i-1}}, \eqn{y_1 = d_1}
+#'    \eqn{y_i = \alpha w_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = d_1}
 #'
 #' @param max_debris_size single integer value or \code{NA};
 #'     the maximal size of the leftover connected components that

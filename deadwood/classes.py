@@ -596,7 +596,7 @@ class Deadwood(MSTOutlierDetector):
     ema_dt : float, default=0.01
        controls the smoothing parameter :math:`\\alpha = 1-\\exp(-dt)`
        of the exponential moving average (in edge length elbow point detection),
-       :math:`y_i = \\alpha w_i + (1-\\alpha) w_{i-1}`, :math:`y_1 = d_1`
+       :math:`y_i = \\alpha w_i + (1-\\alpha) y_{i-1}`, :math:`y_1 = d_1`
 
 
     Attributes
