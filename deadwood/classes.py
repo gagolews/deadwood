@@ -567,8 +567,9 @@ class Deadwood(MSTOutlierDetector):
     are removed.  All the resulting connected components whose
     sizes are smaller than a given threshold are deemed anomalous.
 
-    Once the spanning tree is determined (:math:`\\Omega(n \\log n)` –
-    :math:`O(n^2)`), the Deadwood algorithm runs in :math:`O(n \\log n)` time.
+    Once the spanning tree with increasingly sorted edge weights
+    is determined (:math:`\\Omega(n \\log n)` – :math:`O(n^2)`),
+    the Deadwood algorithm runs in :math:`O(n)` time.
     Memory use is :math:`O(n)`.
 
 
@@ -630,7 +631,7 @@ class Deadwood(MSTOutlierDetector):
         M. Gagolewski, *deadwood*, in preparation, 2026, TODO
 
     .. [2]
-        V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
+        V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
         in a haystack: Detecting knee points in system behavior*,
         In: *31st Intl. Conf. Distributed Computing Systems Workshops*,
         2011, 166-171, https://doi.org/10.1109/ICDCSW.2011.20
@@ -868,7 +869,8 @@ class Deadwood(MSTOutlierDetector):
             self._tree_inc_,
             max_contamination=self.max_contamination if self.contamination == "auto" else -self.contamination,
             ema_dt=self.ema_dt,
-            max_debris_size=self.max_debris_size_
+            max_debris_size=self.max_debris_size_,
+            connected=False
         )
 
         # if self._cut_edges_ is None:

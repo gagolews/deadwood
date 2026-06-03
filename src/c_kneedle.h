@@ -1,7 +1,7 @@
 /*  An implementation of the *Kneedle* algorithm to detect knee/elbow points,
  *  with exponential moving average smoothing
  *
- *  Based on V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan
+ *  Based on V. Satopää, J. Albrecht, D. Irwin, B. Raghavan
  *  Finding a “Kneedle” in a haystack: Detecting knee points in system behavior,
  *  31st Intl. Conf. Distributed Computing Systems Workshops, 2011, pp. 166-171,
  *  DOI: 10.1109/ICDCSW.2011.20
@@ -46,6 +46,8 @@ void Cema(const FLOAT* x, Py_ssize_t n, FLOAT dt, FLOAT* y)
     FLOAT alpha = -std::expm1(-dt);  // 1-np.exp(-dt)
     FLOAT alpham1 = 1.0-alpha;
 
+    DEADWOOD_ASSERT(alpha >= 0.0 && alpha <= 1.0);
+
     y[0] = x[0];
     for (Py_ssize_t i=1; i<n; ++i)
         y[i] = alpha*x[i] + alpham1*y[i-1];
@@ -56,7 +58,7 @@ void Cema(const FLOAT* x, Py_ssize_t n, FLOAT dt, FLOAT* y)
  * Find the most significant knee/elbow using the Kneedle method
  * of an increasing sequence with exponential moving average smoothing
  *
- * Based on V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan
+ * Based on V. Satopää, J. Albrecht, D. Irwin, B. Raghavan
  * Finding a “Kneedle” in a haystack: Detecting knee points in system behavior,
  * 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, pp. 166-171,
  * DOI: 10.1109/ICDCSW.2011.20
@@ -78,16 +80,17 @@ Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT 
 
     Cema(x, n, dt, y.get());  // sets y
 
-    // normalise to [0,1], subtract i/(n-1)
-    FLOAT miny = y[0], maxy = y[0];
-    for (Py_ssize_t i=1; i<n; ++i) {
-        if (miny > y[i]) miny = y[i];
-        else if (maxy < y[i]) maxy = y[i];
+    for (Py_ssize_t i=0; i<n; ++i) {
+        DEADWOOD_ASSERT(i == 0 || y[i-1]-1e-12 <= y[i]);
     }
-    FLOAT rngy = maxy-miny;
-    for (Py_ssize_t i=0; i<n; ++i)
-        y[i] = (y[i]-miny)/rngy - (FLOAT)i/(FLOAT)(n-1);
 
+    // normalise to [0,1], subtract i/(n-1)
+    // NOTE: they are increasing already [ASSERT]!
+    FLOAT miny = y[0];
+    FLOAT rngy = y[n-1]-y[0];
+    for (Py_ssize_t i=0; i<n; ++i) {
+        y[i] = (y[i]-miny)/rngy - (FLOAT)i/(FLOAT)(n-1);
+    }
 
     Py_ssize_t peak_i = 0;  // 0 if not found!
     FLOAT peak_y = -INFINITY;

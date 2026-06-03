@@ -98,7 +98,7 @@ cpdef Py_ssize_t kneedle_increasing(
     ----------
 
     .. [1]
-        V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
+        V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
         in a haystack: Detecting knee points in system behavior*,
         In: *31st Intl. Conf. Distributed Computing Systems Workshops*,
         2011, 166-171, https://doi.org/10.1109/ICDCSW.2011.20
@@ -347,7 +347,7 @@ cdef extern from "c_deadwood.h":
         const T* x, Py_ssize_t n,
         const Py_ssize_t* c, Py_ssize_t k,
         T* y, Py_ssize_t* ind
-    )
+    ) except+
 
     Py_ssize_t Cget_skip_edges(
         const Py_ssize_t* mst_i,
@@ -355,7 +355,7 @@ cdef extern from "c_deadwood.h":
         const Py_ssize_t* c,
         Py_ssize_t n,
         bool* skip
-    )
+    ) except+
 
     void Cunskip_indexes(
         Py_ssize_t* ind,
@@ -407,7 +407,7 @@ cdef extern from "c_deadwood.h":
         floatT ema_dt,
         floatT& contamination,
         Py_ssize_t& threshold_index
-    )
+    ) except+
 
     void Cmst_label_imputer(
         const Py_ssize_t* mst_i,

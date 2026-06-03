@@ -601,9 +601,10 @@ void Cmst_label_imputer(
  */
 template <class FLOAT> class CMSTBranchTrimmer : public CMSTProcessorBase
 {
+public:
+    std::unique_ptr<FLOAT[]> mst_d;
+
 private:
-    const FLOAT* mst_d;
-    const FLOAT trim_d;
     const Py_ssize_t max_size;
 
     std::unique_ptr<Py_ssize_t[]> size;  // size (m,2)
@@ -611,6 +612,7 @@ private:
 
     Py_ssize_t visit_get_sizes(Py_ssize_t v, Py_ssize_t e)
     {
+        if (skip_edges && skip_edges[e]) return 0;
         Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
         Py_ssize_t w = mst_i[2*e+(1-iv)];
 
@@ -640,9 +642,9 @@ private:
         Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
         Py_ssize_t w = mst_i[2*e+(1-iv)];
 
-        if (c[w] < 0) return;  // already visited
+        if (c[w] > 0) return;  // already visited
 
-        c[w] = -1;
+        c[w] = 1;
 
         for (const Py_ssize_t* pe = inc+cumdeg[w]; pe != inc+cumdeg[w+1]; pe++) {
             if (*pe != e) visit_mark(w, *pe);
@@ -650,33 +652,53 @@ private:
     }
 
 
+    void visit_update_mst_d(Py_ssize_t v, Py_ssize_t e, FLOAT max_d)
+    {
+        if (skip_edges && skip_edges[e]) return;
+
+        Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
+        Py_ssize_t w = mst_i[2*e+(1-iv)];
+
+        if (size[2*e + (1-iv)] > max_size) {
+            // no change to mst_d
+            max_d = mst_d[e];
+        }
+        else {
+            if (max_d < mst_d[e]) max_d = mst_d[e];
+            else mst_d[e] = max_d;
+        }
+
+        for (const Py_ssize_t* pe = inc+cumdeg[w]; pe != inc+cumdeg[w+1]; pe++) {
+            if (*pe != e) visit_update_mst_d(w, *pe, max_d);
+        }
+    }
+
+
 public:
     CMSTBranchTrimmer(
-        const FLOAT* mst_d,
+        const FLOAT* orig_mst_d,
         const Py_ssize_t* mst_i,
         Py_ssize_t m,
         Py_ssize_t n,
         Py_ssize_t* c,
-        FLOAT trim_d,
         Py_ssize_t max_size,
         const Py_ssize_t* cumdeg=nullptr,
         const Py_ssize_t* inc=nullptr
     ) :
         CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc),
-        mst_d(mst_d), trim_d(trim_d), max_size(max_size)
+        max_size(max_size)
     {
         DEADWOOD_ASSERT(this->c);
         DEADWOOD_ASSERT(this->cumdeg);
         DEADWOOD_ASSERT(this->inc);
         DEADWOOD_ASSERT(m == n-1);
 
+        mst_d.reset(new FLOAT[m]);
+        for (Py_ssize_t i=0; i<m; ++i) mst_d[i] = orig_mst_d[i];
+
         size.reset(new Py_ssize_t[2*m]);
         for (Py_ssize_t i=0; i<2*m; ++i) size[i] = -1;
-    }
 
-
-    void process()
-    {
         for (Py_ssize_t v=0; v<n; ++v) c[v] = -1;
 
         Py_ssize_t v = 0;  // any vertex
@@ -692,13 +714,36 @@ public:
             else
                 size[2*e+0] = n - size[2*e+1];
         }
+    }
 
+
+    void update_mst_d()
+    {
+        // this makes mst_d not sorted
+
+        Py_ssize_t e;
+        for (e=0; e<m; ++e) {
+            if (size[2*e+0] > max_size && size[2*e+1] > max_size)
+                break;
+        }
+        DEADWOOD_ASSERT(e<m);
+
+        // e will not be trimmed out
+        Py_ssize_t v = mst_i[2*e+0];
+        for (const Py_ssize_t* pe = inc+cumdeg[v]; pe != inc+cumdeg[v+1]; pe++) {
+            visit_update_mst_d(v, *pe, mst_d[*pe]);
+        }
+    }
+
+
+    void trim(FLOAT trim_d)
+    {
         for (Py_ssize_t e=0; e<m; ++e) {
             if (mst_d[e] < trim_d) continue;
 
             Py_ssize_t iv = (size[2*e+0]>=size[2*e+1])?0:1;
             Py_ssize_t v = mst_i[2*e+iv];
-            if (c[v] < 0) continue;
+            if (c[v] > 0) continue;
             if (size[2*e+(1-iv)] > max_size) continue;
             visit_mark(v, e);
         }
@@ -797,23 +842,30 @@ void Cdeadwood(
     DEADWOOD_ASSERT(n > 1);
     DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
 
-    if (connected) {
+    if (connected) {  // TODO: EXPERIMENTAL
         DEADWOOD_ASSERT(k == 1);
+
+        CMSTBranchTrimmer tr(
+            mst_d, mst_i, m, n, c, max_debris_size, mst_cumdeg, mst_inc
+        );
+
+        // tr.update_mst_d();
+
+        std::unique_ptr<FLOAT[]> mst_d2(new FLOAT[m]);
+        for (Py_ssize_t i=0; i<m; ++i) mst_d2[i] = tr.mst_d[i];
+
+        std::sort(mst_d2.get(), mst_d2.get()+m);
 
         Py_ssize_t threshold_index = -1;
         Cget_contamination(
-            mst_d, m, max_contamination, ema_dt,
+            mst_d2.get(), m, max_contamination, ema_dt,
             /*out*/contamination[0], /*out*/threshold_index
         );
 
         DEADWOOD_ASSERT(threshold_index >= 0);
-        FLOAT trim_d = (threshold_index < m)?mst_d[threshold_index]:INFINITY;
+        FLOAT trim_d = (threshold_index < m)?mst_d2[threshold_index]:INFINITY;
 
-        CMSTBranchTrimmer tr(
-            mst_d, mst_i, m, n, c, trim_d,
-            max_debris_size, mst_cumdeg, mst_inc
-        );
-        tr.process();  // modifies c in place
+        tr.trim(trim_d);  // modifies c in place
 
         return;
     }
