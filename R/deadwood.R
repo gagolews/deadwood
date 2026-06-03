@@ -45,15 +45,16 @@
 #' is selected automatically; see \code{\link[quitefastmst]{mst_euclid}} from
 #' the \pkg{quitefastmst} package.
 #'
-#' Once the spanning tree is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
-#' the Deadwood algorithm runs in \eqn{O(n \log n)} time.
+#' Once the spanning tree with increasingly sorted edge weights
+#' is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
+#' the Deadwood algorithm runs in \eqn{O(n)} time.
 #' Memory use is \eqn{O(n)}.
 #'
 #'
 #' @references
 #' M. Gagolewski, deadwood, in preparation, 2026, TODO
 #'
-#' V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, Finding a "Kneedle"
+#' V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, Finding a "Kneedle"
 #' in a haystack: Detecting knee points in system behavior,
 #' In: 31st Intl. Conf. Distributed Computing Systems Workshops,
 #' 2011, 166-171, \doi{10.1109/ICDCSW.2011.20}

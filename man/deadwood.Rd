@@ -88,7 +88,7 @@ maximal contamination level assumed when \code{contamination} is \code{NA}}
 \item{ema_dt}{single numeric value;
 controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
 of the exponential moving average (in edge length elbow point detection),
-\eqn{y_i = \alpha w_i + (1-\alpha) w_{i-1}}, \eqn{y_1 = d_1}}
+\eqn{y_i = \alpha w_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = d_1}}
 
 \item{connected}{should the output tree be connected? \eqn{k=1} only;
 prunes branches instead of chopping the tree into pieces}
@@ -143,9 +143,10 @@ for low-dimensional Euclidean spaces, a faster algorithm based on K-d trees
 is selected automatically; see \code{\link[quitefastmst]{mst_euclid}} from
 the \pkg{quitefastmst} package.
 
-Once the spanning tree is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
+Once the spanning tree with increasingly sorted edge weights
+is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
 the Deadwood algorithm runs in \eqn{O(n)} time.
-Memory use is also \eqn{O(n)}.
+Memory use is \eqn{O(n)}.
 }
 \examples{
 library("datasets")
@@ -159,7 +160,7 @@ plot(X, col=c("#ff000066", "#55555555")[is_outlier+1],
 \references{
 M. Gagolewski, deadwood, in preparation, 2026, TODO
 
-V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, Finding a "Kneedle"
+V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, Finding a "Kneedle"
 in a haystack: Detecting knee points in system behavior,
 In: 31st Intl. Conf. Distributed Computing Systems Workshops,
 2011, 166-171, \doi{10.1109/ICDCSW.2011.20}
