@@ -971,7 +971,7 @@ cpdef tuple deadwood_from_mst(
         `(mst_i, mst_d)`; see ``quitefastmst.mst_euclid``
 
     mst_cut : ndarray, length k-1 (possibly 0)
-        indexes cut edges defining a spanning forest with `k` connected components
+        indexes of cut edges defining a spanning forest with `k` connected components
 
     mst_cumdeg : ndarray, length n+1
         see `deadwood.graph_vertex_incidences`
