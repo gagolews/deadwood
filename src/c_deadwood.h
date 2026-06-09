@@ -388,7 +388,8 @@ private:
 
     Py_ssize_t max_k;
     Py_ssize_t* s;  // NULL or of size max_k >= k, where k is the number of clusters
-    Py_ssize_t k;   // the number of connected components identified
+    Py_ssize_t* mst_cutsizes;  //< size m*2, each pair gives the sizes of the clusters that are formed when we cut out the corresponding edge
+    Py_ssize_t  k;  // the number of connected components identified
 
     Py_ssize_t visit(Py_ssize_t v, Py_ssize_t e)
     {
@@ -413,6 +414,12 @@ private:
             if (*pe != e) curs += visit(w, *pe);
         }
 
+        if (mst_cutsizes && e>=0) {
+            Py_ssize_t iv = (Py_ssize_t)(mst_i[2*e+1]==v);
+            mst_cutsizes[2*e+(1-iv)] = curs;
+            //mst_cutsizes[2*e+iv] = this_component_size-curs;  // t.b.d. later
+        }
+
         return curs;
     }
 
@@ -425,21 +432,25 @@ public:
         Py_ssize_t* c,
         Py_ssize_t max_k,
         Py_ssize_t* s=nullptr,
+        Py_ssize_t* mst_cutsizes=nullptr,
         const Py_ssize_t* cumdeg=nullptr,
         const Py_ssize_t* inc=nullptr,
         const bool* skip_edges=nullptr
-    ) : CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc, skip_edges), max_k(max_k), s(s), k(-1)
+    ) : CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc, skip_edges),
+        max_k(max_k), s(s), mst_cutsizes(mst_cutsizes), k(-1)
     {
         DEADWOOD_ASSERT(this->c);
         DEADWOOD_ASSERT(this->cumdeg);
         DEADWOOD_ASSERT(this->inc);
+        DEADWOOD_ASSERT(!this->mst_cutsizes || this->s);
     }
 
 
     Py_ssize_t process()
     {
         for (Py_ssize_t v=0; v<n; ++v) c[v] = -1;
-        for (Py_ssize_t i=0; i<max_k; ++i) s[i] = 0;
+        if (s) for (Py_ssize_t i=0; i<max_k; ++i) s[i] = 0;
+        if (mst_cutsizes) for (Py_ssize_t i=0; i<2*m; ++i) mst_cutsizes[i] = -1;
 
         k = 0;
         for (Py_ssize_t v=0; v<n; ++v) {
@@ -453,6 +464,16 @@ public:
                 visit(v, -1);
 
             k++;
+        }
+
+        if (mst_cutsizes) {
+            for (Py_ssize_t e=0; e<m; ++e) {
+                if (skip_edges && skip_edges[e]) continue;
+                if (mst_cutsizes[2*e+0]>=0)
+                    mst_cutsizes[2*e+1] = s[c[mst_i[2*e+0]]]-mst_cutsizes[2*e+0];
+                else
+                    mst_cutsizes[2*e+0] = s[c[mst_i[2*e+1]]]-mst_cutsizes[2*e+1];
+            }
         }
 
         return k;
@@ -473,10 +494,14 @@ public:
  *      c[i] denotes the cluster ID (in {0, 1, ..., k-1} for some k)
  *      of the i-th object, i=0,...,n-1
  *  @param max_k the actual size of s (a safeguard)
- *  @param s [out] array of length max_k >= k, where k is the number of connected
- *      components in the forest; s[i] gives the size of the i-th cluster;
- *      pass NULL to get only the cluster labels;
+ *  @param cl_sizes [out] array of length max_k >= k, where k is the number of
+ *      connected components in the forest; s[i] gives the size of
+ *      the i-th cluster;  pass NULL to get only the cluster labels;
  *      obviously, k<=n; e.g., if m==n-1, then k=sum(skip_edges)+1
+ *  @param mst_cutsizes [out] c_contiguous matrix of size m*2,
+ *     where {mst_cutsizes[i,0], mst_cutsizes[i,1]} specifies the number
+ *     of vertices in the two connected components that arise when we remove
+ *     the i-th edge from the forest, or {-1, -1} if this edge is non-existent
  *  @param mst_cumdeg an array of length n+1 or NULL; see Cgraph_vertex_incidences
  *  @param mst_inc an array of length 2*m or NULL; see Cgraph_vertex_incidences
  *  @param mst_skip Boolean array of length m or NULL; indicates the edges to skip
@@ -487,12 +512,15 @@ Py_ssize_t Cmst_cluster_sizes(
     Py_ssize_t n,
     Py_ssize_t* c,
     Py_ssize_t max_k=0,
-    Py_ssize_t* s=nullptr,
+    Py_ssize_t* cl_sizes=nullptr,
+    Py_ssize_t* mst_cutsizes=nullptr,
     const Py_ssize_t* mst_cumdeg=nullptr,
     const Py_ssize_t* mst_inc=nullptr,
     const bool* mst_skip=nullptr
 ) {
-    CMSTClusterSizeGetter get(mst_i, m, n, c, max_k, s, mst_cumdeg, mst_inc, mst_skip);
+    CMSTClusterSizeGetter get(
+        mst_i, m, n, c, max_k, cl_sizes, mst_cutsizes, mst_cumdeg, mst_inc, mst_skip
+    );
     return get.process();  // modifies c in place
 }
 
@@ -874,7 +902,7 @@ void Cdeadwood(
     std::unique_ptr<bool[]> mst_skip(new bool[m]);  // std::vector<bool> has no data()
     for (Py_ssize_t i=0; i<m; ++i) mst_skip[i] = false;
 
-    CMSTClusterSizeGetter size_getter(mst_i, m, n, c, n, sizes.get(), mst_cumdeg, mst_inc, mst_skip.get());
+    CMSTClusterSizeGetter size_getter(mst_i, m, n, c, n, sizes.get(), nullptr, mst_cumdeg, mst_inc, mst_skip.get());
 
     if (k == 1) {
         Py_ssize_t threshold_index = -1;

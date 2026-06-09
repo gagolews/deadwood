@@ -394,7 +394,8 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t n,
         Py_ssize_t* labels,
         Py_ssize_t max_k,
-        Py_ssize_t* s,
+        Py_ssize_t* cl_sizes,
+        Py_ssize_t* mst_cutsizes,
         const Py_ssize_t* mst_cumdeg,
         const Py_ssize_t* mst_inc,
         const bool* mst_skip
@@ -888,6 +889,11 @@ cpdef tuple mst_cluster_sizes(
 
     sizes : ndarray, shape (k,)
         an integer vector with `sizes[i]` denoting the size of the `i`-th cluster
+
+    mst_cutsizes: ndarray, shape (n-1, 2)
+       `{mst_cutsizes[i,0], mst_cutsizes[i,1]}` specifies the number of vertices
+        in the two connected components that arise when we remove the `i`-th edge
+        from the forest, or `{-1, -1}` if this edge is non-existent
     """
     cdef Py_ssize_t m = mst_i.shape[0]
     cdef Py_ssize_t n = m+1
@@ -934,15 +940,16 @@ cpdef tuple mst_cluster_sizes(
 
 
     cdef np.ndarray[Py_ssize_t] labels = np.empty(n, dtype=np.intp)
-    cdef np.ndarray[Py_ssize_t] sizes = np.zeros(k, dtype=np.intp)
+    cdef np.ndarray[Py_ssize_t] cl_sizes = np.zeros(k, dtype=np.intp)
+    cdef np.ndarray[Py_ssize_t,ndim=2] mst_cutsizes = np.empty((m, 2), dtype=np.intp)
 
     cdef Py_ssize_t _k = Cmst_cluster_sizes(
-        &mst_i[0,0], m, n, &labels[0], k, &sizes[0],
+        &mst_i[0,0], m, n, &labels[0], k, &cl_sizes[0], &mst_cutsizes[0,0],
         mst_cumdeg_ptr, mst_inc_ptr, mst_skip_ptr
     )
     assert _k == k
 
-    return labels, sizes
+    return labels, cl_sizes, mst_cutsizes
 
 
 cpdef tuple deadwood_from_mst(
