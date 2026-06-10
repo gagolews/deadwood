@@ -74,7 +74,6 @@ LogicalVector dot_deadwood(
     double max_contamination,
     double ema_dt,
     int max_debris_size,
-    bool connected,
     bool verbose
 ) {
     if (verbose) DEADWOOD_PRINT("[deadwood] Determining clusters.\n");
@@ -102,7 +101,7 @@ LogicalVector dot_deadwood(
     std::vector<Py_ssize_t> is_outlier(n);
     Cdeadwood(
         mst_d.data(), mst_i.data(), mst_cut.data(), n-1, n, k,
-        max_contamination, ema_dt, max_debris_size, connected,
+        max_contamination, ema_dt, max_debris_size,
         contamination.data(), is_outlier.data(), NULL, NULL
     );
 

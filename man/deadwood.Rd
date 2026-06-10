@@ -17,7 +17,6 @@ deadwood(d, ...)
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
-  connected = FALSE,
   distance = c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
   verbose = FALSE,
   ...
@@ -30,7 +29,6 @@ deadwood(d, ...)
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
-  connected = FALSE,
   verbose = FALSE,
   ...
 )
@@ -51,7 +49,6 @@ deadwood(d, ...)
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
-  connected = FALSE,
   cut_edges = NULL,
   verbose = FALSE,
   ...
@@ -90,9 +87,6 @@ controls the smoothing parameter \eqn{\alpha = 1-\exp(-dt)}
 of the exponential moving average (in edge length elbow point detection),
 \eqn{y_i = \alpha w_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = d_1}}
 
-\item{connected}{should the output tree be connected? \eqn{k=1} only;
-prunes branches instead of chopping the tree into pieces}
-
 \item{distance}{metric used in the case where \code{d} is a matrix; one of:
 \code{"euclidean"} (synonym: \code{"l2"}),
 \code{"manhattan"} (a.k.a. \code{"l1"} and \code{"cityblock"}),
@@ -127,7 +121,7 @@ and marks small debris as outliers.
 More precisely, the use of a mutual reachability distance
 pulls peripheral points farther away from each other.
 Tree edges with weights beyond the detected elbow point
-are removed. All the resulting connected components whose
+are removed.  All the resulting connected components whose
 sizes are smaller than a given threshold are deemed anomalous.
 }
 \details{
