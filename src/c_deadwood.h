@@ -624,7 +624,7 @@ void Cmst_label_imputer(
 
 /* ************************************************************************** */
 
-
+#if 0
 /** Deadwood, connected=true
  */
 template <class FLOAT> class CMSTBranchTrimmer : public CMSTProcessorBase
@@ -778,6 +778,7 @@ public:
     }
 
 };
+#endif
 
 
 /* ************************************************************************** */
@@ -839,12 +840,11 @@ void Cget_contamination(
  *  @param max_debris_size connected components of size <= max_debris_size will
  *         be treated as outliers
  *  @param max_contamination maximal contamination level;
- *         negative values will be used as actual contamination levels
+ *         negative values will be used as requested contamination levels
  *  @param ema_dt controls the exponential moving average smoothing parameter
  *         alpha = 1-exp(-dt) (in elbow detection)
  *  @param contamination [out] array of length k;
  *         detected contamination levels in each cluster
- *  @param connected should the output tree be connected? k==1 only
  *  @param mst_cumdeg an array of length n+1 or NULL; see Cgraph_vertex_incidences
  *  @param mst_inc an array of length 2*m or NULL; see Cgraph_vertex_incidences
  */
@@ -859,7 +859,6 @@ void Cdeadwood(
     FLOAT max_contamination,
     FLOAT ema_dt,
     Py_ssize_t max_debris_size,
-    bool connected,
     FLOAT* contamination,  // size k [out]
     Py_ssize_t* c,  // size n [out]
     const Py_ssize_t* mst_cumdeg=nullptr,
@@ -870,6 +869,7 @@ void Cdeadwood(
     DEADWOOD_ASSERT(n > 1);
     DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
 
+#if 0
     if (connected) {  // TODO: EXPERIMENTAL
         DEADWOOD_ASSERT(k == 1);
 
@@ -897,6 +897,7 @@ void Cdeadwood(
 
         return;
     }
+#endif
 
     std::unique_ptr<Py_ssize_t[]> sizes(new Py_ssize_t[n]);  // upper bound for the number of clusters
     std::unique_ptr<bool[]> mst_skip(new bool[m]);  // std::vector<bool> has no data()

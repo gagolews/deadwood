@@ -869,8 +869,7 @@ class Deadwood(MSTOutlierDetector):
             self._tree_inc_,
             max_contamination=self.max_contamination if self.contamination == "auto" else -self.contamination,
             ema_dt=self.ema_dt,
-            max_debris_size=self.max_debris_size_,
-            connected=False
+            max_debris_size=self.max_debris_size_
         )
 
         # if self._cut_edges_ is None:

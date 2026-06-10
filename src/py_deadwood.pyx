@@ -430,7 +430,6 @@ cdef extern from "c_deadwood.h":
         floatT max_contamination,
         floatT ema_dt,
         Py_ssize_t max_debris_size,
-        bool connected,
         floatT* contamination,
         Py_ssize_t* c,
         const Py_ssize_t* mst_cumdeg,
@@ -960,8 +959,7 @@ cpdef tuple deadwood_from_mst(
         Py_ssize_t[::1] mst_inc,
         floatT max_contamination=0.5,
         floatT ema_dt=0.01,
-        Py_ssize_t max_debris_size=50,
-        bool connected=False
+        Py_ssize_t max_debris_size=50
     ):
     """
     deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
@@ -998,10 +996,6 @@ cpdef tuple deadwood_from_mst(
     max_debris_size : int
         connected components of size ≤ `max_debris_size` will be treated as outliers
 
-    connected : bool, default=False
-        should the output tree be connected? k=1 only;
-        prunes branches instead of chopping the tree into pieces
-
 
     Returns
     -------
@@ -1032,8 +1026,8 @@ cpdef tuple deadwood_from_mst(
     if mst_inc.shape[0] != 2*m:
         raise ValueError("mst_inc should be of length 2*m")
 
-    if connected and k != 1:
-        raise ValueError("(connected) tree can only be requested if k==1")
+    #if connected and k != 1:
+    #    raise ValueError("(connected) tree can only be requested if k==1")
 
     cdef np.ndarray[Py_ssize_t] is_outlier_ = np.empty(n, dtype=np.intp)
     cdef np.ndarray[floatT] contamination_ = np.empty(k,
@@ -1042,10 +1036,11 @@ cpdef tuple deadwood_from_mst(
 
     Cdeadwood(
         &mst_d[0], &mst_i[0,0], &mst_cut[0], m, n, k,
-        max_contamination, ema_dt, max_debris_size, connected,
+        max_contamination, ema_dt, max_debris_size,
         &contamination_[0],
         &is_outlier_[0],
-        &mst_cumdeg[0], &mst_inc[0]
+        &mst_cumdeg[0],
+        &mst_inc[0]
     )
 
     return is_outlier_, contamination_
