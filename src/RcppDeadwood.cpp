@@ -16,6 +16,7 @@
 
 #include "c_common.h"
 #include "c_kneedle.h"
+#include "c_auxiliary.h"
 #include "c_deadwood.h"
 
 using namespace Rcpp;

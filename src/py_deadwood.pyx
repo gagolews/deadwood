@@ -342,7 +342,7 @@ cpdef Py_ssize_t argkmin(T[::1] x, int k):
 
 
 
-cdef extern from "c_deadwood.h":
+cdef extern from "c_auxiliary.h":
     void Csort_groups[T](
         const T* x, Py_ssize_t n,
         const Py_ssize_t* c, Py_ssize_t k,
@@ -371,8 +371,6 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t n
     ) except+
 
-    Py_ssize_t Csum_bool(const bool* x, Py_ssize_t n)
-
     void Cgraph_vertex_degrees(
         const Py_ssize_t* graph_i,
         Py_ssize_t m,
@@ -388,6 +386,16 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t* inc
     ) except+
 
+    void Cget_contamination[floatT](
+        const floatT* mst_d,
+        Py_ssize_t m,
+        floatT max_contamination,
+        floatT ema_dt,
+        floatT& contamination,
+        Py_ssize_t& threshold_index
+    ) except+
+
+cdef extern from "c_deadwood.h":
     Py_ssize_t Cmst_cluster_sizes(
         const Py_ssize_t* mst_i,
         Py_ssize_t m,
@@ -401,14 +409,6 @@ cdef extern from "c_deadwood.h":
         const bool* mst_skip
     ) except+
 
-    void Cget_contamination[floatT](
-        const floatT* mst_d,
-        Py_ssize_t m,
-        floatT max_contamination,
-        floatT ema_dt,
-        floatT& contamination,
-        Py_ssize_t& threshold_index
-    ) except+
 
     void Cmst_label_imputer(
         const Py_ssize_t* mst_i,
@@ -419,6 +419,7 @@ cdef extern from "c_deadwood.h":
         const Py_ssize_t* mst_inc,
         const bool* mst_skip
     ) except+
+
 
     void Cdeadwood[floatT](
         const floatT* mst_d,
@@ -896,6 +897,7 @@ cpdef tuple mst_cluster_sizes(
     """
     cdef Py_ssize_t m = mst_i.shape[0]
     cdef Py_ssize_t n = m+1
+    cdef Py_ssize_t i
 
     if mst_i.shape[1] != 2: raise ValueError("mst_i must have two columns")
 
@@ -911,7 +913,9 @@ cpdef tuple mst_cluster_sizes(
             raise ValueError("mst_skip should be either of size n-1 or None")
         mst_skip_ptr = &mst_skip_obj[0]
 
-        k += Csum_bool(mst_skip_ptr, m)
+        # k += Csum_bool(mst_skip_ptr, m)
+        for i in range(m):
+            if mst_skip_ptr[i]: k += 1
 
 
     if (mst_cumdeg is None) != (mst_inc is None):
