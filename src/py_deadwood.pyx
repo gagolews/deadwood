@@ -91,7 +91,7 @@ cpdef Py_ssize_t kneedle_increasing(
     -------
 
     index : integer
-        the index of the knee/elbow point; 0 if not found
+        the index of the knee/elbow point or n-1 if not found
 
 
     References
@@ -343,18 +343,19 @@ cpdef Py_ssize_t argkmin(T[::1] x, int k):
 
 
 cdef extern from "c_auxiliary.h":
+    void Cget_contamination[floatT](
+        const floatT* mst_d,
+        Py_ssize_t m,
+        floatT max_contamination,
+        floatT ema_dt,
+        floatT& contamination,
+        Py_ssize_t& elbow_index
+    ) except+
+
     void Csort_groups[T](
         const T* x, Py_ssize_t n,
         const Py_ssize_t* c, Py_ssize_t k,
         T* y, Py_ssize_t* ind
-    ) except+
-
-    Py_ssize_t Cget_skip_edges(
-        const Py_ssize_t* mst_i,
-        Py_ssize_t m,
-        const Py_ssize_t* c,
-        Py_ssize_t n,
-        bool* skip
     ) except+
 
     void Cunskip_indexes(
@@ -369,6 +370,16 @@ cdef extern from "c_auxiliary.h":
         Py_ssize_t m,
         const bool* skip,
         Py_ssize_t n
+    ) except+
+
+
+cdef extern from "c_mst_helpers.h":
+    Py_ssize_t Cget_skip_edges(
+        const Py_ssize_t* mst_i,
+        Py_ssize_t m,
+        const Py_ssize_t* c,
+        Py_ssize_t n,
+        bool* skip
     ) except+
 
     void Cgraph_vertex_degrees(
@@ -386,16 +397,8 @@ cdef extern from "c_auxiliary.h":
         Py_ssize_t* inc
     ) except+
 
-    void Cget_contamination[floatT](
-        const floatT* mst_d,
-        Py_ssize_t m,
-        floatT max_contamination,
-        floatT ema_dt,
-        floatT& contamination,
-        Py_ssize_t& threshold_index
-    ) except+
 
-cdef extern from "c_deadwood.h":
+cdef extern from "c_mst_cluster_sizes.h":
     Py_ssize_t Cmst_cluster_sizes(
         const Py_ssize_t* mst_i,
         Py_ssize_t m,
@@ -410,6 +413,7 @@ cdef extern from "c_deadwood.h":
     ) except+
 
 
+cdef extern from "c_mst_label_imputer.h":
     void Cmst_label_imputer(
         const Py_ssize_t* mst_i,
         Py_ssize_t m,
@@ -421,6 +425,7 @@ cdef extern from "c_deadwood.h":
     ) except+
 
 
+cdef extern from "c_deadwood.h":
     void Cdeadwood[floatT](
         const floatT* mst_d,
         const Py_ssize_t* mst_i,
@@ -815,7 +820,8 @@ cpdef tuple get_contamination(
     """
     deadwood.get_contamination(mst_d, max_contamination=0.5, ema_dt=0.01)
 
-    Detects an elbow point in a subset of a given array.
+    Detects outlier contamination level as an elbow point in a subset
+    of a given array.
 
 
     Parameters
@@ -840,19 +846,19 @@ cpdef tuple get_contamination(
     contamination : float
         detected contamination level
 
-    index : int
-        an index in `mst_d` with the detected contamination level
+    elbow_index : int
+        elbow point index
     """
     cdef Py_ssize_t m = mst_d.shape[0]
     cdef Py_ssize_t n = m+1
     cdef floatT contamination
-    cdef Py_ssize_t index
+    cdef Py_ssize_t elbow_index
 
     Cget_contamination(
-        &mst_d[0], m, max_contamination, ema_dt, contamination, index
+        &mst_d[0], m, max_contamination, ema_dt, contamination, elbow_index
     )
 
-    return contamination, index
+    return contamination, elbow_index
 
 
 cpdef tuple mst_cluster_sizes(

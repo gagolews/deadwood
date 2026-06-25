@@ -25,43 +25,41 @@
 
 
 
-/*! Detect elbow point of a shifted array
+/*! Detect outlier contamination levels as an elbow point in a shifted array
  *
- *  @param mst_d size m - edge weights
- *  @param m length of mst_d
+ *  @param x array of size n
+ *  @param n length of x
  *  @param max_contamination maximal contamination level;
  *         negative values will be used as actual contamination levels
  *  @param ema_dt controls the exponential moving average smoothing parameter
  *         alpha = 1-exp(-dt) (in elbow detection)
  *  @param contamination [out] array of length k;
  *         detected contamination levels in each cluster
- *  @param threshold_index [out] index in mst_d
+ *  @param elbow_index [out] index in x or n if not found
  */
 template<class FLOAT>
 void Cget_contamination(
-    const FLOAT* mst_d,
-    Py_ssize_t m,
+    const FLOAT* x,
+    Py_ssize_t n,
     FLOAT max_contamination,
     FLOAT ema_dt,
     FLOAT& contamination,
-    Py_ssize_t& threshold_index
+    Py_ssize_t& elbow_index
 ) {
+    DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
     if (max_contamination <= 0.0) {
         contamination = -max_contamination;
-        threshold_index =  int(m*(1.0-contamination));
+        elbow_index   = int(n*(1.0-contamination))-1;
     }
     else {
-        Py_ssize_t shift = (int)(m*(1.0-max_contamination));
-        Py_ssize_t elbow_index = Ckneedle_increasing(mst_d+shift, m-shift, true, ema_dt);
-        if (elbow_index == 0) {
-            threshold_index = m;
-            contamination = 0.0;
-        }
-        else {
-            threshold_index = shift+elbow_index+1;
-            contamination = (m-threshold_index)/(FLOAT)(m+1);
-        }
+        Py_ssize_t shift = (int)(n*(1.0-max_contamination));
+        elbow_index = Ckneedle_increasing(x+shift, n-shift, true, ema_dt);
+        elbow_index += shift;
+        contamination = (n-elbow_index-1)/(FLOAT)(n+1);
     }
+
+    DEADWOOD_ASSERT(contamination >= 0.0 && contamination <= 1.0);
+    DEADWOOD_ASSERT(elbow_index >= 0 && elbow_index < n);
 }
 
 
@@ -110,51 +108,6 @@ void Csort_groups(
         else
             y[ind[c[i]+1]++] = x[i];
     }
-}
-
-
-/*! Identifies which MST edges must be skipped to obtain a forest whose
- *  connected components match a given partition.  If this is not possible,
- *  a more fine-grained split is generated.
- *
- *  This is as easy as finding all MST edges {u,v} for which c[u]≠c[v].
- *
- *  @param mst_i c_contiguous matrix of size m*2,
- *     where {mst_i[i,0], mst_i[i,1]} specifies the i-th (undirected) edge
- *     in the spanning tree
- *  @param m number of rows in mst_i (edges)
- *  @param n length of c and the number of vertices in the spanning tree
- *  @param c [in] array of length n, where
- *      c[i] denotes the cluster ID of the i-th object
- *  @param skip [out] array of length m, indicating which edges
- *      of the tree must be skipped to create a subpartition of c
- *
- *  @return s number of edges in skip;  ideally, s=k-1, where k is the
- *      number of classes in c
- */
-Py_ssize_t Cget_skip_edges(
-    const Py_ssize_t* mst_i,  // size m [in]
-    Py_ssize_t m,
-    const Py_ssize_t* c,  // size n [in]
-    Py_ssize_t n,
-    bool* skip  // size m [out]
-) {
-    Py_ssize_t s = 0;
-
-    for (Py_ssize_t i=0; i<m; ++i) {
-        Py_ssize_t u = mst_i[2*i+0];
-        Py_ssize_t v = mst_i[2*i+1];
-        DEADWOOD_ASSERT(u >= 0 && u < n);
-        DEADWOOD_ASSERT(v >= 0 && v < n);
-        if (c[u] != c[v]) {
-            s++;
-            skip[i] = true;
-        }
-        else
-            skip[i] = false;
-    }
-
-    return s;
 }
 
 
@@ -260,98 +213,6 @@ void Cskip_indexes(
         DEADWOOD_ASSERT(ind[i] >= 0 && ind[i] < n);
         ind[i] = o[ind[i]];
     }
-}
-
-
-/*! Compute the degree of each vertex in an undirected graph
- *  over a vertex set {0,...,n-1}.
- *
- *
- * @param ind c_contiguous matrix of size m*2,
- *     where {ind[i,0], ind[i,1]} is the i-th edge with ind[i,j] < n
- * @param m number of edges (rows in ind)
- * @param n number of vertices
- * @param deg [out] array of size n, where
- *     deg[i] will give the degree of the i-th vertex.
- */
-void Cgraph_vertex_degrees(
-    const Py_ssize_t* ind,
-    const Py_ssize_t m,
-    const Py_ssize_t n,
-    Py_ssize_t* deg /*out*/
-) {
-    for (Py_ssize_t i=0; i<n; ++i)
-        deg[i] = 0;
-
-    for (Py_ssize_t i=0; i<m; ++i) {
-        Py_ssize_t u = ind[2*i+0];
-        Py_ssize_t v = ind[2*i+1];
-
-        if (u < 0 || v < 0)
-            throw std::domain_error("All elements must be >= 0");
-        else if (u >= n || v >= n)
-            throw std::domain_error("All elements must be < n");
-        else if (u == v)
-            throw std::domain_error("Self-loops are not allowed");
-
-        deg[u]++;
-        deg[v]++;
-    }
-}
-
-
-/*! Compute the incidence list of each vertex in an undirected graph
- *  over a vertex set {0,...,n-1}.
- *
- *  @param ind c_contiguous matrix of size m*2,
- *      where {ind[i,0], ind[i,1]} is the i-th edge with ind[i,j] < n
- *  @param m number of edges (rows in ind)
- *  @param n number of vertices
- *  @param cumdeg [out] array of size n+1, where cumdeg[i+1] the sum of the first i vertex degrees
- *  @param inc [out] array of size 2*m; inc[cumdeg[i]]..inc[cumdeg[i+1]-1] gives the edges incident on the i-th vertex
- */
-void Cgraph_vertex_incidences(
-    const Py_ssize_t* ind,
-    const Py_ssize_t m,
-    const Py_ssize_t n,
-    Py_ssize_t* cumdeg,
-    Py_ssize_t* inc
-) {
-    cumdeg[0] = 0;
-    Cgraph_vertex_degrees(ind, m, n, cumdeg+1);
-
-    Py_ssize_t cd = 0;
-    for (Py_ssize_t i=1; i<n+1; ++i) {
-        Py_ssize_t this_deg = cumdeg[i];
-        cumdeg[i] = cd;
-        cd += this_deg;
-    }
-    // that's not it yet; cumdeg is adjusted below
-
-
-    for (Py_ssize_t e=0; e<m; ++e) {
-        Py_ssize_t u = ind[2*e+0];
-        Py_ssize_t v = ind[2*e+1];
-
-        *(inc+cumdeg[u+1]) = e;
-        ++(cumdeg[u+1]);
-
-        *(inc+cumdeg[v+1]) = e;
-        ++(cumdeg[v+1]);
-    }
-
-    DEADWOOD_ASSERT(cumdeg[0] == 0);
-    DEADWOOD_ASSERT(cumdeg[n] == 2*m);
-
-
-// #ifdef DEBUG
-//     cumdeg = 0;
-//     inc[0] = data;
-//     for (Py_ssize_t i=0; i<n; ++i) {
-//         DEADWOOD_ASSERT(inc[i] == data+cumdeg);
-//         cumdeg += deg[i];
-//     }
-// #endif
 }
 
 

@@ -6,7 +6,8 @@ import deadwood
 
 
 def test_kneedle():
-    assert 0 == deadwood.kneedle_increasing(np.r_[1.0,1.0,1.0,1.0,1.0])
+    x = np.r_[1.0,1.0,1.0,1.0,1.0]
+    assert deadwood.kneedle_increasing(x) == len(x)-1
 
     n = 1001
     x = np.linspace(0.1, 1, n)

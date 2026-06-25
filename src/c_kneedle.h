@@ -69,7 +69,7 @@ void Cema(const FLOAT* x, Py_ssize_t n, FLOAT dt, FLOAT* y)
  * @param convex whether the data in x are convex-ish (elbow detection) or not (knee)
  * @param dt controls the smoothing parameter alpha = 1-exp(-dt)
  *
- * @return the location of the knee/elbow, 0 if not found
+ * @return the location of the knee/elbow, n-1 if not found
  */
 template <class FLOAT>
 Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT dt)
@@ -92,7 +92,7 @@ Py_ssize_t Ckneedle_increasing(const FLOAT* x, Py_ssize_t n, bool convex, FLOAT 
         y[i] = (y[i]-miny)/rngy - (FLOAT)i/(FLOAT)(n-1);
     }
 
-    Py_ssize_t peak_i = 0;  // 0 if not found!
+    Py_ssize_t peak_i = n-1;  // n-1 if not found!
     FLOAT peak_y = -INFINITY;
 
     if (convex) {
