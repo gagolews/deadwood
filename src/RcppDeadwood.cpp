@@ -91,18 +91,21 @@ LogicalVector dot_deadwood(
     }
 
     Py_ssize_t k = cut_edges.size()+1;
+    Py_ssize_t max_k = k; // TODO
 
-    std::vector<Py_ssize_t> mst_cut(k-1);
+    std::vector<Py_ssize_t> is_outlier(n);
+    std::vector<double> contamination(max_k);
+    std::vector<Py_ssize_t> mst_cut(max_k-1);
     for (Py_ssize_t i=0; i<k-1; ++i) {
         mst_cut[i] = (Py_ssize_t)cut_edges[i]-1;
         DEADWOOD_ASSERT(mst_cut[i] >= 0 && mst_cut[i] < n-1);
     }
 
-    std::vector<double> contamination(k);
-    std::vector<Py_ssize_t> is_outlier(n);
-    Cdeadwood(
-        mst_d.data(), mst_i.data(), mst_cut.data(), n-1, n, k,
+
+    Py_ssize_t _k = Cdeadwood(
+        mst_d.data(), mst_i.data(), n-1, n,
         max_contamination, ema_dt, max_debris_size,
+        k, max_k, mst_cut.data(),
         contamination.data(), is_outlier.data(), NULL, NULL
     );
 
@@ -112,11 +115,15 @@ LogicalVector dot_deadwood(
         else res[i] = FALSE;
     }
 
-    NumericVector contaminationr(k);
-    for (Py_ssize_t i=0; i<k; ++i)
+    NumericVector contaminationr(_k);
+    for (Py_ssize_t i=0; i<_k; ++i)
         contaminationr[i] = contamination[i];
-
     res.attr("contamination") = contaminationr;
+
+    NumericVector cut_edgesr(_k-1);
+    for (Py_ssize_t i=0; i<_k-1; ++i)
+        cut_edgesr[i] = cut_edges[i]+1;
+    res.attr("cut_edges") = cut_edgesr;  // TODO: document
 
     if (verbose) DEADWOOD_PRINT("[deadwood] Done.\n");
 

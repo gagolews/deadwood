@@ -28,8 +28,10 @@ class CMSTClusterSizeGetter : public CMSTProcessorBase
 private:
 
     Py_ssize_t max_k;
-    Py_ssize_t* s;  // NULL or of size max_k >= k, where k is the number of clusters
+    Py_ssize_t* c;  // nullable or length n; cluster IDs of the vertices
+    Py_ssize_t* s;  // NULL or of size max_k >= k, where k is the number of clusters; s[i] is the size of the i-th cluster
     Py_ssize_t* mst_cutsizes;  //< size m*2, each pair gives the sizes of the clusters that are formed when we cut out the corresponding edge
+    const bool* skip_edges;  // size m or NULL
     Py_ssize_t  k;  // the number of connected components identified
 
     Py_ssize_t visit(Py_ssize_t v, Py_ssize_t e)
@@ -74,11 +76,11 @@ public:
         Py_ssize_t max_k,
         Py_ssize_t* s=nullptr,
         Py_ssize_t* mst_cutsizes=nullptr,
+        const bool* skip_edges=nullptr,
         const Py_ssize_t* cumdeg=nullptr,
-        const Py_ssize_t* inc=nullptr,
-        const bool* skip_edges=nullptr
-    ) : CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc, skip_edges),
-        max_k(max_k), s(s), mst_cutsizes(mst_cutsizes), k(-1)
+        const Py_ssize_t* inc=nullptr
+    ) : CMSTProcessorBase(mst_i, m, n, cumdeg, inc),
+        max_k(max_k), c(c), s(s), mst_cutsizes(mst_cutsizes), skip_edges(skip_edges), k(-1)
     {
         DEADWOOD_ASSERT(this->c);
         DEADWOOD_ASSERT(this->cumdeg);
@@ -155,12 +157,13 @@ Py_ssize_t Cmst_cluster_sizes(
     Py_ssize_t max_k=0,
     Py_ssize_t* cl_sizes=nullptr,
     Py_ssize_t* mst_cutsizes=nullptr,
+    const bool* mst_skip=nullptr,
     const Py_ssize_t* mst_cumdeg=nullptr,
-    const Py_ssize_t* mst_inc=nullptr,
-    const bool* mst_skip=nullptr
+    const Py_ssize_t* mst_inc=nullptr
 ) {
     CMSTClusterSizeGetter get(
-        mst_i, m, n, c, max_k, cl_sizes, mst_cutsizes, mst_cumdeg, mst_inc, mst_skip
+        mst_i, m, n, c, max_k, cl_sizes, mst_cutsizes, mst_skip,
+        mst_cumdeg, mst_inc
     );
     return get.process();  // modifies c in place
 }

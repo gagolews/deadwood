@@ -26,6 +26,8 @@
 class CMSTMissingLabelsImputer : public CMSTProcessorBase
 {
 private:
+    Py_ssize_t* c;  // nullable or length n; cluster IDs of the vertices
+    const bool* skip_edges;  // size m
 
     void visit(Py_ssize_t v, Py_ssize_t e)
     {
@@ -51,10 +53,10 @@ public:
         Py_ssize_t m,
         Py_ssize_t n,
         Py_ssize_t* c,
+        const bool* skip_edges=nullptr,
         const Py_ssize_t* cumdeg=nullptr,
-        const Py_ssize_t* inc=nullptr,
-        const bool* skip_edges=nullptr
-    ) : CMSTProcessorBase(mst_i, m, n, c, cumdeg, inc, skip_edges)
+        const Py_ssize_t* inc=nullptr
+    ) : CMSTProcessorBase(mst_i, m, n, cumdeg, inc), c(c), skip_edges(skip_edges)
     {
         DEADWOOD_ASSERT(this->c);
         DEADWOOD_ASSERT(this->cumdeg);
@@ -104,11 +106,11 @@ void Cmst_label_imputer(
     Py_ssize_t m,
     Py_ssize_t n,
     Py_ssize_t* c,
+    const bool* mst_skip=nullptr,
     const Py_ssize_t* mst_cumdeg=nullptr,
-    const Py_ssize_t* mst_inc=nullptr,
-    const bool* mst_skip=nullptr
+    const Py_ssize_t* mst_inc=nullptr
 ) {
-    CMSTMissingLabelsImputer imp(mst_i, m, n, c, mst_cumdeg, mst_inc, mst_skip);
+    CMSTMissingLabelsImputer imp(mst_i, m, n, c, mst_skip, mst_cumdeg, mst_inc);
     imp.process();  // modifies c in place
 }
 

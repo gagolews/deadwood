@@ -4,6 +4,10 @@
 
 *   ...to do...
 
+*   [BACKWARD INCOMPATIBILITY] `kneedle_increasing` now returns
+    the index of the last element of a vector if a knee/elbow point could
+    not be identified.
+
 
 ## 0.9.0 (2026-02-13)
 

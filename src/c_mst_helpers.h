@@ -169,11 +169,8 @@ protected:
     const Py_ssize_t m;  // preferably == n-1; number of edges in mst_i
     const Py_ssize_t n;  // number of vertices
 
-    Py_ssize_t* c;  // nullable or length n; cluster IDs of the vertices
-
     const Py_ssize_t* cumdeg;  // nullable or length n+1
     const Py_ssize_t* inc;     // nullable or length 2*m
-    const bool* skip_edges;    // nullable or length m
 
     std::unique_ptr<Py_ssize_t[]> _cumdeg;  // data buffer for cumdeg (optional)
     std::unique_ptr<Py_ssize_t[]> _inc;     // data buffer for inc (optional)
@@ -188,13 +185,10 @@ public:
         const Py_ssize_t* mst_i,
         const Py_ssize_t m,
         const Py_ssize_t n,
-        Py_ssize_t* c=nullptr,
         const Py_ssize_t* cumdeg=nullptr,
-        const Py_ssize_t* inc=nullptr,
-        const bool* skip_edges=nullptr
+        const Py_ssize_t* inc=nullptr
     ) :
-        mst_i(mst_i), m(m), n(n), c(c),
-        cumdeg(cumdeg), inc(inc), skip_edges(skip_edges)
+        mst_i(mst_i), m(m), n(n), cumdeg(cumdeg), inc(inc)
     {
         if (!cumdeg) {
             DEADWOOD_ASSERT(!inc);

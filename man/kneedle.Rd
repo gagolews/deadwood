@@ -8,7 +8,7 @@
 kneedle_increasing(x, convex = TRUE, dt = 0.01)
 }
 \arguments{
-\item{x}{data vector (increasing)}
+\item{x}{data vector (increasing) of length \code{n}}
 
 \item{convex}{whether the data in \code{x} are convex-ish (elbow detection)
 or not (knee lookup)}
@@ -18,7 +18,7 @@ of the exponential moving average,
 \eqn{y_i = \alpha x_i + (1-\alpha) y_{i-1}}, \eqn{y_1 = x_1}}
 }
 \value{
-Returns the index of the knee/elbow point; 1 if not found.
+Returns the index of the knee/elbow point or \code{n} if not found.
 }
 \description{
 Finds the most significant knee/elbow using the Kneedle algorithm

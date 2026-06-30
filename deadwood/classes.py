@@ -861,12 +861,15 @@ class Deadwood(MSTOutlierDetector):
         if self.verbose:
             print("[deadwood] Finding outliers.", file=sys.stderr)
 
-        is_outlier_, contamination_ = core.deadwood_from_mst(
+        max_k = len(self._cut_edges_)+1 if self._cut_edges_ is not None else 1 # TODO
+
+        is_outlier_, contamination_, mst_cut_ = core.deadwood_from_mst(
             self._tree_d_,
             self._tree_i_,
             self._cut_edges_ if self._cut_edges_ is not None else np.empty(0, np.intp),
             self._tree_cumdeg_,
             self._tree_inc_,
+            max_k=max_k,
             max_contamination=self.max_contamination if self.contamination == "auto" else -self.contamination,
             ema_dt=self.ema_dt,
             max_debris_size=self.max_debris_size_
@@ -879,6 +882,7 @@ class Deadwood(MSTOutlierDetector):
 
         self.labels_ = 1-2*(is_outlier_.astype(int))
         self.contamination_ = contamination_ if contamination_.shape[0]>1 else contamination_[0]
+        # TODO mst_cut_
 
         if self.verbose:
             print("[deadwood] Done.", file=sys.stderr)

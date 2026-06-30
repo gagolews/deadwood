@@ -7,7 +7,7 @@
 #' Finds the most significant knee/elbow using the Kneedle algorithm
 #' with exponential smoothing.
 #'
-#' @param x data vector (increasing)
+#' @param x data vector (increasing) of length \code{n}
 #'
 #' @param convex whether the data in \code{x} are convex-ish (elbow detection)
 #'         or not (knee lookup)
@@ -18,7 +18,7 @@
 #'
 #'
 #' @return
-#' Returns the index of the knee/elbow point; 1 if not found.
+#' Returns the index of the knee/elbow point or \code{n} if not found.
 #'
 #' @references
 #' V. Satopää, J. Albrecht, D. Irwin, B. Raghavan,

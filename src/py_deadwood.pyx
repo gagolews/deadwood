@@ -407,9 +407,9 @@ cdef extern from "c_mst_cluster_sizes.h":
         Py_ssize_t max_k,
         Py_ssize_t* cl_sizes,
         Py_ssize_t* mst_cutsizes,
+        const bool* mst_skip,
         const Py_ssize_t* mst_cumdeg,
-        const Py_ssize_t* mst_inc,
-        const bool* mst_skip
+        const Py_ssize_t* mst_inc
     ) except+
 
 
@@ -419,25 +419,26 @@ cdef extern from "c_mst_label_imputer.h":
         Py_ssize_t m,
         Py_ssize_t n,
         Py_ssize_t* labels,
+        const bool* mst_skip,
         const Py_ssize_t* mst_cumdeg,
-        const Py_ssize_t* mst_inc,
-        const bool* mst_skip
+        const Py_ssize_t* mst_inc
     ) except+
 
 
 cdef extern from "c_deadwood.h":
-    void Cdeadwood[floatT](
+    Py_ssize_t Cdeadwood[floatT](
         const floatT* mst_d,
         const Py_ssize_t* mst_i,
-        const Py_ssize_t* mst_cut,
         Py_ssize_t m,
         Py_ssize_t n,
-        Py_ssize_t k,
         floatT max_contamination,
         floatT ema_dt,
         Py_ssize_t max_debris_size,
+        Py_ssize_t k,
+        Py_ssize_t max_k,
+        Py_ssize_t* mst_cut,
         floatT* contamination,
-        Py_ssize_t* c,
+        Py_ssize_t* is_outlier,
         const Py_ssize_t* mst_cumdeg,
         const Py_ssize_t* mst_inc
     ) except+
@@ -805,8 +806,8 @@ cpdef np.ndarray[Py_ssize_t] mst_label_imputer(
     cdef np.ndarray[Py_ssize_t] ret = np.array(labels, dtype=np.intp)
 
     Cmst_label_imputer(
-        &mst_i[0,0], m, n, &ret[0],
-        mst_cumdeg_ptr, mst_inc_ptr, mst_skip_ptr
+        &mst_i[0,0], m, n, &ret[0], mst_skip_ptr,
+        mst_cumdeg_ptr, mst_inc_ptr
     )
 
     return ret
@@ -954,7 +955,7 @@ cpdef tuple mst_cluster_sizes(
 
     cdef Py_ssize_t _k = Cmst_cluster_sizes(
         &mst_i[0,0], m, n, &labels[0], k, &cl_sizes[0], &mst_cutsizes[0,0],
-        mst_cumdeg_ptr, mst_inc_ptr, mst_skip_ptr
+        mst_skip_ptr, mst_cumdeg_ptr, mst_inc_ptr
     )
     assert _k == k
 
@@ -967,6 +968,7 @@ cpdef tuple deadwood_from_mst(
         Py_ssize_t[::1] mst_cut,
         Py_ssize_t[::1] mst_cumdeg,
         Py_ssize_t[::1] mst_inc,
+        Py_ssize_t max_k=10,
         floatT max_contamination=0.5,
         floatT ema_dt=0.01,
         Py_ssize_t max_debris_size=50
@@ -994,6 +996,10 @@ cpdef tuple deadwood_from_mst(
     mst_inc : ndarray, length 2*m
         see `deadwood.graph_vertex_incidences`
 
+    max_k : int
+        maximal number of clusters to identify;
+        cannot be smaller than `k`
+
     max_contamination : float
         maximal contamination level used in elbow detection in the edge weight
         quantile function; negative values will be used as actual (target)
@@ -1013,8 +1019,12 @@ cpdef tuple deadwood_from_mst(
     is_outlier : ndarray, shape (n,)
         `is_outlier[i]=1` if the `i`-th point is an outlier and 0 otherwise
 
-    contamination : ndarray, shape (k,)
-        detected contamination levels in each cluster
+    contamination : ndarray, shape (l,)
+        detected contamination levels in each of the l clusters,
+        `l≤max_k`
+
+    mst_cut : ndarray, shape (l-1,)
+        indexes of cut edges defining a spanning forest with `l` connected components
 
 
     References
@@ -1026,6 +1036,7 @@ cpdef tuple deadwood_from_mst(
     cdef Py_ssize_t m = mst_i.shape[0]
     cdef Py_ssize_t n = m+1
     cdef Py_ssize_t k = mst_cut.shape[0]+1
+    cdef Py_ssize_t _k
 
     if not m == mst_d.shape[0] or m != n-1 or mst_i.shape[1] != 2:
         raise ValueError("ill-defined spanning tree")
@@ -1036,21 +1047,26 @@ cpdef tuple deadwood_from_mst(
     if mst_inc.shape[0] != 2*m:
         raise ValueError("mst_inc should be of length 2*m")
 
+    if max_k < k : max_k = k
+
     #if connected and k != 1:
     #    raise ValueError("(connected) tree can only be requested if k==1")
 
     cdef np.ndarray[Py_ssize_t] is_outlier_ = np.empty(n, dtype=np.intp)
-    cdef np.ndarray[floatT] contamination_ = np.empty(k,
+    cdef np.ndarray[floatT] contamination_ = np.empty(max_k,
         dtype=np.float32 if floatT is float else np.float64
     )
+    cdef np.ndarray[Py_ssize_t] mst_cut_ = np.empty(max_k-1, dtype=np.intp)
+    for _k in range(k-1): mst_cut_[_k] = mst_cut[_k]
 
-    Cdeadwood(
-        &mst_d[0], &mst_i[0,0], &mst_cut[0], m, n, k,
+    _k = Cdeadwood(
+        &mst_d[0], &mst_i[0,0], m, n,
         max_contamination, ema_dt, max_debris_size,
+        k, max_k, &mst_cut_[0],
         &contamination_[0],
         &is_outlier_[0],
         &mst_cumdeg[0],
         &mst_inc[0]
     )
 
-    return is_outlier_, contamination_
+    return is_outlier_, contamination_[:_k], mst_cut_[:(_k-1)]

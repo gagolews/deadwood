@@ -1,7 +1,8 @@
 library("tinytest")
 library("deadwood")
 
-expect_equal(1, kneedle_increasing(c(1.0, 1.0, 1.0, 1.0, 1.0)))
+x <- c(1.0, 1.0, 1.0, 1.0, 1.0)
+expect_equal(length(x), kneedle_increasing(x))
 
 n <- 1001
 x <- seq(0.1, 1.0, length.out=n)
