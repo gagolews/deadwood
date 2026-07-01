@@ -22,14 +22,16 @@
 #'
 #' @description
 #' Deadwood is an anomaly detection algorithm based on a dataset's mutual
-#' reachability minimum spanning tree.  It chops protruding tree segments
+#' reachability minimum spanning tree.  It prunes protruding tree segments
 #' and marks small debris as outliers.
 #'
-#' More precisely, the use of a mutual reachability distance
-#' pulls peripheral points farther away from each other.
-#' Tree edges with weights beyond the detected elbow point
-#' are removed.  All the resulting connected components whose
-#' sizes are smaller than a given threshold are deemed anomalous.
+#' More precisely, tree edges with weights greater than the detected elbow
+#' point are removed.  All the resulting connected components whose sizes do
+#' not exceed a prespecified threshold are deemed anomalous.  The use of
+#' a mutual reachability distance pulls peripheral observations farther away
+#' from one another.  If the dataset is comprised of well-separated clusters
+#' of heterogeneous densities, an attempt to split the dataset and refine
+#' the outlierness markers is be made.
 #'
 #'
 #' @details
@@ -47,12 +49,17 @@
 #'
 #' Once the spanning tree with increasingly sorted edge weights
 #' is determined (\eqn{\Omega(n \log n)}-\eqn{O(n^2)}),
-#' the Deadwood algorithm runs in \eqn{O(n)} time.
+#' the Deadwood algorithm runs in \eqn{O(k n \log n)} time,
+#' where \eqn{k} is the number of detected subclusters.
 #' Memory use is \eqn{O(n)}.
 #'
 #'
 #' @references
-#' M. Gagolewski, deadwood, in preparation, 2026, TODO
+#' M. Gagolewski, Deadwood, in preparation, 2026, TODO
+#'
+#' M. Gagolewski, Lumbermark: Resistant clustering by chopping up mutual
+#' reachability minimum spanning trees*, preprint, 2026,
+#' \doi{10.48550/arXiv.2604.07143}
 #'
 #' V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, Finding a "Kneedle"
 #' in a haystack: Detecting knee points in system behavior,
@@ -87,6 +94,15 @@
 #'     by identifying the most significant elbow point of the curve
 #'     comprised of increasingly ordered tree edge weights
 #'     smoothened with an exponential moving average
+#'
+#' @param max_k maximal number of clusters to detect; by default (\code{NA}),
+#'     at most 10 clusters are requested unless \code{cut_edges} is given,
+#'     in which case there will be no further cluster refinement
+#'
+#' @param min_cluster_factor in the \code{k}-th iteration of the cluster
+#'     refinement stage, clusters will not be smaller than
+#'     \code{min_cluster_factor*n/(k+1)}, which is similar to what happens
+#'     in the Lumbermark clustering algorithm
 #'
 #' @param max_contamination single numeric value;
 #'    maximal contamination level assumed when \code{contamination} is \code{NA}
@@ -146,7 +162,9 @@ deadwood <- function(d, ...)
 #' @method deadwood default
 deadwood.default <- function(
     d,
-    M=5L,  # TODO: set default
+    M=10L,
+    min_cluster_factor=0.25,
+    max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -159,6 +177,8 @@ deadwood.default <- function(
     tree <- mst(d, M=M, distance=distance, verbose=verbose, ...)
     deadwood.mst(
         tree,
+        min_cluster_factor=min_cluster_factor,
+        max_k=max_k,
         contamination=contamination,
         max_debris_size=max_debris_size,
         max_contamination=max_contamination,
@@ -173,7 +193,9 @@ deadwood.default <- function(
 #' @method deadwood dist
 deadwood.dist <- function(
     d,
-    M=5L,  # TODO: set default
+    M=10L,
+    min_cluster_factor=0.25,
+    max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -183,6 +205,8 @@ deadwood.dist <- function(
 ) {
     deadwood.mst(
         mst(d, M=M, verbose=verbose, ...),
+        min_cluster_factor=min_cluster_factor,
+        max_k=max_k,
         contamination=contamination,
         max_debris_size=max_debris_size,
         max_contamination=max_contamination,
@@ -197,6 +221,8 @@ deadwood.dist <- function(
 #' @method deadwood mstclust
 deadwood.mstclust <- function(
     d,
+    min_cluster_factor=0.25,
+    max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -212,6 +238,8 @@ deadwood.mstclust <- function(
 
     deadwood.mst(
         tree,
+        min_cluster_factor=min_cluster_factor,
+        max_k=max_k,
         contamination=contamination,
         max_debris_size=max_debris_size,
         max_contamination=max_contamination,
@@ -227,6 +255,8 @@ deadwood.mstclust <- function(
 #' @method deadwood mst
 deadwood.mst <- function(
     d,
+    min_cluster_factor=0.25,
+    max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
     max_contamination=0.5,
@@ -239,15 +269,23 @@ deadwood.mst <- function(
     contamination <- as.double(contamination)[1]
     max_debris_size <- as.integer(max_debris_size)[1]
     max_contamination <- as.double(max_contamination)[1]
+    min_cluster_factor <- as.double(min_cluster_factor)[1]
+    max_k <- as.integer(max_k)[1]
     ema_dt <- as.double(ema_dt)[1]
     cut_edges <- as.numeric(cut_edges)   # numeric(0) if NULL
 
+    stopifnot(min_cluster_factor > 0.0, min_cluster_factor < 1.0)
     stopifnot(ema_dt > 0.0)
 
     n <- NROW(d)+1
     if (is.na(max_debris_size))
         max_debris_size <- as.integer(sqrt(n))
     max_debris_size <- max(1L, max_debris_size)
+
+    if (is.na(max_k)) {
+        max_k <- if (length(cut_edges) == 0) 10 else length(cut_edges)+1
+    }
+    stopifnot(max_k > 0, max_k <= n)
 
     stopifnot(max_contamination >= 0, max_contamination <= 1)
     if (!is.na(contamination)) {
@@ -256,7 +294,7 @@ deadwood.mst <- function(
     }
 
     is_outlier <- .deadwood(
-        d, cut_edges, max_contamination, ema_dt, max_debris_size, verbose
+        d, cut_edges, max_k, min_cluster_factor, max_contamination, ema_dt, max_debris_size, verbose
     )
 
     stopifnot(attr(is_outlier, "contamination") >= 0)
@@ -266,7 +304,7 @@ deadwood.mst <- function(
         is_outlier,
         names=attr(d, "Labels"),
         mst=d,
-        cut_edges=cut_edges,
+        cut_edges=attr(is_outlier, "cut_edges"),
         class="mstoutlier"
     )
 }

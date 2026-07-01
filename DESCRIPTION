@@ -2,7 +2,7 @@ Package: deadwood
 Type: Package
 Title: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees
 Version: 0.9.0.9003
-Date: 2026-06-30
+Date: 2026-07-01
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),
@@ -11,14 +11,16 @@ Authors@R:
     )
 Description:
     Implements an anomaly detection algorithm based on a dataset's
-    mutual reachability minimum spanning tree: 'deadwood' chops
+    mutual reachability minimum spanning tree: 'deadwood' prunes
     protruding tree segments and marks small debris as outliers;
     see Gagolewski (2026) <https://deadwood.gagolewski.com/>.
-    More precisely, the use of a mutual reachability distance pulls
-    peripheral points farther away from each other.  Tree edges
-    with weights beyond the detected elbow point are removed.
-    All the resulting connected components whose sizes are smaller
-    than a given threshold are deemed anomalous.
+    More precisely, tree edges with weights greater than the detected elbow
+    point are removed.  All the resulting connected components whose sizes do
+    not exceed a prespecified threshold are deemed anomalous.  The use of
+    a mutual reachability distance pulls peripheral observations farther away
+    from one another.  If the dataset is comprised of well-separated clusters
+    of heterogeneous densities, an attempt to split the dataset and refine
+    the outlierness markers is be made.
     The 'Python' version of 'deadwood' is available via 'PyPI'.
 BugReports: https://github.com/gagolews/deadwood/issues
 URL:

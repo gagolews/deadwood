@@ -85,7 +85,7 @@ Here is the fraction of detected outliers:
 
 ``` python
 np.mean(is_outlier<0)
-## np.float64(0.1014)
+## np.float64(0.0975)
 ```
 
 
@@ -120,6 +120,7 @@ plt.show()
 ```{figure} python-figures/py_z2_deadwood-7.*
 Outlier detection on z2
 ```
+
 
 Detect outliers with *Deadwood*, separately in each cluster
 determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):

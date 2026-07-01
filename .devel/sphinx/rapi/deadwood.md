@@ -2,9 +2,9 @@
 
 ## Description
 
-Deadwood is an anomaly detection algorithm based on a dataset\'s mutual reachability minimum spanning tree. It chops protruding tree segments and marks small debris as outliers.
+Deadwood is an anomaly detection algorithm based on a dataset\'s mutual reachability minimum spanning tree. It prunes protruding tree segments and marks small debris as outliers.
 
-More precisely, the use of a mutual reachability distance pulls peripheral points farther away from each other. Tree edges with weights beyond the detected elbow point are removed. All the resulting connected components whose sizes are smaller than a given threshold are deemed anomalous.
+More precisely, tree edges with weights greater than the detected elbow point are removed. All the resulting connected components whose sizes do not exceed a prespecified threshold are deemed anomalous. The use of a mutual reachability distance pulls peripheral observations farther away from one another. If the dataset is comprised of well-separated clusters of heterogeneous densities, an attempt to split the dataset and refine the outlierness markers is be made.
 
 ## Usage
 
@@ -14,12 +14,13 @@ deadwood(d, ...)
 ## Default S3 method:
 deadwood(
   d,
-  M = 5L,
+  M = 10L,
+  min_cluster_factor = 0.25,
+  max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
-  connected = FALSE,
   distance = c("euclidean", "l2", "manhattan", "cityblock", "l1", "cosine"),
   verbose = FALSE,
   ...
@@ -28,12 +29,13 @@ deadwood(
 ## S3 method for class 'dist'
 deadwood(
   d,
-  M = 5L,
+  M = 10L,
+  min_cluster_factor = 0.25,
+  max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
-  connected = FALSE,
   verbose = FALSE,
   ...
 )
@@ -41,6 +43,8 @@ deadwood(
 ## S3 method for class 'mstclust'
 deadwood(
   d,
+  min_cluster_factor = 0.25,
+  max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
   max_contamination = 0.5,
@@ -52,11 +56,12 @@ deadwood(
 ## S3 method for class 'mst'
 deadwood(
   d,
+  min_cluster_factor = 0.25,
+  max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
   max_contamination = 0.5,
   ema_dt = 0.01,
-  connected = FALSE,
   cut_edges = NULL,
   verbose = FALSE,
   ...
@@ -70,11 +75,12 @@ deadwood(
 | `d` | a numeric matrix with $n$ rows and $p$ columns (or an object coercible to one, e.g., a data frame with numeric-like columns), an object of class `dist` (see [`dist`](https://stat.ethz.ch/R-manual/R-devel/library/stats/help/dist.html)), an object of class `mstclust` (see <span class="pkg">genieclust</span> and <span class="pkg">lumbermark</span>), or an object of class `mst` (see [`mst`](mst.md)) |
 | `...` | further arguments passed to [`mst`](mst.md) |
 | `M` | smoothing factor; $M \leq 1$ gives the selected `distance`; otherwise, the mutual reachability distance based on the $M$-th nearest neighbours is used |
+| `min_cluster_factor` | in the `k`-th iteration of the cluster refinement stage, clusters will not be smaller than `min_cluster_factor*n/(k+1)`, which is similar to what happens in the Lumbermark clustering algorithm |
+| `max_k` | maximal number of clusters to detect; by default (`NA`), at most 10 clusters are requested unless `cut_edges` is given, in which case there will be no further cluster refinement |
 | `contamination` | single numeric value or `NA`; the estimated (approximate) proportion of outliers in the dataset; if `NA`, the contamination amount will be determined by identifying the most significant elbow point of the curve comprised of increasingly ordered tree edge weights smoothened with an exponential moving average |
 | `max_debris_size` | single integer value or `NA`; the maximal size of the leftover connected components that will be considered outliers; if `NA`, $\sqrt{n}$ is assumed |
 | `max_contamination` | single numeric value; maximal contamination level assumed when `contamination` is `NA` |
-| `ema_dt` | single numeric value; controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average (in edge length elbow point detection), $y_i = \alpha w_i + (1-\alpha) w_{i-1}$, $y_1 = d_1$ |
-| `connected` | should the output tree be connected? $k=1$ only; prunes branches instead of chopping the tree into pieces |
+| `ema_dt` | single numeric value; controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average (in edge length elbow point detection), $y_i = \alpha w_i + (1-\alpha) y_{i-1}$, $y_1 = d_1$ |
 | `distance` | metric used in the case where `d` is a matrix; one of: `"euclidean"` (synonym: `"l2"`), `"manhattan"` (a.k.a. `"l1"` and `"cityblock"`), `"cosine"` |
 | `verbose` | logical; whether to print diagnostic messages and progress information |
 | `cut_edges` | numeric vector or `NULL`; $k-1$ indexes of the tree edges whose omission lead to $k$ connected components (clusters), where the outliers are to be sought independently; most frequently this is generated via <span class="pkg">genieclust</span> or <span class="pkg">lumbermark</span> |
@@ -85,7 +91,7 @@ As with all distance-based methods (this includes k-means and DBSCAN as well), a
 
 If `d` is a numeric matrix or an object of class `dist`, [`mst`](mst.md) will be called to compute an MST, which generally takes at most $O(n^2)$ time. However, by default, for low-dimensional Euclidean spaces, a faster algorithm based on K-d trees is selected automatically; see [`mst_euclid`](https://quitefastmst.gagolewski.com/rapi/mst_euclid.html) from the <span class="pkg">quitefastmst</span> package.
 
-Once the spanning tree is determined ($\Omega(n \log n)$-$O(n^2)$), the Deadwood algorithm runs in $O(n)$ time. Memory use is also $O(n)$.
+Once the spanning tree with increasingly sorted edge weights is determined ($\Omega(n \log n)$-$O(n^2)$), the Deadwood algorithm runs in $O(k n \log n)$ time, where $k$ is the number of detected subclusters. Memory use is $O(n)$.
 
 ## Value
 
@@ -99,9 +105,11 @@ The `mst` attribute gives the computed minimum spanning tree which can be reused
 
 ## References
 
-M. Gagolewski, deadwood, in preparation, 2026, TODO
+M. Gagolewski, Deadwood, in preparation, 2026, TODO
 
-V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, Finding a \"Kneedle\" in a haystack: Detecting knee points in system behavior, In: 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, 166-171, [doi:10.1109/ICDCSW.2011.20](https://doi.org/10.1109/ICDCSW.2011.20)
+M. Gagolewski, Lumbermark: Resistant clustering by chopping up mutual reachability minimum spanning trees\*, preprint, 2026, [doi:10.48550/arXiv.2604.07143](https://doi.org/10.48550/arXiv.2604.07143)
+
+V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, Finding a \"Kneedle\" in a haystack: Detecting knee points in system behavior, In: 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, 166-171, [doi:10.1109/ICDCSW.2011.20](https://doi.org/10.1109/ICDCSW.2011.20)
 
 R.J.G.B. Campello, D. Moulavi, J. Sander, Density-based clustering based on hierarchical density estimates, Lecture Notes in Computer Science 7819, 2013, 160-172, [doi:10.1007/978-3-642-37456-2_14](https://doi.org/10.1007/978-3-642-37456-2_14)
 

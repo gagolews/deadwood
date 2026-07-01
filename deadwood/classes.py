@@ -558,18 +558,21 @@ class MSTOutlierDetector(MSTBase):
 class Deadwood(MSTOutlierDetector):
     """
     Deadwood [1]_ is an anomaly detection algorithm based on a dataset's mutual
-    reachability minimum spanning tree.  It chops protruding tree segments
+    reachability minimum spanning tree.  It prunes protruding tree segments
     and marks small debris as outliers.
 
-    More precisely, the use of a mutual reachability distance [3]_
-    pulls peripheral points farther away from each other.
-    Tree edges with weights beyond the detected elbow point [2]_
-    are removed.  All the resulting connected components whose
-    sizes are smaller than a given threshold are deemed anomalous.
+    More precisely, tree edges with weights greater than the detected elbow
+    point [3]_ are removed.  All the resulting connected components whose sizes
+    do not exceed a prespecified threshold are deemed anomalous.  The use of
+    a mutual reachability distance [4]_ pulls peripheral observations farther
+    away from one another.  If the dataset is comprised of well-separated
+    clusters of heterogeneous densities, an attempt to split the dataset and
+    refine the outlierness markers will be made.
 
     Once the spanning tree with increasingly sorted edge weights
     is determined (:math:`\\Omega(n \\log n)` – :math:`O(n^2)`),
-    the Deadwood algorithm runs in :math:`O(n)` time.
+    the Deadwood algorithm runs in :math:`O(k n \\log n)` time,
+    where `k` is the number of detected subclusters.
     Memory use is :math:`O(n)`.
 
 
@@ -578,6 +581,17 @@ class Deadwood(MSTOutlierDetector):
 
     M, metric, quitefastmst_params, verbose
         see :any:`deadwood.MSTBase`
+
+    min_cluster_factor : float
+        In the `k`-th iteration of the cluster refinement stage,
+        clusters will not be smaller than `min_cluster_factor*n/(k+1)`,
+        which is similar to what happens in the Lumbermark [2]_ clustering
+        algorithm.
+
+    max_n_clusters : 'auto' or int, default='auto'
+        Maximal number of clusters to detect. By default, at most 10 clusters
+        are requested unless `_cut_edges_` is given, in which case
+        there will be no further cluster refinement.
 
     contamination : 'auto' or float, default='auto'
         The estimated (approximate) proportion of outliers in the dataset.
@@ -607,8 +621,8 @@ class Deadwood(MSTOutlierDetector):
             see :any:`deadwood.MSTBase`
 
     labels_ : ndarray of shape (n_samples_,)
-        ``labels_[i]`` gives the inlier (1) or outlier (-1) status
-        of the `i`-th input point.
+        ``labels_[i]`` gives the inlier (>=0) or outlier (-1) status
+        of the `i`-th input point.  Non-negative values give cluster IDs.
 
     contamination_ : float or ndarray of shape (n_clusters_,)
         Detected contamination threshold(s) (elbow point(s)).
@@ -618,25 +632,35 @@ class Deadwood(MSTOutlierDetector):
     max_debris_size_ : float
         Computed max debris size.
 
+    max_n_clusters_ : float
+
     _cut_edges_ : None or ndarray of shape (n_clusters_-1,)
         Indexes of MST edges whose removal forms n_clusters_ connected
         components (clusters) in which outliers are to be sought.
-        This parameter is usually set by ``fit`` called on a ``MSTClusterer``.
+        This attribute is usually set by ``fit`` called on a ``MSTClusterer``.
+
+    cut_edges_ : None or ndarray of shape (n_clusters_-1,)
+        The identified cut edges.
 
 
     References
     ----------
 
     .. [1]
-        M. Gagolewski, *deadwood*, in preparation, 2026, TODO
+        M. Gagolewski, *Deadwood*, in preparation, 2026, TODO
 
     .. [2]
+        M. Gagolewski, *Lumbermark: Resistant clustering by chopping up mutual
+        reachability minimum spanning trees*, preprint, 2026,
+        https://doi.org/10.48550/arXiv.2604.07143
+
+    .. [3]
         V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, *Finding a "Kneedle"
         in a haystack: Detecting knee points in system behavior*,
         In: *31st Intl. Conf. Distributed Computing Systems Workshops*,
         2011, 166-171, https://doi.org/10.1109/ICDCSW.2011.20
 
-    .. [3]
+    .. [4]
         R.J.G.B. Campello, D. Moulavi, J. Sander,
         Density-based clustering based on hierarchical density estimates,
         *Lecture Notes in Computer Science* 7819, 2013, 160-172,
@@ -645,13 +669,15 @@ class Deadwood(MSTOutlierDetector):
     def __init__(
             self,
             *,
+            M=10,
+            min_cluster_factor=0.25,
+            max_n_clusters="auto",
             contamination="auto",
             max_debris_size="auto",
-            M=5,  #TODO: set default
             max_contamination=0.5,
             ema_dt=0.01,
             metric="l2",
-            quitefastmst_params=None,  # TODO: set default ?dict(mutreach_ties="dcore_min", mutreach_leaves="reconnect_dcore_min"),
+            quitefastmst_params=None,
             verbose=False
         ):
         # # # # # # # # # # # #
@@ -665,11 +691,15 @@ class Deadwood(MSTOutlierDetector):
         self.contamination      = contamination
         self.max_debris_size    = max_debris_size
 
-        self.contamination_     = None
-        self.max_debris_size_   = None
-
         self.max_contamination  = max_contamination
         self.ema_dt             = ema_dt
+
+        self.min_cluster_factor = min_cluster_factor
+        self.max_n_clusters     = max_n_clusters
+
+        self.contamination_     = None
+        self.max_debris_size_   = None
+        self.max_n_clusters_    = None
 
         self._cut_edges_        = None  # actually, _cut_edges
 
@@ -684,6 +714,17 @@ class Deadwood(MSTOutlierDetector):
         self.ema_dt = float(self.ema_dt)
         if self.ema_dt <= 0.0:
             raise ValueError("ema_dt must be > 0")
+
+        self.min_cluster_factor = float(self.min_cluster_factor)
+        if not 0.0 < self.max_contamination < 1.0:
+            raise ValueError("max_contamination must be in (0, 1)")
+
+        if self.max_n_clusters == "auto":
+            pass
+        else:
+            self.max_n_clusters = int(self.max_n_clusters)
+            if self.max_n_clusters <= 0:
+                raise ValueError("max_n_clusters must be 'auto' or > 0")
 
         if self.contamination == "auto":
             pass
@@ -842,6 +883,7 @@ class Deadwood(MSTOutlierDetector):
         -----
 
         Refer to the `labels_` attribute for the result.
+        Negative labels denote outliers.
 
         As with all distance-based methods (this includes local outlier factor
         as well), applying data preprocessing and feature engineering techniques
@@ -849,6 +891,9 @@ class Deadwood(MSTOutlierDetector):
         might lead to more meaningful results.
         """
         self.labels_ = None
+
+        if self._cut_edges_ is not None and len(self._cut_edges_) == 0:
+            self._cut_edges_ = None
 
         self._check_params()  # re-check, they might have changed
         self._get_mst(X)  # sets n_samples_, n_features_, _tree_w, _tree_i, _d_core, etc.
@@ -858,10 +903,15 @@ class Deadwood(MSTOutlierDetector):
         else:
             self.max_debris_size_ = self.max_debris_size
 
+        if self.max_n_clusters == "auto":
+            self.max_n_clusters_ = 10 if self._cut_edges_ is None \
+                else len(self._cut_edges_)+1
+        else:
+            self.max_n_clusters_ = self.max_n_clusters
+        assert self.max_n_clusters_ > 0 and self.max_n_clusters_ <= self.n_samples_
+
         if self.verbose:
             print("[deadwood] Finding outliers.", file=sys.stderr)
-
-        max_k = len(self._cut_edges_)+1 if self._cut_edges_ is not None else 1 # TODO
 
         is_outlier_, contamination_, mst_cut_ = core.deadwood_from_mst(
             self._tree_d_,
@@ -869,20 +919,18 @@ class Deadwood(MSTOutlierDetector):
             self._cut_edges_ if self._cut_edges_ is not None else np.empty(0, np.intp),
             self._tree_cumdeg_,
             self._tree_inc_,
-            max_k=max_k,
+            max_k=self.max_n_clusters_,
+            min_cluster_factor=self.min_cluster_factor,
+            #inlier_threshold=inlier_threshold,
             max_contamination=self.max_contamination if self.contamination == "auto" else -self.contamination,
             ema_dt=self.ema_dt,
             max_debris_size=self.max_debris_size_
         )
 
-        # if self._cut_edges_ is None:
-        #     is_outlier = self._fit_single()
-        # else:
-        #     is_outlier = self._fit_multi()
-
-        self.labels_ = 1-2*(is_outlier_.astype(int))
-        self.contamination_ = contamination_ if contamination_.shape[0]>1 else contamination_[0]
-        # TODO mst_cut_
+        self.labels_ = is_outlier_
+        self.contamination_ = contamination_ if len(contamination_)>1 else contamination_[0]
+        if len(mst_cut_) > 0: self.cut_edges_ = mst_cut_
+        self.n_clusters_ = len(mst_cut_)+1
 
         if self.verbose:
             print("[deadwood] Done.", file=sys.stderr)

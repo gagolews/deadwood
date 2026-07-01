@@ -436,6 +436,8 @@ cdef extern from "c_deadwood.h":
         Py_ssize_t max_debris_size,
         Py_ssize_t k,
         Py_ssize_t max_k,
+        floatT min_cluster_factor,
+        #floatT inlier_threshold,
         Py_ssize_t* mst_cut,
         floatT* contamination,
         Py_ssize_t* is_outlier,
@@ -852,8 +854,8 @@ cpdef tuple get_contamination(
     """
     cdef Py_ssize_t m = mst_d.shape[0]
     cdef Py_ssize_t n = m+1
-    cdef floatT contamination
-    cdef Py_ssize_t elbow_index
+    cdef floatT contamination=0.0  # out
+    cdef Py_ssize_t elbow_index=0  # out
 
     Cget_contamination(
         &mst_d[0], m, max_contamination, ema_dt, contamination, elbow_index
@@ -969,12 +971,14 @@ cpdef tuple deadwood_from_mst(
         Py_ssize_t[::1] mst_cumdeg,
         Py_ssize_t[::1] mst_inc,
         Py_ssize_t max_k=10,
+        floatT min_cluster_factor=0.25,
+        #floatT inlier_threshold=0.001,
         floatT max_contamination=0.5,
         floatT ema_dt=0.01,
         Py_ssize_t max_debris_size=50
     ):
     """
-    deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
+    deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_k=10, min_cluster_factor=0.25, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
 
     Deadwood is an outlier detection algorithm that prunes
     mutual reachability minimum spanning trees.
@@ -999,6 +1003,10 @@ cpdef tuple deadwood_from_mst(
     max_k : int
         maximal number of clusters to identify;
         cannot be smaller than `k`
+
+    min_cluster_factor : float
+        in the `k`-th iteration, clusters will not be smaller than
+        `min_cluster_factor*n/(k+1)`
 
     max_contamination : float
         maximal contamination level used in elbow detection in the edge weight
@@ -1062,7 +1070,8 @@ cpdef tuple deadwood_from_mst(
     _k = Cdeadwood(
         &mst_d[0], &mst_i[0,0], m, n,
         max_contamination, ema_dt, max_debris_size,
-        k, max_k, &mst_cut_[0],
+        k, max_k, min_cluster_factor, #inlier_threshold,
+        &mst_cut_[0],
         &contamination_[0],
         &is_outlier_[0],
         &mst_cumdeg[0],

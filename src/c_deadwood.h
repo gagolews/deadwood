@@ -33,25 +33,29 @@ private:
     FLOAT ema_dt;
     Py_ssize_t max_debris_size;
     Py_ssize_t max_k;
+    FLOAT min_cluster_factor;
+    // FLOAT inlier_threshold;
 
     std::unique_ptr<bool[]> is_inlier;
 
-    std::unique_ptr<Py_ssize_t[]> c;  // size n; cluster IDs of vertices
-    std::unique_ptr<Py_ssize_t[]> d;  // size n; sub-cluster IDs of vertices
-    std::unique_ptr<Py_ssize_t[]> s;  // size max_k; s[i] is the size of the i-th cluster
-    std::unique_ptr<bool[]> skip_edges;  // std::vector<bool> has no .data()
+    std::unique_ptr<Py_ssize_t[]> c;  // cluster IDs of vertices [n]
+    std::unique_ptr<Py_ssize_t[]> d;  // subcluster IDs of vertices [n]
+    std::unique_ptr<Py_ssize_t[]> s;  // s[i] is the size of the i-th cluster [max_k]
+
     std::unique_ptr<Py_ssize_t[]> mst_cutsizes;  //< size m*2, each pair gives the sizes of the clusters that are formed when we cut out the corresponding edge
-    std::unique_ptr<FLOAT[]> contamination;
-    std::unique_ptr<FLOAT[]> weight_thresholds;
 
-    Py_ssize_t k;  // the number of connected components identified
+    std::unique_ptr<bool[]> skip_edges;  // disabling edges yields clusters [m]
+    std::unique_ptr<FLOAT[]> contamination;  // contamination levels [max_k]
+    std::unique_ptr<FLOAT[]> weight_thresholds;  // edge weight thresholds [max_k]
 
-    Py_ssize_t cur_s;
-    std::unique_ptr<Py_ssize_t[]> cur_e;
-    std::unique_ptr<FLOAT[]> cur_d;
+    Py_ssize_t k;  // the number of clusters identified
 
-    Py_ssize_t cur_p;
-    std::unique_ptr<Py_ssize_t[]> cur_v;
+    Py_ssize_t cur_s;  // number of edges in the current cluster
+    std::unique_ptr<Py_ssize_t[]> cur_e;  // edges in the current cluster [m]
+    std::unique_ptr<FLOAT[]> cur_d;       // weights of edges in the current cluster [m]
+
+    Py_ssize_t cur_p;  // number of vertices in the current subcluster
+    std::unique_ptr<Py_ssize_t[]> cur_v;  // vertices in the current subcluster [n]
 
     /* helper for mark_cluster */
     Py_ssize_t mark_cluster_visitor(Py_ssize_t v, Py_ssize_t e)
@@ -69,7 +73,7 @@ private:
             cur_e[cur_s++] = e;
         }
 
-        DEADWOOD_ASSERT(c[w] < 0);
+        //DEADWOOD_ASSERT(c[w] < 0);
         c[w] = k;
 
         Py_ssize_t curs = 1;
@@ -182,15 +186,18 @@ public:
         FLOAT max_contamination,
         FLOAT ema_dt,
         Py_ssize_t max_debris_size,
-        Py_ssize_t max_k,
         Py_ssize_t k,
+        Py_ssize_t max_k,
+        FLOAT min_cluster_factor,
+        // FLOAT inlier_threshold,
         const Py_ssize_t* mst_cut=nullptr,
         const Py_ssize_t* mst_cumdeg=nullptr,
         const Py_ssize_t* mst_inc=nullptr
     ) : CMSTProcessorBase(mst_i, m, n, mst_cumdeg, mst_inc),
         mst_d(mst_d), max_contamination(max_contamination),
         ema_dt(ema_dt), max_debris_size(max_debris_size),
-        max_k(max_k)
+        max_k(max_k), min_cluster_factor(min_cluster_factor)
+        // inlier_threshold(inlier_threshold)
     {
         DEADWOOD_ASSERT(this->cumdeg);
         DEADWOOD_ASSERT(this->inc);
@@ -204,8 +211,8 @@ public:
         weight_thresholds.reset(new FLOAT[max_k]);
         mst_cutsizes.reset(new Py_ssize_t[2*m]);
         cur_e.reset(new Py_ssize_t[m]);
-        cur_v.reset(new Py_ssize_t[n]);
         cur_d.reset(new FLOAT[m]);
+        cur_v.reset(new Py_ssize_t[n]);
 
         skip_edges.reset(new bool[m]);
         for (Py_ssize_t e=0; e<m; ++e) skip_edges[e] = false;
@@ -226,6 +233,7 @@ public:
         for (Py_ssize_t i=0; i<max_k; ++i) s[i] = 0;
         for (Py_ssize_t i=0; i<2*m; ++i) mst_cutsizes[i] = -1;
 
+        // start with the initial partition (possibly the whole set)
         k = 0;
         for (Py_ssize_t v=0; v<n; ++v) {
             if (c[v] >= 0) continue;  // already visited -> skip
@@ -235,14 +243,97 @@ public:
             k++;
         }
 
+        // DEADWOOD_PRINT("%d %d\n", k, max_k);
+        if (k == max_k) return k;
+
+        Py_ssize_t num_left=0;
+        std::unique_ptr<bool[]> left(new bool[max_k]);
+        for (; num_left<k; num_left++) left[num_left] = true;
+
+        bool changed=true;
+        while (k < max_k && num_left > 0 && changed) {
+            // DEADWOOD_PRINT("%d %d\n", k, max_k);
+            Py_ssize_t min_cluster_size = std::max(max_debris_size+1, Py_ssize_t(min_cluster_factor*n/(k+1)));
+
+            FLOAT min_weight_threshold=INFINITY;
+            for (Py_ssize_t i=0; i<k; ++i)
+                if (left[i] && weight_thresholds[i] < min_weight_threshold)
+                    min_weight_threshold = weight_thresholds[i];
+
+            changed=false;
+            for (Py_ssize_t e=m-1; e>=0; --e) {  // edges in decreasing order
+                if (mst_d[e] < min_weight_threshold) break;
+
+                if (skip_edges[e] || mst_cutsizes[2*e+0] < min_cluster_size
+                     || mst_cutsizes[2*e+1] < min_cluster_size) continue;
+
+                Py_ssize_t v = mst_i[2*e+0];
+                Py_ssize_t w = mst_i[2*e+1];
+                DEADWOOD_ASSERT(c[v] == c[w]);
+                if (!left[c[v]]) continue;
+
+                if (mst_d[e] < weight_thresholds[c[v]]) continue;
+
+                /* ok, so we now have a candidate edge;
+                will its removal, leading to the splitting of the cluster
+                containing vertex v, result in an increase in the number
+                of inliers? */
+                skip_edges[e] = true;
+                Py_ssize_t orig_k = k;
+                FLOAT orig_weight_threshold = weight_thresholds[c[v]];
+                FLOAT orig_contamination = contamination[c[v]];
+                Py_ssize_t changed_inliers;
+
+                num_left--;
+                left[c[v]] = false;
+
+                k = c[v];
+                mark_cluster(v);
+                changed_inliers = mark_inliers();
+                // DEADWOOD_PRINT("%d\n", changed_inliers);
+                if (changed_inliers > 0) {
+                    changed = true;
+                    num_left++;
+                    left[c[v]] = true;
+                }
+
+                k = orig_k;
+                mark_cluster(w);
+                changed_inliers = mark_inliers();
+                // DEADWOOD_PRINT("%d\n", changed_inliers);
+                if (changed_inliers > 0) {
+                    changed = true;
+                    num_left++;
+                    left[c[w]] = true;
+                }
+
+                // DEADWOOD_PRINT("%g %g %g\n", orig_weight_threshold, weight_thresholds[c[v]], weight_thresholds[c[w]]);
+
+                if (changed) {
+                    k = orig_k+1;
+                    break;
+                }
+
+                // undo
+                k = c[v];
+                skip_edges[e] = false;
+                mark_cluster(v);
+                k = orig_k;
+                weight_thresholds[c[v]] = orig_weight_threshold;
+                contamination[c[v]] = orig_contamination;
+            }
+        }
+
         return k;
     }
 
 
-    void get_outliers(Py_ssize_t* c)
+    /*** -1 for outliers and cluster ID otherwise */
+    void get_outliers(Py_ssize_t* x)
     {
         for (Py_ssize_t v=0; v<n; ++v)
-            c[v] = 1-(Py_ssize_t)is_inlier[v];
+            if (is_inlier[v]) x[v] = c[v];
+            else x[v] = -1;
     }
 
 
@@ -279,6 +370,8 @@ public:
  *  @param max_k maximal number of clusters to identify
  *  @param is_outlier [out] array of length n, c[i]==1 marks an outlier
  *         and c[i]==0 denotes an inlier
+ *  @param min_cluster_factor in the k-th iteration, clusters will not be
+ *         smaller than min_cluster_factor*n/(k+1)
  *  @param max_debris_size connected components of size <= max_debris_size will
  *         be treated as outliers
  *  @param max_contamination maximal contamination level;
@@ -303,6 +396,8 @@ Py_ssize_t Cdeadwood(
     Py_ssize_t max_debris_size,
     Py_ssize_t k,
     Py_ssize_t max_k,
+    FLOAT min_cluster_factor,
+    // FLOAT inlier_threshold,
     Py_ssize_t* mst_cut,  // size max_k-1 [in/out]
     FLOAT* contamination,  // size max_k [out]
     Py_ssize_t* is_outlier,  // size n [out]
@@ -317,8 +412,9 @@ Py_ssize_t Cdeadwood(
     DEADWOOD_ASSERT(max_contamination >= -1.0 && max_contamination <= 1.0);
 
     CDeadwood<FLOAT> dw(
-        mst_d, mst_i, m, n, max_contamination, ema_dt, max_debris_size, max_k,
-        k, mst_cut, mst_cumdeg, mst_inc
+        mst_d, mst_i, m, n, max_contamination, ema_dt, max_debris_size,
+        k, max_k, min_cluster_factor, //inlier_threshold,
+        mst_cut, mst_cumdeg, mst_inc
     );
 
     Py_ssize_t _k = dw.process();

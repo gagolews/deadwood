@@ -6,6 +6,7 @@ import deadwood
 import sys
 import sklearn.datasets
 import pandas as pd
+from sklearn.datasets import make_blobs, make_moons
 
 
 def test_deadwood_base_classes():
@@ -75,7 +76,7 @@ def _blob_and_aureola(n, m, seed=123):
         r.reshape(-1,1)*np.c_[np.cos(u), np.sin(u)],
         5*np.c_[np.cos(t), np.sin(t)]
     ))
-    y = np.repeat([1, -1], [n, m])
+    y = np.repeat([0, -1], [n, m])
     return X, y
 
 
@@ -83,19 +84,19 @@ def test_deadwood_single():
     n, m = 140, 19
     X, y_true = _blob_and_aureola(n, m)
 
-    D = deadwood.Deadwood(contamination=m/(n+m)).fit(X)
+    D = deadwood.Deadwood(contamination=m/(n+m), max_n_clusters=1).fit(X)
     y_pred = D.labels_
     # print(y_pred, y_true)
     assert D.contamination_ == m/(n+m)
     assert np.all(y_pred == y_true)
 
-    D = deadwood.Deadwood(contamination=0)
+    D = deadwood.Deadwood(contamination=0, max_n_clusters=1)
     y_pred = D.fit_predict(X)
     # print(y_pred)
     assert D.contamination_ == 0.0
-    assert np.all(y_pred == np.repeat(1, X.shape[0]))
+    assert np.all(y_pred == np.repeat(0, X.shape[0]))
 
-    D = deadwood.Deadwood(ema_dt = 0.01, max_contamination = 0.37)
+    D = deadwood.Deadwood(ema_dt=0.01, max_contamination=0.37, max_n_clusters=1)
     y_pred = D.fit_predict(X)
     # print(y_pred)
     assert np.abs(D.contamination_ - m/(n+m))<1e-6
@@ -113,7 +114,8 @@ def test_deadwood_multi():
     X2, y_true2 = _blob_and_aureola(n2, m2)
 
     X = np.vstack((X1, X2+11))
-    y_true = np.r_[y_true1, y_true2]
+    y_true_a = np.r_[y_true1, 2*(y_true2+1)-1]
+    y_true_b = np.r_[2*(y_true1+1)-1, y_true2]
 
     # deadwood.plot_scatter(X, labels=y_true, asp=1)
     # deadwood.plt.show()
@@ -122,13 +124,25 @@ def test_deadwood_multi():
     D._cut_edges_ = np.r_[X.shape[0]-2]
     D.fit(X)
     y = D.labels_
-    print(D.contamination_)
+    # print(D.contamination_)
     # import matplotlib.pyplot as plt
     # deadwood.plot_scatter(X, labels=y, asp=1)
     # deadwood.plt.show()
     assert np.abs(D.contamination_[0] - m1/(n1+m1))<1e-6
     assert np.abs(D.contamination_[1] - m2/(n2+m2))<1e-6
-    assert np.all(y == y_true)
+    assert np.all(y == y_true_a) or np.all(y == y_true_b)
+    assert np.all(D._cut_edges_ == D.cut_edges_)
+
+
+def test_deadwood_heterogeneous():
+    X, y_true = make_blobs(centers=[np.repeat(2, 2), np.repeat(-2, 2)], cluster_std=[1.5, 0.3], random_state=666)
+
+    D = deadwood.Deadwood(M=10)
+    D.fit(X)
+    y = D.labels_
+    assert len(D.contamination_) == 2  # detects 2 clusters automatically
+    assert np.all(y >= -1)
+    assert np.all(y < 2)
 
 
 if __name__ == "__main__":
@@ -136,3 +150,4 @@ if __name__ == "__main__":
     test_deadwood_df()
     test_deadwood_single()
     test_deadwood_multi()
+    test_deadwood_heterogeneous()

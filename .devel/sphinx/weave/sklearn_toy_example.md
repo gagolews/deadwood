@@ -73,7 +73,7 @@ anomaly_algorithms = [
     ),
     (
         "Local Outlier Factor",
-        LocalOutlierFactor(n_neighbors=35, contamination=outliers_fraction),
+        LocalOutlierFactor(contamination=outliers_fraction),
     ),
     (
         "Robust covariance",
@@ -131,8 +131,10 @@ for i_dataset, X in enumerate(datasets):
         else:
             y_pred = algorithm.fit(X).predict(X)
 
-        colors = np.array(["#377eb8", "#ff7f00"])
-        plt.scatter(X[:, 0], X[:, 1], s=10, color=colors[(y_pred + 1) // 2])
+        if np.all((y_pred == -1) | (y_pred == 1)):
+            y_pred[y_pred == 1] = 0
+
+        deadwood.plot_scatter(X[:, 0], X[:, 1], s=10, labels=y_pred)
 
         plt.xlim(-7, 7)
         plt.ylim(-7, 7)
@@ -158,6 +160,7 @@ Outputs of outlier detection algorithms
 ```
 
 The Deadwood method generates quite meaningful partitions.
+It can split well-separable clusters automatically.
 It is also the fastest among the above ones.
 Even though no algorithm is perfect in all the possible scenarios,
 Deadwood is definitely worth a try in your next data mining challenge.

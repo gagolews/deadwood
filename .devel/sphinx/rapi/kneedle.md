@@ -14,13 +14,13 @@ kneedle_increasing(x, convex = TRUE, dt = 0.01)
 
 |  |  |
 |----|----|
-| `x` | data vector (increasing) |
+| `x` | data vector (increasing) of length `n` |
 | `convex` | whether the data in `x` are convex-ish (elbow detection) or not (knee lookup) |
-| `dt` | controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average, $y_i = \alpha x_i + (1-\alpha) x_{i-1}$, $y_1 = x_1$ |
+| `dt` | controls the smoothing parameter $\alpha = 1-\exp(-dt)$ of the exponential moving average, $y_i = \alpha x_i + (1-\alpha) y_{i-1}$, $y_1 = x_1$ |
 
 ## Value
 
-Returns the index of the knee/elbow point; 1 if not found.
+Returns the index of the knee/elbow point or `n` if not found.
 
 ## Author(s)
 
@@ -28,7 +28,7 @@ Returns the index of the knee/elbow point; 1 if not found.
 
 ## References
 
-V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, Finding a \"Kneedle\" in a haystack: Detecting knee points in system behavior, In: 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, 166-171, [doi:10.1109/ICDCSW.2011.20](https://doi.org/10.1109/ICDCSW.2011.20)
+V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, Finding a \"Kneedle\" in a haystack: Detecting knee points in system behavior, In: 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, 166-171, [doi:10.1109/ICDCSW.2011.20](https://doi.org/10.1109/ICDCSW.2011.20)
 
 ## See Also
 

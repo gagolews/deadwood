@@ -57,8 +57,6 @@ ctypedef fused floatT:
     double
 
 
-
-
 cdef extern from "../src/c_oldmst.h":
 
     cdef cppclass CDistance[T]:

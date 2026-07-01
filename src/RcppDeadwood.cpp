@@ -72,6 +72,8 @@ double kneedle_increasing(NumericVector x, bool convex=true, double dt=0.01)
 LogicalVector dot_deadwood(
     NumericMatrix mst,
     NumericVector cut_edges,
+    int max_k,
+    double min_cluster_factor,
     double max_contamination,
     double ema_dt,
     int max_debris_size,
@@ -91,7 +93,7 @@ LogicalVector dot_deadwood(
     }
 
     Py_ssize_t k = cut_edges.size()+1;
-    Py_ssize_t max_k = k; // TODO
+    if (max_k < k) max_k = k;
 
     std::vector<Py_ssize_t> is_outlier(n);
     std::vector<double> contamination(max_k);
@@ -101,17 +103,16 @@ LogicalVector dot_deadwood(
         DEADWOOD_ASSERT(mst_cut[i] >= 0 && mst_cut[i] < n-1);
     }
 
-
     Py_ssize_t _k = Cdeadwood(
         mst_d.data(), mst_i.data(), n-1, n,
         max_contamination, ema_dt, max_debris_size,
-        k, max_k, mst_cut.data(),
-        contamination.data(), is_outlier.data(), NULL, NULL
+        k, max_k, min_cluster_factor, //inlier_threshold,
+        mst_cut.data(), contamination.data(), is_outlier.data(), NULL, NULL
     );
 
     LogicalVector res(n);
     for (Py_ssize_t i=0; i<n; ++i) {
-        if (is_outlier[i]) res[i] = TRUE;
+        if (is_outlier[i]<0) res[i] = TRUE;
         else res[i] = FALSE;
     }
 
@@ -122,8 +123,8 @@ LogicalVector dot_deadwood(
 
     NumericVector cut_edgesr(_k-1);
     for (Py_ssize_t i=0; i<_k-1; ++i)
-        cut_edgesr[i] = cut_edges[i]+1;
-    res.attr("cut_edges") = cut_edgesr;  // TODO: document
+        cut_edgesr[i] = mst_cut[i]+1;
+    res.attr("cut_edges") = cut_edgesr;
 
     if (verbose) DEADWOOD_PRINT("[deadwood] Done.\n");
 

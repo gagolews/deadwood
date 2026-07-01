@@ -8,6 +8,10 @@ See [`deadwood()`](deadwood.md) for more details.
 
 **Maintainer**: Marek Gagolewski <marek@gagolewski.com> ([ORCID](https://orcid.org/0000-0003-0637-6028)) \[copyright holder\]
 
+Authors:
+
+- Marek Gagolewski <marek@gagolewski.com> ([ORCID](https://orcid.org/0000-0003-0637-6028)) \[copyright holder\]
+
 ## See Also
 
 The official online manual of <span class="pkg">deadwood</span> at <https://deadwood.gagolewski.com/>

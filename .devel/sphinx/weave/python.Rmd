@@ -94,6 +94,7 @@ plot_scatter(X2, (is_outlier<0))
 plt.show()
 ```
 
+
 Detect outliers with *Deadwood*, separately in each cluster
 determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
