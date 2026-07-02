@@ -15,7 +15,7 @@ deadwood(d, ...)
 deadwood(
   d,
   M = 10L,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
@@ -30,7 +30,7 @@ deadwood(
 deadwood(
   d,
   M = 10L,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
@@ -43,7 +43,7 @@ deadwood(
 ## S3 method for class 'mstclust'
 deadwood(
   d,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
@@ -56,7 +56,7 @@ deadwood(
 ## S3 method for class 'mst'
 deadwood(
   d,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,

@@ -8,8 +8,7 @@ The *scikit-learn* homepage [showcases](https://scikit-learn.org/stable/auto_exa
 a couple of outlier detection algorithms on 2D toy datasets.  Below we re-run
 this illustration on a larger data sample and with the Deadwood algorithm included.
 
-**TL;DR — See the bottom of the page for the resulting figure.**
-
+**TL;DR: See the bottom of the page for the resulting figure.**
 
 
 

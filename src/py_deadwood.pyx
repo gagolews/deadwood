@@ -971,14 +971,14 @@ cpdef tuple deadwood_from_mst(
         Py_ssize_t[::1] mst_cumdeg,
         Py_ssize_t[::1] mst_inc,
         Py_ssize_t max_k=10,
-        floatT min_cluster_factor=0.25,
+        floatT min_cluster_factor=0.15,
         #floatT inlier_threshold=0.001,
         floatT max_contamination=0.5,
         floatT ema_dt=0.01,
         Py_ssize_t max_debris_size=50
     ):
     """
-    deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_k=10, min_cluster_factor=0.25, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
+    deadwood.deadwood_from_mst(mst_d, mst_i, mst_cut, mst_cumdeg, mst_inc, max_k=10, min_cluster_factor=0.15, max_contamination=0.5, ema_dt=0.01, max_debris_size=50)
 
     Deadwood is an outlier detection algorithm that prunes
     mutual reachability minimum spanning trees.

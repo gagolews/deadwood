@@ -66,7 +66,7 @@ J.L. Bentley, Multidimensional binary search trees used for associative searchin
 
 R.J.G.B. Campello, D. Moulavi, J. Sander, Density-based clustering based on hierarchical density estimates, *Lecture Notes in Computer Science* 7819, 2013, 160-172, [doi:10.1007/978-3-642-37456-2_14](https://doi.org/10.1007/978-3-642-37456-2_14)
 
-M. Gagolewski, quitefastmst, in preparation, 2026, TODO
+M. Gagolewski, quitefastmst, in preparation, 2026, TODO, <https://quitefastmst.gagolewski.com/>
 
 ## See Also
 

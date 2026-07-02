@@ -14,14 +14,6 @@ pip3 install deadwood  # python3 -m pip install deadwood
 
 ## Basic Use
 
-::::{note}
-This section is a work in progress.
-In the meantime, take a look at the examples in the [reference manual](../pythonapi).
-
-*To learn more about Python, check out my open-access textbook*
-[Minimalist Data Wrangling in Python](https://datawranglingpy.gagolewski.com/).
-::::
-
 ```{python imports,results="hide"}
 import numpy as np
 import pandas as pd
@@ -43,7 +35,8 @@ pd.set_option("min_rows", 200)
 
 Example noisy dataset[^datasetsource]:
 
-[^datasetsource]: The discussed dataset comes from G. Karypis, E.H. Han, V. Kumar,
+[^datasetsource]: The discussed dataset comes from
+G. Karypis, E.H. Han, V. Kumar,
 CHAMELEON: A hierarchical clustering algorithm using dynamic modeling,
 *IEEE Transactions on Computers* **32**(8), 68-75, 1999
 and is available for download from
@@ -56,16 +49,14 @@ plt.show()
 ```
 
 
-Detect outliers with *Deadwood* (default settings):
+Let us perform outlier detection with *Deadwood*.
+Note the [**scikit-learn**](https://scikit-learn.org/)-compatible API.
 
-
-```{python py_chameleon_t7_10k_deadwood,fig.cap="Outlier detection on chameleon_t7_10k"}
-is_outlier = deadwood.Deadwood().fit_predict(X1)
-plot_scatter(X1, (is_outlier<0))
+```{python py_chameleon_t7_10k_deadwood,fig.cap="Outlier detection in chameleon_t7_10k"}
+is_outlier = deadwood.Deadwood(max_n_clusters=1).fit_predict(X1)
+plot_scatter(X1, is_outlier)
 plt.show()
 ```
-
-Note the [**scikit-learn**](https://scikit-learn.org/)-compatible API.
 
 Here is the fraction of detected outliers:
 
@@ -77,36 +68,64 @@ np.mean(is_outlier<0)
 ## Clusters of Unequal Densities
 
 The above dataset consists of clusters of relatively equal densities.
-[wut/z2](https://clustering-benchmarks.gagolewski.com/) is an
-example where there are five clusters of rather non-homogeneous densities.
+Here is an example featuring non-homogeneous subgroups.
 
-```{python py_z2_dataset,fig.cap="The z2 dataset"}
-X2 = np.loadtxt("z2.data.gz", ndmin=2)
-plot_scatter(X2)
-plt.show()
-```
+```{python py_chameleon_t8_8k_dataset,fig.cap="Outlier detection in the chameleon_t8_8k dataset, without and with automatic subcluster detection"}
+X2 = np.loadtxt("chameleon_t8_8k.data.gz", ndmin=2)
 
-Detect outliers with *Deadwood* (default settings):
+plt.subplot(121)
+is_outlier = deadwood.Deadwood(max_n_clusters=1).fit_predict(X2)
+plot_scatter(X2, is_outlier)
 
-```{python py_z2_deadwood,fig.cap="Outlier detection on z2"}
+plt.subplot(122)
 is_outlier = deadwood.Deadwood().fit_predict(X2)
-plot_scatter(X2, (is_outlier<0))
+plot_scatter(X2, is_outlier)
+
 plt.show()
 ```
 
+In the right subfigure, Deadwood was able to identify three subclusters automatically.
+In each of them, the outlierness threshold is estimated independently.
 
-Detect outliers with *Deadwood*, separately in each cluster
-determined by [*Lumbermark*](https://lumbermark.gagolewski.com/):
 
-```{python py_z2_lumbermark,fig.cap="Detected clusters of z2"}
+
+## Clusters of Highly Imbalanced Sizes
+
+The above dataset consists of relatively large clusters.
+[wut/z2](https://clustering-benchmarks.gagolewski.com/) is an
+example where two small clusters on the right are treated as anomalous:
+
+```{python py_z2_dataset,fig.cap="Outlier detection in the z2 dataset"}
+X3 = np.loadtxt("z2.data.gz", ndmin=2)
+is_outlier = deadwood.Deadwood().fit_predict(X3)
+plot_scatter(X3, is_outlier)
+plt.show()
+```
+
+To remedy this, we can decrease the appropriate size threshold
+(`max_debris_size`) parameter:
+
+```{python py_z2_deadwood2,fig.cap="Outlier detection in z2 with smaller max_debris_size"}
+is_outlier = deadwood.Deadwood(max_debris_size=20).fit_predict(X3)
+plot_scatter(X3, is_outlier)
+plt.show()
+```
+
+Alternatively, we can first identify the clusters in the dataset
+(currently, [*Lumbermark*](https://lumbermark.gagolewski.com/)
+and [*Genie*](https://genieclust.gagolewski.com/) are supported).
+Then, we can perform outlier detection in each cluster separately:
+
+```{python py_z2_lumbermark,fig.cap="Detected clusters and outliers in z2"}
 import lumbermark
-clusters = lumbermark.Lumbermark(n_clusters=5).fit(X2)
-plot_scatter(X2, clusters.labels_)
+clusters = lumbermark.Lumbermark(n_clusters=5).fit(X3)
+is_outlier = deadwood.Deadwood().fit_predict(clusters)
+plot_scatter(X3, is_outlier)
 plt.show()
 ```
 
-```{python py_z2_lumbermark_deadwood,fig.cap="Outlier detection on clusters of z2"}
-is_outlier = deadwood.Deadwood().fit_predict(clusters)
-plot_scatter(X2, (is_outlier<0))
-plt.show()
-```
+::::{note}
+*To learn more about Python, check out my open-access textbook*
+[Minimalist Data Wrangling in Python](https://datawranglingpy.gagolewski.com/).
+::::
+

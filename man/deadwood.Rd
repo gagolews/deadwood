@@ -13,7 +13,7 @@ deadwood(d, ...)
 \method{deadwood}{default}(
   d,
   M = 10L,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
@@ -27,7 +27,7 @@ deadwood(d, ...)
 \method{deadwood}{dist}(
   d,
   M = 10L,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
@@ -39,7 +39,7 @@ deadwood(d, ...)
 
 \method{deadwood}{mstclust}(
   d,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,
@@ -51,7 +51,7 @@ deadwood(d, ...)
 
 \method{deadwood}{mst}(
   d,
-  min_cluster_factor = 0.25,
+  min_cluster_factor = 0.15,
   max_k = NA_integer_,
   contamination = NA_real_,
   max_debris_size = NA_real_,

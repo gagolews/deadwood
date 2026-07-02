@@ -670,7 +670,7 @@ class Deadwood(MSTOutlierDetector):
             self,
             *,
             M=10,
-            min_cluster_factor=0.25,
+            min_cluster_factor=0.15,
             max_n_clusters="auto",
             contamination="auto",
             max_debris_size="auto",

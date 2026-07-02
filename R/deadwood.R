@@ -163,7 +163,7 @@ deadwood <- function(d, ...)
 deadwood.default <- function(
     d,
     M=10L,
-    min_cluster_factor=0.25,
+    min_cluster_factor=0.15,
     max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
@@ -194,7 +194,7 @@ deadwood.default <- function(
 deadwood.dist <- function(
     d,
     M=10L,
-    min_cluster_factor=0.25,
+    min_cluster_factor=0.15,
     max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
@@ -221,7 +221,7 @@ deadwood.dist <- function(
 #' @method deadwood mstclust
 deadwood.mstclust <- function(
     d,
-    min_cluster_factor=0.25,
+    min_cluster_factor=0.15,
     max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,
@@ -255,7 +255,7 @@ deadwood.mstclust <- function(
 #' @method deadwood mst
 deadwood.mst <- function(
     d,
-    min_cluster_factor=0.25,
+    min_cluster_factor=0.15,
     max_k=NA_integer_,
     contamination=NA_real_,
     max_debris_size=NA_real_,

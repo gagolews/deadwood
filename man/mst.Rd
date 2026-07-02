@@ -120,7 +120,8 @@ Density-based clustering based on hierarchical density estimates,
 \emph{Lecture Notes in Computer Science} 7819, 2013, 160-172,
 \doi{10.1007/978-3-642-37456-2_14}
 
-M. Gagolewski, quitefastmst, in preparation, 2026, TODO
+M. Gagolewski, quitefastmst, in preparation, 2026, TODO,
+\url{https://quitefastmst.gagolewski.com/}
 }
 \seealso{
 The official online manual of \pkg{deadwood} at \url{https://deadwood.gagolewski.com/}
