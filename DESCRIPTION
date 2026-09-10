@@ -2,7 +2,7 @@ Package: deadwood
 Type: Package
 Title: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees
 Version: 0.9.0.9003
-Date: 2026-07-01
+Date: 2026-09-10
 Authors@R:
     person("Marek", "Gagolewski",
         role = c("aut", "cre", "cph"),
@@ -20,7 +20,7 @@ Description:
     a mutual reachability distance pulls peripheral observations farther away
     from one another.  If the dataset is comprised of well-separated clusters
     of heterogeneous densities, an attempt to split the dataset and refine
-    the outlierness markers is be made.
+    the outlierness markers will be made.
     The 'Python' version of 'deadwood' is available via 'PyPI'.
 BugReports: https://github.com/gagolews/deadwood/issues
 URL:

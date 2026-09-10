@@ -141,7 +141,7 @@ not exceed a prespecified threshold are deemed anomalous.  The use of
 a mutual reachability distance pulls peripheral observations farther away
 from one another.  If the dataset is comprised of well-separated clusters
 of heterogeneous densities, an attempt to split the dataset and refine
-the outlierness markers is be made.
+the outlierness markers will be made.
 }
 \details{
 As with all distance-based methods (this includes k-means and DBSCAN as well),

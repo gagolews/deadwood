@@ -4,7 +4,7 @@
 
 Deadwood is an anomaly detection algorithm based on a dataset\'s mutual reachability minimum spanning tree. It prunes protruding tree segments and marks small debris as outliers.
 
-More precisely, tree edges with weights greater than the detected elbow point are removed. All the resulting connected components whose sizes do not exceed a prespecified threshold are deemed anomalous. The use of a mutual reachability distance pulls peripheral observations farther away from one another. If the dataset is comprised of well-separated clusters of heterogeneous densities, an attempt to split the dataset and refine the outlierness markers is be made.
+More precisely, tree edges with weights greater than the detected elbow point are removed. All the resulting connected components whose sizes do not exceed a prespecified threshold are deemed anomalous. The use of a mutual reachability distance pulls peripheral observations farther away from one another. If the dataset is comprised of well-separated clusters of heterogeneous densities, an attempt to split the dataset and refine the outlierness markers will be made.
 
 ## Usage
 

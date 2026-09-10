@@ -34,7 +34,7 @@ More precisely:
 
 * if the dataset is comprised of well-separated clusters of heterogeneous
     densities, an attempt to split the dataset and refine the outlierness
-    markers is be made.
+    markers is made.
 
 
 ## How to Install
