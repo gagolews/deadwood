@@ -1,18 +1,19 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="mst: Euclidean and Mutual Reachability Minimum Spanning Trees" href="mst.html" /><link rel="prev" title="deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees" href="deadwood.html" />
-        <link rel="canonical" href="https://deadwood.gagolewski.com/rapi/kneedle.html" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="mst: Euclidean and Mutual Reachability Minimum Spanning Trees" href="mst.html"><link rel="prev" title="deadwood: Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees" href="deadwood.html">
+        <link rel="canonical" href="https://deadwood.gagolewski.com/rapi/kneedle.html">
+        <link rel="prefetch" href="https://www.gagolewski.com/_static/img/deadwood.png" as="image">
 
-    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
         <title>kneedle: Knee/Elbow Point Detection - Python and R Package deadwood</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c484f746" />
     
     
@@ -209,7 +210,7 @@
 <a class="sidebar-brand" href="../index.html">deadwood</a>
 </span>
 <div class="sidebar-brand">
-0.9.0
+0.9.1
 </div>
 <form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -235,9 +236,9 @@
 <p class="caption" role="heading"><span class="caption-text">R API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../weave/r.html">R Examples</a></li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="../rapi.html">R Package <em>deadwood</em> Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of R Package deadwood Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../rapi.html">R Package <em>deadwood</em> Reference</a><input aria-label="Toggle navigation of R Package deadwood Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="deadwood-package.html">deadwood-package: The Deadwood Outlier Detection Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="deadwood.html">deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deadwood.html">deadwood: Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">kneedle: Knee/Elbow Point Detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mst.html">mst: Euclidean and Mutual Reachability Minimum Spanning Trees</a></li>
 </ul>
@@ -272,7 +273,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" title="Edit this page">
+  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -313,13 +314,13 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">x</span></code></p></td>
-<td><p>data vector (increasing)</p></td>
+<td><p>data vector (increasing) of length <code class="docutils literal notranslate"><span class="pre">n</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">convex</span></code></p></td>
 <td><p>whether the data in <code class="docutils literal notranslate"><span class="pre">x</span></code> are convex-ish (elbow detection) or not (knee lookup)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dt</span></code></p></td>
-<td><p>controls the smoothing parameter <span class="math notranslate nohighlight">\(\alpha = 1-\exp(-dt)\)</span> of the exponential moving average, <span class="math notranslate nohighlight">\(y_i = \alpha x_i + (1-\alpha) x_{i-1}\)</span>, <span class="math notranslate nohighlight">\(y_1 = x_1\)</span></p></td>
+<td><p>controls the smoothing parameter <span class="math notranslate nohighlight">\(\alpha = 1-\exp(-dt)\)</span> of the exponential moving average, <span class="math notranslate nohighlight">\(y_i = \alpha x_i + (1-\alpha) y_{i-1}\)</span>, <span class="math notranslate nohighlight">\(y_1 = x_1\)</span></p></td>
 </tr>
 </tbody>
 </table>
@@ -327,7 +328,7 @@
 </section>
 <section id="value">
 <h2>Value<a class="headerlink" href="#value" title="Link to this heading">¶</a></h2>
-<p>Returns the index of the knee/elbow point; 1 if not found.</p>
+<p>Returns the index of the knee/elbow point or <code class="docutils literal notranslate"><span class="pre">n</span></code> if not found.</p>
 </section>
 <section id="author-s">
 <h2>Author(s)<a class="headerlink" href="#author-s" title="Link to this heading">¶</a></h2>
@@ -335,7 +336,7 @@
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
-<p>V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, Finding a “Kneedle” in a haystack: Detecting knee points in system behavior, In: 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, 166-171, <a class="reference external" href="https://doi.org/10.1109/ICDCSW.2011.20">doi:10.1109/ICDCSW.2011.20</a></p>
+<p>V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, Finding a “Kneedle” in a haystack: Detecting knee points in system behavior, In: 31st Intl. Conf. Distributed Computing Systems Workshops, 2011, 166-171, <a class="reference external" href="https://doi.org/10.1109/ICDCSW.2011.20">doi:10.1109/ICDCSW.2011.20</a></p>
 </section>
 <section id="see-also">
 <h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
@@ -364,7 +365,7 @@
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees</div>
+                <div class="title">deadwood: Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees</div>
                 
               </div>
             </a>
@@ -378,7 +379,7 @@
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-02-21T13:53:08+0100.
+              Last updated on 2026-09-28T15:02:52+0200.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>
@@ -418,10 +419,10 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+</div><script src="../_static/documentation_options.js?v=9dc39874"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>

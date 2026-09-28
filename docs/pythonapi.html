@@ -1,18 +1,19 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="R Examples" href="weave/r.html" /><link rel="prev" title="Comparing Algorithms on Toy Datasets" href="weave/sklearn_toy_example.html" />
-        <link rel="canonical" href="https://deadwood.gagolewski.com/pythonapi.html" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="R Examples" href="weave/r.html"><link rel="prev" title="Comparing Algorithms on Toy Datasets" href="weave/sklearn_toy_example.html">
+        <link rel="canonical" href="https://deadwood.gagolewski.com/pythonapi.html">
+        <link rel="prefetch" href="https://www.gagolewski.com/_static/img/deadwood.png" as="image">
 
-    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
         <title>Python Package deadwood Reference - Python and R Package deadwood</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c484f746" />
     
     
@@ -209,7 +210,7 @@
 <a class="sidebar-brand" href="index.html">deadwood</a>
 </span>
 <div class="sidebar-brand">
-0.9.0
+0.9.1
 </div>
 <form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -235,9 +236,9 @@
 <p class="caption" role="heading"><span class="caption-text">R API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="weave/r.html">R Examples</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="rapi.html">R Package <em>deadwood</em> Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of R Package deadwood Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rapi.html">R Package <em>deadwood</em> Reference</a><input aria-label="Toggle navigation of R Package deadwood Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="rapi/deadwood-package.html">deadwood-package: The Deadwood Outlier Detection Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rapi/deadwood.html">deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rapi/deadwood.html">deadwood: Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rapi/kneedle.html">kneedle: Knee/Elbow Point Detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rapi/mst.html">mst: Euclidean and Mutual Reachability Minimum Spanning Trees</a></li>
 </ul>
@@ -272,7 +273,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" title="Edit this page">
+  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -304,8 +305,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#deadwood.MSTOutlierDetector" title="deadwood.MSTOutlierDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deadwood.MSTOutlierDetector</span></code></a>(*[, M, metric, ...])</p></td>
 <td><p>A base class for <a class="reference internal" href="#deadwood.Deadwood" title="deadwood.Deadwood"><code class="xref any py py-class docutils literal notranslate"><span class="pre">deadwood.Deadwood</span></code></a> and other spanning tree-based outlier detection algorithms.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#deadwood.Deadwood" title="deadwood.Deadwood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deadwood.Deadwood</span></code></a>(*[, contamination, ...])</p></td>
-<td><p>Deadwood <a class="reference internal" href="#r20a182a25fbf-1" id="id2">[1]</a> is an anomaly detection algorithm based on Mutual Reachability Minimum Spanning Trees.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#deadwood.Deadwood" title="deadwood.Deadwood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deadwood.Deadwood</span></code></a>(*[, M, ...])</p></td>
+<td><p>Deadwood <a class="reference internal" href="#r20a182a25fbf-1" id="id2">[1]</a> is an anomaly detection algorithm based on a dataset's mutual reachability minimum spanning tree.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#deadwood.kneedle_increasing" title="deadwood.kneedle_increasing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deadwood.kneedle_increasing</span></code></a>(x[, convex, dt])</p></td>
 <td><p>Finds the most significant knee/elbow using the Kneedle algorithm <a class="reference internal" href="#rb13e41ff1a2e-1" id="id3">[1]</a> with exponential smoothing.</p></td>
@@ -322,22 +323,35 @@
 <p id="module-deadwood">deadwood Python Package</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="deadwood.Deadwood">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deadwood.</span></span><span class="sig-name descname"><span class="pre">Deadwood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">contamination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_debris_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_contamination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ema_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quitefastmst_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deadwood.Deadwood" title="Link to this definition">¶</a></dt>
-<dd><p>Deadwood <a class="reference internal" href="#r20a182a25fbf-1" id="id4">[1]</a> is an anomaly detection algorithm based on Mutual
-Reachability Minimum Spanning Trees.  It trims protruding tree segments
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deadwood.</span></span><span class="sig-name descname"><span class="pre">Deadwood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cluster_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_n_clusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contamination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_debris_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_contamination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ema_dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quitefastmst_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deadwood.Deadwood" title="Link to this definition">¶</a></dt>
+<dd><p>Deadwood <a class="reference internal" href="#r20a182a25fbf-1" id="id4">[1]</a> is an anomaly detection algorithm based on a dataset’s mutual
+reachability minimum spanning tree.  It prunes protruding tree segments
 and marks small debris as outliers.</p>
-<p>More precisely, the use of a mutual reachability distance <a class="reference internal" href="#r20a182a25fbf-3" id="id5">[3]</a>
-pulls peripheral points farther away from each other.
-Tree edges with weights beyond the detected elbow point <a class="reference internal" href="#r20a182a25fbf-2" id="id6">[2]</a>
-are removed.  All the resulting connected components whose
-sizes are smaller than a given threshold are deemed anomalous.</p>
-<p>Once the spanning tree is determined (<span class="math notranslate nohighlight">\(\Omega(n \log n)\)</span> –
-<span class="math notranslate nohighlight">\(O(n^2)\)</span>), the Deadwood algorithm runs in <span class="math notranslate nohighlight">\(O(n)\)</span> time.
-Memory use is also <span class="math notranslate nohighlight">\(O(n)\)</span>.</p>
+<p>More precisely, tree edges with weights greater than the detected elbow
+point <a class="reference internal" href="#r20a182a25fbf-3" id="id5">[3]</a> are removed.  All the resulting connected components whose sizes
+do not exceed a prespecified threshold are deemed anomalous.  The use of
+a mutual reachability distance <a class="reference internal" href="#r20a182a25fbf-4" id="id6">[4]</a> pulls peripheral observations farther
+away from one another.  If the dataset is comprised of well-separated
+clusters of heterogeneous densities, an attempt to split the dataset and
+refine the outlierness markers will be made.</p>
+<p>Once the spanning tree with increasingly sorted edge weights
+is determined (<span class="math notranslate nohighlight">\(\Omega(n \log n)\)</span> – <span class="math notranslate nohighlight">\(O(n^2)\)</span>),
+the Deadwood algorithm runs in <span class="math notranslate nohighlight">\(O(k n \log n)\)</span> time,
+where <cite>k</cite> is the number of detected subclusters.
+Memory use is <span class="math notranslate nohighlight">\(O(n)\)</span>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>M, metric, quitefastmst_params, verbose</strong></dt><dd><p>see <a class="reference internal" href="#deadwood.MSTBase" title="deadwood.MSTBase"><code class="xref any py py-class docutils literal notranslate"><span class="pre">deadwood.MSTBase</span></code></a></p>
+</dd>
+<dt><strong>min_cluster_factor</strong><span class="classifier">float</span></dt><dd><p>In the <cite>k</cite>-th iteration of the cluster refinement stage,
+clusters will not be smaller than <cite>min_cluster_factor*n/(k+1)</cite>,
+which is similar to what happens in the Lumbermark <a class="reference internal" href="#r20a182a25fbf-2" id="id7">[2]</a> clustering
+algorithm.</p>
+</dd>
+<dt><strong>max_n_clusters</strong><span class="classifier">‘auto’ or int, default=’auto’</span></dt><dd><p>Maximal number of clusters to detect. By default, at most 10 clusters
+are requested unless <cite>_cut_edges_</cite> is given, in which case
+there will be no further cluster refinement.</p>
 </dd>
 <dt><strong>contamination</strong><span class="classifier">‘auto’ or float, default=’auto’</span></dt><dd><p>The estimated (approximate) proportion of outliers in the dataset.
 If <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, the contamination amount will be determined
@@ -353,7 +367,7 @@ is assumed.</p>
 </dd>
 <dt><strong>ema_dt</strong><span class="classifier">float, default=0.01</span></dt><dd><p>controls the smoothing parameter <span class="math notranslate nohighlight">\(\alpha = 1-\exp(-dt)\)</span>
 of the exponential moving average (in edge length elbow point detection),
-<span class="math notranslate nohighlight">\(y_i = \alpha w_i + (1-\alpha) w_{i-1}\)</span>, <span class="math notranslate nohighlight">\(y_1 = d_1\)</span></p>
+<span class="math notranslate nohighlight">\(y_i = \alpha w_i + (1-\alpha) y_{i-1}\)</span>, <span class="math notranslate nohighlight">\(y_1 = d_1\)</span></p>
 </dd>
 </dl>
 </dd>
@@ -361,18 +375,21 @@ of the exponential moving average (in edge length elbow point detection),
 <dd class="field-even"><dl>
 <dt><strong>n_samples_, n_features_</strong></dt><dd><p>see <a class="reference internal" href="#deadwood.MSTBase" title="deadwood.MSTBase"><code class="xref any py py-class docutils literal notranslate"><span class="pre">deadwood.MSTBase</span></code></a></p>
 </dd>
-<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id20"><span class="problematic" id="id21">n_samples_</span></a>,)</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">labels_[i]</span></code> gives the inlier (1) or outlier (-1) status
-of the <cite>i</cite>-th input point.</p>
+<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id22"><span class="problematic" id="id23">n_samples_</span></a>,)</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">labels_[i]</span></code> gives the inlier (&gt;=0) or outlier (-1) status
+of the <cite>i</cite>-th input point.  Non-negative values give cluster IDs.</p>
 </dd>
-<dt><strong>contamination_</strong><span class="classifier">float or ndarray of shape (<a href="#id22"><span class="problematic" id="id23">n_clusters_</span></a>,)</span></dt><dd><p>Detected contamination threshold(s) (elbow point(s)).
+<dt><strong>contamination_</strong><span class="classifier">float or ndarray of shape (<a href="#id24"><span class="problematic" id="id25">n_clusters_</span></a>,)</span></dt><dd><p>Detected contamination threshold(s) (elbow point(s)).
 For the actual number of outliers detected, compute
 <code class="docutils literal notranslate"><span class="pre">numpy.mean(labels_&lt;0)</span></code>.</p>
 </dd>
 <dt><strong>max_debris_size_</strong><span class="classifier">float</span></dt><dd><p>Computed max debris size.</p>
 </dd>
-<dt><strong>_cut_edges_</strong><span class="classifier">None or ndarray of shape (<a href="#id24"><span class="problematic" id="id25">n_clusters_</span></a>-1,)</span></dt><dd><p>Indexes of MST edges whose removal forms <a href="#id26"><span class="problematic" id="id27">n_clusters_</span></a> connected
+<dt><strong>max_n_clusters_</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>_cut_edges_</strong><span class="classifier">None or ndarray of shape (<a href="#id26"><span class="problematic" id="id27">n_clusters_</span></a>-1,)</span></dt><dd><p>Indexes of MST edges whose removal forms <a href="#id28"><span class="problematic" id="id29">n_clusters_</span></a> connected
 components (clusters) in which outliers are to be sought.
-This parameter is usually set by <code class="docutils literal notranslate"><span class="pre">fit</span></code> called on a <code class="docutils literal notranslate"><span class="pre">MSTClusterer</span></code>.</p>
+This attribute is usually set by <code class="docutils literal notranslate"><span class="pre">fit</span></code> called on a <code class="docutils literal notranslate"><span class="pre">MSTClusterer</span></code>.</p>
+</dd>
+<dt><strong>cut_edges_</strong><span class="classifier">None or ndarray of shape (<a href="#id30"><span class="problematic" id="id31">n_clusters_</span></a>-1,)</span></dt><dd><p>The identified cut edges.</p>
 </dd>
 </dl>
 </dd>
@@ -382,17 +399,23 @@ This parameter is usually set by <code class="docutils literal notranslate"><spa
 <div class="citation" id="r20a182a25fbf-1" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id4">2</a>)</span>
-<p>M. Gagolewski, <em>deadwood</em>, in preparation, 2026, TODO</p>
+<p>M. Gagolewski, <em>Deadwood</em>, in preparation, 2026, TODO</p>
 </div>
 <div class="citation" id="r20a182a25fbf-2" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">2</a><span class="fn-bracket">]</span></span>
-<p>V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, <em>Finding a “Kneedle”
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">2</a><span class="fn-bracket">]</span></span>
+<p>M. Gagolewski, <em>Lumbermark: Resistant clustering by chopping up mutual
+reachability minimum spanning trees</em>, preprint, 2026,
+<a class="reference external" href="https://doi.org/10.48550/arXiv.2604.07143">https://doi.org/10.48550/arXiv.2604.07143</a></p>
+</div>
+<div class="citation" id="r20a182a25fbf-3" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">3</a><span class="fn-bracket">]</span></span>
+<p>V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, <em>Finding a “Kneedle”
 in a haystack: Detecting knee points in system behavior</em>,
 In: <em>31st Intl. Conf. Distributed Computing Systems Workshops</em>,
 2011, 166-171, <a class="reference external" href="https://doi.org/10.1109/ICDCSW.2011.20">https://doi.org/10.1109/ICDCSW.2011.20</a></p>
 </div>
-<div class="citation" id="r20a182a25fbf-3" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">3</a><span class="fn-bracket">]</span></span>
+<div class="citation" id="r20a182a25fbf-4" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">4</a><span class="fn-bracket">]</span></span>
 <p>R.J.G.B. Campello, D. Moulavi, J. Sander,
 Density-based clustering based on hierarchical density estimates,
 <em>Lecture Notes in Computer Science</em> 7819, 2013, 160-172,
@@ -432,7 +455,8 @@ and <cite>max_debris_size</cite> much more cheaply.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Refer to the <cite>labels_</cite> attribute for the result.</p>
+<p>Refer to the <cite>labels_</cite> attribute for the result.
+Negative labels denote outliers.</p>
 <p>As with all distance-based methods (this includes local outlier factor
 as well), applying data preprocessing and feature engineering techniques
 (e.g., feature scaling, feature selection, dimensionality reduction)
@@ -457,7 +481,7 @@ and many other topological data analysis tasks.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>M</strong><span class="classifier">int, default=0</span></dt><dd><p>Smoothing factor for the mutual reachability distance <a class="reference internal" href="#rfb2a6797784d-1" id="id10">[1]</a>.
+<dt><strong>M</strong><span class="classifier">int, default=0</span></dt><dd><p>Smoothing factor for the mutual reachability distance <a class="reference internal" href="#rfb2a6797784d-1" id="id12">[1]</a>.
 <cite>M = 0</cite> and <cite>M = 1</cite> select the original distance as given by
 the <cite>metric</cite> parameter.</p>
 </dd>
@@ -488,7 +512,7 @@ onto <code class="docutils literal notranslate"><span class="pre">stderr</span><
 </dd>
 <dt><strong>n_features_</strong><span class="classifier">int or None</span></dt><dd><p>The number of features in the dataset.</p>
 </dd>
-<dt><strong>labels_</strong><span class="classifier">ndarray of shape(<a href="#id28"><span class="problematic" id="id29">n_samples_</span></a>, )</span></dt><dd><p>Detected cluster labels or outlier flags.</p>
+<dt><strong>labels_</strong><span class="classifier">ndarray of shape(<a href="#id32"><span class="problematic" id="id33">n_samples_</span></a>, )</span></dt><dd><p>Detected cluster labels or outlier flags.</p>
 <p>For clustering, <code class="docutils literal notranslate"><span class="pre">labels_[i]</span></code> gives the cluster ID of the <cite>i</cite>-th object
 (between 0 and <cite>n_clusters_</cite> - 1).</p>
 <p>For outlier detection, <code class="docutils literal notranslate"><span class="pre">1</span></code> denotes an inlier.</p>
@@ -503,12 +527,12 @@ onto <code class="docutils literal notranslate"><span class="pre">stderr</span><
 Otherwise, a general-purpose implementation of the Jarník
 (Prim/Dijkstra)-like <span class="math notranslate nohighlight">\(O(n^2)\)</span>-time algorithm is called.</p>
 <p>If <cite>M &gt; 0</cite>, then the minimum spanning tree is computed with respect to a
-mutual reachability distance <a class="reference internal" href="#rfb2a6797784d-1" id="id11">[1]</a>:
+mutual reachability distance <a class="reference internal" href="#rfb2a6797784d-1" id="id13">[1]</a>:
 <span class="math notranslate nohighlight">\(d_M(i,j)=\max\{d(i,j), c_M(i), c_M(j)\}\)</span>, where
 <span class="math notranslate nohighlight">\(d(i,j)\)</span> is an ordinary distance and <span class="math notranslate nohighlight">\(c_M(i)\)</span> is the core
 distance given by <span class="math notranslate nohighlight">\(d(i,k)\)</span> with <span class="math notranslate nohighlight">\(k\)</span> being
 <span class="math notranslate nohighlight">\(i\)</span>’s <span class="math notranslate nohighlight">\(M\)</span>-th nearest neighbour (not including self,
-unlike in <a class="reference internal" href="#rfb2a6797784d-1" id="id12">[1]</a>).  This pulls outliers away from their neighbours.</p>
+unlike in <a class="reference internal" href="#rfb2a6797784d-1" id="id14">[1]</a>).  This pulls outliers away from their neighbours.</p>
 <p>If the distances are not unique,  there might be multiple trees
 spanning a given graph that meet the minimality property.</p>
 <dl class="field-list simple">
@@ -524,7 +548,7 @@ spanning tree.</p>
 <div role="list" class="citation-list">
 <div class="citation" id="rfb2a6797784d-1" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id10">1</a>,<a role="doc-backlink" href="#id11">2</a>,<a role="doc-backlink" href="#id12">3</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id12">1</a>,<a role="doc-backlink" href="#id13">2</a>,<a role="doc-backlink" href="#id14">3</a>)</span>
 <p>R.J.G.B. Campello, D. Moulavi, J. Sander,
 Density-based clustering based on hierarchical density estimates,
 <em>Lecture Notes in Computer Science</em> 7819, 2013, 160-172,
@@ -562,7 +586,7 @@ and <code class="docutils literal notranslate"><span class="pre">n_features</spa
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id30"><span class="problematic" id="id31">n_samples_</span></a>)</span></dt><dd><p><cite>self.labels_</cite> attribute.</p>
+<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id34"><span class="problematic" id="id35">n_samples_</span></a>)</span></dt><dd><p><cite>self.labels_</cite> attribute.</p>
 </dd>
 </dl>
 </dd>
@@ -590,7 +614,7 @@ with <code class="docutils literal notranslate"><span class="pre">n_samples</spa
 <dt class="sig sig-object py" id="deadwood.MSTClusterer">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deadwood.</span></span><span class="sig-name descname"><span class="pre">MSTClusterer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quitefastmst_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deadwood.MSTClusterer" title="Link to this definition">¶</a></dt>
 <dd><p>A base class for <code class="xref any docutils literal notranslate"><span class="pre">genieclust.Genie</span></code>, <code class="xref any docutils literal notranslate"><span class="pre">lumbermark.Lumbermark</span></code>,
-and other spanning tree-based clustering algorithms <a class="reference internal" href="#re3b062309fc4-1" id="id16">[1]</a>.</p>
+and other spanning tree-based clustering algorithms <a class="reference internal" href="#re3b062309fc4-1" id="id18">[1]</a>.</p>
 <p>By removing <cite>k-1</cite> edges from a spanning tree, we form <cite>k</cite> connected
 components which can be conceived as clusters.</p>
 <dl class="field-list">
@@ -606,7 +630,7 @@ components which can be conceived as clusters.</p>
 <dd class="field-even"><dl>
 <dt><strong>n_samples_, n_features_</strong></dt><dd><p>see <a class="reference internal" href="#deadwood.MSTBase" title="deadwood.MSTBase"><code class="xref any py py-class docutils literal notranslate"><span class="pre">deadwood.MSTBase</span></code></a></p>
 </dd>
-<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id32"><span class="problematic" id="id33">n_samples_</span></a>,)</span></dt><dd><p>Detected cluster labels.</p>
+<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id36"><span class="problematic" id="id37">n_samples_</span></a>,)</span></dt><dd><p>Detected cluster labels.</p>
 <p><code class="docutils literal notranslate"><span class="pre">labels_[i]</span></code> gives the cluster ID of the <cite>i</cite>-th input point
 (between 0 and <cite>n_clusters_</cite>-1).</p>
 <p>Eventual outliers are labelled <code class="docutils literal notranslate"><span class="pre">-1</span></code>.</p>
@@ -614,7 +638,7 @@ components which can be conceived as clusters.</p>
 <dt><strong>n_clusters_</strong><span class="classifier">int</span></dt><dd><p>The actual number of clusters detected by the algorithm.</p>
 <p>If it is different from the requested one, a warning is generated.</p>
 </dd>
-<dt><strong>_cut_edges_</strong><span class="classifier">ndarray of shape (<a href="#id34"><span class="problematic" id="id35">n_clusters_</span></a>-1,)</span></dt><dd><p>Indexes of the MST edges whose removal forms the <cite>n_clusters_</cite> detected
+<dt><strong>_cut_edges_</strong><span class="classifier">ndarray of shape (<a href="#id38"><span class="problematic" id="id39">n_clusters_</span></a>-1,)</span></dt><dd><p>Indexes of the MST edges whose removal forms the <cite>n_clusters_</cite> detected
 connected components (clusters).</p>
 </dd>
 </dl>
@@ -624,7 +648,7 @@ connected components (clusters).</p>
 <div role="list" class="citation-list">
 <div class="citation" id="re3b062309fc4-1" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id16">2</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id18">2</a>)</span>
 <p>M. Gagolewski, A. Cena, M. Bartoszuk, Ł. Brzozowski,
 Clustering with minimum spanning trees: How good can it be?,
 <em>Journal of Classification</em> 42, 2025, 90-112,
@@ -649,7 +673,7 @@ spanning tree-based outlier detection algorithms.</p>
 <dd class="field-even"><dl>
 <dt><strong>n_samples_, n_features_</strong></dt><dd><p>see <a class="reference internal" href="#deadwood.MSTBase" title="deadwood.MSTBase"><code class="xref any py py-class docutils literal notranslate"><span class="pre">deadwood.MSTBase</span></code></a></p>
 </dd>
-<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id36"><span class="problematic" id="id37">n_samples_</span></a>,)</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">labels_[i]</span></code> gives the inlier (1) or outlier (-1) status
+<dt><strong>labels_</strong><span class="classifier">ndarray of shape (<a href="#id40"><span class="problematic" id="id41">n_samples_</span></a>,)</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">labels_[i]</span></code> gives the inlier (1) or outlier (-1) status
 of the <cite>i</cite>-th input point.</p>
 </dd>
 </dl>
@@ -660,7 +684,7 @@ of the <cite>i</cite>-th input point.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="deadwood.kneedle_increasing">
 <span class="sig-prename descclassname"><span class="pre">deadwood.</span></span><span class="sig-name descname"><span class="pre">kneedle_increasing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deadwood.kneedle_increasing" title="Link to this definition">¶</a></dt>
-<dd><p>Finds the most significant knee/elbow using the Kneedle algorithm <a class="reference internal" href="#rb13e41ff1a2e-1" id="id18">[1]</a>
+<dd><p>Finds the most significant knee/elbow using the Kneedle algorithm <a class="reference internal" href="#rb13e41ff1a2e-1" id="id20">[1]</a>
 with exponential smoothing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -672,14 +696,14 @@ or not (knee lookup)</p>
 </dd>
 <dt><strong>dt</strong><span class="classifier">float</span></dt><dd><p>controls the smoothing parameter <span class="math notranslate nohighlight">\(\alpha = 1-\exp(-dt)\)</span>
 of the exponential moving average,
-<span class="math notranslate nohighlight">\(y_i = \alpha x_i + (1-\alpha) x_{i-1}\)</span>,
+<span class="math notranslate nohighlight">\(y_i = \alpha x_i + (1-\alpha) y_{i-1}\)</span>,
 <span class="math notranslate nohighlight">\(y_1 = x_1\)</span>.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>index</strong><span class="classifier">integer</span></dt><dd><p>the index of the knee/elbow point; 0 if not found</p>
+<dt><strong>index</strong><span class="classifier">integer</span></dt><dd><p>the index of the knee/elbow point or n-1 if not found</p>
 </dd>
 </dl>
 </dd>
@@ -688,8 +712,8 @@ of the exponential moving average,
 <div role="list" class="citation-list">
 <div class="citation" id="rb13e41ff1a2e-1" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id18">2</a>)</span>
-<p>V. Satopaa, J. Albrecht, D. Irwin, B. Raghavan, <em>Finding a “Kneedle”
+<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id20">2</a>)</span>
+<p>V. Satopää, J. Albrecht, D. Irwin, B. Raghavan, <em>Finding a “Kneedle”
 in a haystack: Detecting knee points in system behavior</em>,
 In: <em>31st Intl. Conf. Distributed Computing Systems Workshops</em>,
 2011, 166-171, <a class="reference external" href="https://doi.org/10.1109/ICDCSW.2011.20">https://doi.org/10.1109/ICDCSW.2011.20</a></p>
@@ -874,7 +898,7 @@ Therefore, you can expect it to be pretty fast.</p>
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-02-21T13:53:08+0100.
+              Last updated on 2026-09-28T15:02:52+0200.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>
@@ -920,10 +944,10 @@ Therefore, you can expect it to be pretty fast.</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=39bb1c6d"></script>
+</div><script src="_static/documentation_options.js?v=9dc39874"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>

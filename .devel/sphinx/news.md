@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.x (under development)
+## 0.9.1 (2026-09-29)
 
 *   [NEW FEATURE]  If the dataset is comprised of well-separated clusters
     of heterogeneous densities, an attempt to split the dataset and refine

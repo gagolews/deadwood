@@ -1,18 +1,19 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Python Package deadwood Reference" href="../pythonapi.html" /><link rel="prev" title="Python Examples" href="python.html" />
-        <link rel="canonical" href="https://deadwood.gagolewski.com/weave/sklearn_toy_example.html" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Python Package deadwood Reference" href="../pythonapi.html"><link rel="prev" title="Python Examples" href="python.html">
+        <link rel="canonical" href="https://deadwood.gagolewski.com/weave/sklearn_toy_example.html">
+        <link rel="prefetch" href="https://www.gagolewski.com/_static/img/deadwood.png" as="image">
 
-    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="https://www.gagolewski.com/_static/img/deadwood.png"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
         <title>Comparing Algorithms on Toy Datasets - Python and R Package deadwood</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c484f746" />
     
     
@@ -209,7 +210,7 @@
 <a class="sidebar-brand" href="../index.html">deadwood</a>
 </span>
 <div class="sidebar-brand">
-0.9.0
+0.9.1
 </div>
 <form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -235,9 +236,9 @@
 <p class="caption" role="heading"><span class="caption-text">R API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="r.html">R Examples</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../rapi.html">R Package <em>deadwood</em> Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of R Package deadwood Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../rapi.html">R Package <em>deadwood</em> Reference</a><input aria-label="Toggle navigation of R Package deadwood Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../rapi/deadwood-package.html">deadwood-package: The Deadwood Outlier Detection Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../rapi/deadwood.html">deadwood: Deadwood: Outlier Detection via Trimming of Mutual Reachability Minimum Spanning Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../rapi/deadwood.html">deadwood: Deadwood: Outlier Detection via Pruning Mutual Reachability Minimum Spanning Trees</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../rapi/kneedle.html">kneedle: Knee/Elbow Point Detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../rapi/mst.html">mst: Euclidean and Mutual Reachability Minimum Spanning Trees</a></li>
 </ul>
@@ -272,7 +273,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" title="Edit this page">
+  <a class="muted-link" href="https://github.com/gagolews/deadwood/issues/" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -295,7 +296,7 @@
 <p>The <em>scikit-learn</em> homepage <a class="reference external" href="https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_anomaly_comparison.html">showcases</a>
 a couple of outlier detection algorithms on 2D toy datasets.  Below we re-run
 this illustration on a larger data sample and with the Deadwood algorithm included.</p>
-<p><strong>TL;DR — See the bottom of the page for the resulting figure.</strong></p>
+<p><strong>TL;DR: See the bottom of the page for the resulting figure.</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -344,7 +345,7 @@ this illustration on a larger data sample and with the Deadwood algorithm includ
     <span class="p">),</span>
     <span class="p">(</span>
         <span class="s2">&quot;Local Outlier Factor&quot;</span><span class="p">,</span>
-        <span class="n">LocalOutlierFactor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">contamination</span><span class="o">=</span><span class="n">outliers_fraction</span><span class="p">),</span>
+        <span class="n">LocalOutlierFactor</span><span class="p">(</span><span class="n">contamination</span><span class="o">=</span><span class="n">outliers_fraction</span><span class="p">),</span>
     <span class="p">),</span>
     <span class="p">(</span>
         <span class="s2">&quot;Robust covariance&quot;</span><span class="p">,</span>
@@ -398,8 +399,10 @@ this illustration on a larger data sample and with the Deadwood algorithm includ
         <span class="k">else</span><span class="p">:</span>
             <span class="n">y_pred</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
-        <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;#377eb8&quot;</span><span class="p">,</span> <span class="s2">&quot;#ff7f00&quot;</span><span class="p">])</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[(</span><span class="n">y_pred</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">y_pred</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="n">y_pred</span><span class="p">[</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">deadwood</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
@@ -426,6 +429,7 @@ this illustration on a larger data sample and with the Deadwood algorithm includ
 </figcaption>
 </figure>
 <p>The Deadwood method generates quite meaningful partitions.
+It can split well-separable clusters automatically.
 It is also the fastest among the above ones.
 Even though no algorithm is perfect in all the possible scenarios,
 Deadwood is definitely worth a try in your next data mining challenge.</p>
@@ -470,7 +474,7 @@ might lead to more meaningful results.</p>
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-02-21T13:53:08+0100.
+              Last updated on 2026-09-28T15:02:52+0200.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>
@@ -485,9 +489,9 @@ might lead to more meaningful results.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+</div><script src="../_static/documentation_options.js?v=9dc39874"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
