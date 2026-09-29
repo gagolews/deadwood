@@ -51,6 +51,16 @@ pip3 install deadwood  # python3 -m pip install deadwood
 [Minimalist Data Wrangling in Python](https://datawranglingpy.gagolewski.com/).
 
 
+For best performance, advanced users will benefit from compiling the package
+from sources:
+
+```bash
+CPPFLAGS="-O3 -march=native" pip3 install quitefastmst deadwood --force --no-binary="quitefastmst,deadwood"
+```
+
+🚧 TO DO (help needed): How to enable OpenMP support on macOS in **quitefastmst**?
+
+
 ### R Version
 
 To install from [CRAN](https://CRAN.R-project.org/package=deadwood), call:

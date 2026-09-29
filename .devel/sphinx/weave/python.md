@@ -15,6 +15,18 @@ pip3 install deadwood  # python3 -m pip install deadwood
 ```
 
 
+::::{note}
+For best performance, advanced users will benefit from compiling the package
+from sources:
+
+
+```bash
+CPPFLAGS="-O3 -march=native" pip3 install quitefastmst deadwood --force --no-binary="quitefastmst,deadwood"
+```
+
+🚧 TO DO (help needed): How to enable OpenMP support on macOS in **quitefastmst**?
+::::
+
 
 ## Basic Use
 
@@ -107,7 +119,6 @@ Outlier detection in the chameleon_t8_8k dataset, without and with automatic sub
 
 In the right subfigure, Deadwood was able to identify three subclusters automatically.
 In each of them, the outlierness threshold is estimated independently.
-
 
 
 ## Clusters of Highly Imbalanced Sizes
