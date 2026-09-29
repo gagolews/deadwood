@@ -299,6 +299,20 @@
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;deadwood&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For best performance, advanced users will benefit from compiling the package
+from sources:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">Sys.setenv</span><span class="p">(</span><span class="n">CXX_DEFS</span><span class="o">=</span><span class="s">&quot;-O3 -march=native&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1"># for gcc and clang</span>
+<span class="nf">install.packages</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;quitefastmst&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;deadwood&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;source&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To enable OpenMP on macOS, execute <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">libomp</span></code>, and then call in R:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">Sys.setenv</span><span class="p">(</span><span class="n">CXX_DEFS</span><span class="o">=</span><span class="s">&quot;-O3 -march=native -Xpreprocessor -fopenmp&quot;</span><span class="p">)</span>
+<span class="nf">install.packages</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;quitefastmst&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;deadwood&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;source&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </section>
 <section id="basic-use">
 <h2>Basic Use<a class="headerlink" href="#basic-use" title="Link to this heading">¶</a></h2>
@@ -456,7 +470,7 @@ and is available for download from
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-09-28T15:02:52+0200.
+              Last updated on 2026-09-29T11:28:44+0200.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>

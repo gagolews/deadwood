@@ -13,7 +13,24 @@ To install the package from [CRAN](https://CRAN.R-project.org/package=deadwood),
 install.packages("deadwood")
 ```
 
+::::{note}
+For best performance, advanced users will benefit from compiling the package
+from sources:
 
+
+```r
+Sys.setenv(CXX_DEFS="-O3 -march=native")  # for gcc and clang
+install.packages(c("quitefastmst", "deadwood"), type="source")
+```
+
+To enable OpenMP on macOS, execute `brew install libomp`, and then call in R:
+
+
+```r
+Sys.setenv(CXX_DEFS="-O3 -march=native -Xpreprocessor -fopenmp")
+install.packages(c("quitefastmst", "deadwood"), type="source")
+```
+::::
 
 
 ## Basic Use
