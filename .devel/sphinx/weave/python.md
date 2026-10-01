@@ -46,7 +46,7 @@ def plot_scatter(X, labels=None):
 
 
 
-Example noisy dataset[^datasetsource]:
+An example noisy dataset[^datasetsource]:
 
 [^datasetsource]: The discussed dataset comes from
 G. Karypis, E.H. Han, V. Kumar,

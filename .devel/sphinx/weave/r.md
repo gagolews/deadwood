@@ -35,7 +35,7 @@ install.packages(c("quitefastmst", "deadwood"), type="source")
 
 ## Basic Use
 
-Example noisy dataset[^datasetsource]:
+An example noisy dataset[^datasetsource]:
 
 [^datasetsource]: The discussed dataset comes from
 G. Karypis, E.H. Han, V. Kumar,
@@ -46,8 +46,12 @@ and is available for download from
 
 
 ``` r
-plot_scatter <- function(X, labels=1)
-    plot(X, asp=1, ann=FALSE, col=c("#00000055","#aaaaaa33")[labels], pch=16)
+plot_scatter <- function(X, labels=1L) {
+    if (is.logical(labels)) labels <- 1L-labels
+    labels[is.na(labels)] <- 0L
+    pal <- c("#aaaaaa55", palette.colors(palette="R4", alpha=0.3))
+    plot(X, asp=1, ann=FALSE, col=pal[labels+1L], pch=16)
+}
 
 X1 <- as.matrix(read.table("chameleon_t7_10k.data.gz"))
 plot_scatter(X1)
@@ -65,7 +69,7 @@ Let us perform outlier detection with *Deadwood*.
 ``` r
 library("deadwood")
 is_outlier <- deadwood(X1, max_k=1)
-plot_scatter(X1, is_outlier+1)
+plot_scatter(X1, is_outlier)
 ```
 
 (fig:r_chameleon_t7_10k_deadwood)=
@@ -94,11 +98,11 @@ Here is an example featuring non-homogeneous subgroups.
 X2 <- as.matrix(read.table("chameleon_t8_8k.data.gz"))
 
 par(mfrow=c(1, 2))
-is_outlier <- deadwood(X2, max_k=1)
-plot_scatter(X2, is_outlier+1)
+is_outlier1 <- deadwood(X2, max_k=1)
+plot_scatter(X2, is_outlier1)
 
-is_outlier <- deadwood(X2)
-plot_scatter(X2, is_outlier+1)
+is_outlier2 <- deadwood(X2)
+plot_scatter(X2, is_outlier2)
 ```
 
 (fig:r_chameleon_t8_8k_dataset)=
@@ -106,9 +110,17 @@ plot_scatter(X2, is_outlier+1)
 Outlier detection in the chameleon_t8_8k dataset, without and with automatic subcluster detection
 ```
 
-In the right subfigure, Deadwood was able to identify three subclusters automatically.
-In each of them, the outlierness threshold is estimated independently.
+In the second case, Deadwood was able to identify three subclusters automatically. In each subcluster, the outlierness threshold was estimated independently.
 
+
+``` r
+plot_scatter(X2, attr(is_outlier2, "cluster"))
+```
+
+(fig:r_chameleon_t8_8k_dataset2)=
+```{figure} r-figures/r_chameleon_t8_8k_dataset2-1.*
+Detected subclusters in chameleon_t8_8k dataset
+```
 
 
 ## Clusters of Highly Imbalanced Sizes
@@ -121,7 +133,7 @@ example where two small clusters on the right are treated as anomalous:
 ``` r
 X3 <- as.matrix(read.table("z2.data.gz"))
 is_outlier <- deadwood(X3)
-plot_scatter(X3, is_outlier+1)
+plot_scatter(X3, is_outlier)
 ```
 
 (fig:r_z2_dataset)=
@@ -135,7 +147,7 @@ To remedy this, we can decrease the appropriate size threshold
 
 ``` r
 is_outlier <- deadwood(X3, max_debris_size=20)
-plot_scatter(X3, is_outlier+1)
+plot_scatter(X3, is_outlier)
 ```
 
 (fig:r_z2_dataset2)=
@@ -153,7 +165,7 @@ Then, we can perform outlier detection in each cluster separately:
 library("lumbermark")
 clusters <- lumbermark(X3, 5)
 is_outlier <- deadwood(clusters)
-plot_scatter(X3, is_outlier+1)
+plot_scatter(X3, attr(is_outlier, "cluster"))
 ```
 
 (fig:r_z2_lumbermark)=

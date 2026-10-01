@@ -210,7 +210,7 @@
 <a class="sidebar-brand" href="../index.html">deadwood</a>
 </span>
 <div class="sidebar-brand">
-0.9.1
+0.9.2
 </div>
 <form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -420,6 +420,7 @@
 <h2>Value<a class="headerlink" href="#value" title="Link to this heading">¶</a></h2>
 <p>A logical vector <code class="docutils literal notranslate"><span class="pre">y</span></code> of length <span class="math notranslate nohighlight">\(n\)</span>, where <code class="docutils literal notranslate"><span class="pre">y[i]</span> <span class="pre">==</span> <span class="pre">TRUE</span></code> means that the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th observation is deemed to be an outlier.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">mst</span></code> attribute gives the computed minimum spanning tree which can be reused in further calls to the functions from <span class="pkg">genieclust</span>, <span class="pkg">lumbermark</span>, and <span class="pkg">deadwood</span>. <code class="docutils literal notranslate"><span class="pre">cut_edges</span></code> gives the <code class="docutils literal notranslate"><span class="pre">cut_edges</span></code> passed as argument. <code class="docutils literal notranslate"><span class="pre">contamination</span></code> gives the detected contamination levels in each cluster (which can be different from the observed proportion of outliers detected).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">cluster</span></code> attribute gives the <span class="math notranslate nohighlight">\(n\)</span> detected cluster IDs (positive integers or <code class="docutils literal notranslate"><span class="pre">NA</span></code> in case of outliers).</p>
 </section>
 <section id="author-s">
 <h2>Author(s)<a class="headerlink" href="#author-s" title="Link to this heading">¶</a></h2>
@@ -485,7 +486,7 @@
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-09-29T11:52:28+0200.
+              Last updated on 2026-10-01T10:22:32+0200.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>
@@ -527,7 +528,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=9dc39874"></script>
+</div><script src="../_static/documentation_options.js?v=aa3b121e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

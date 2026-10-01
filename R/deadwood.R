@@ -140,6 +140,9 @@
 #' in each cluster (which can be different from the observed proportion
 #' of outliers detected).
 #'
+#' The \code{cluster} attribute gives the \eqn{n} detected cluster IDs
+#' (positive integers or \code{NA} in case of outliers).
+#'
 #'
 #' @examples
 #' library("datasets")

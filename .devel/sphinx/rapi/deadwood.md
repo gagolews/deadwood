@@ -99,6 +99,8 @@ A logical vector `y` of length $n$, where `y[i] == TRUE` means that the `i`-th o
 
 The `mst` attribute gives the computed minimum spanning tree which can be reused in further calls to the functions from <span class="pkg">genieclust</span>, <span class="pkg">lumbermark</span>, and <span class="pkg">deadwood</span>. `cut_edges` gives the `cut_edges` passed as argument. `contamination` gives the detected contamination levels in each cluster (which can be different from the observed proportion of outliers detected).
 
+The `cluster` attribute gives the $n$ detected cluster IDs (positive integers or `NA` in case of outliers).
+
 ## Author(s)
 
 [Marek Gagolewski](https://www.gagolewski.com/)

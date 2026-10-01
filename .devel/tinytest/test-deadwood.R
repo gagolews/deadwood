@@ -44,9 +44,12 @@ X <- rbind(
 d1 <- deadwood(X, M=11)
 # plot(X, col=d1+1)
 expect_equal(as.logical(d1), rep(c(FALSE, TRUE, TRUE, TRUE), c(n1, m1, n2, m2)))
+expect_equal(attr(d1, "cluster"), rep(c(1, NA, NA, NA), c(n1, m1, n2, m2)))
 
-d2 <- deadwood(attr(d1, "mst"), cut_edges=NROW(attr(d1, "mst")), max_contamination=0.39, max_debris_size=10)
+d2 <- deadwood(attr(d1, "mst"), cut_edges=NROW(attr(d1, "mst")),
+max_contamination=0.39, max_debris_size=10)
 plot(X, col=d2+1)
 expect_equal(as.logical(d2), rep(c(FALSE, TRUE, FALSE, TRUE), c(n1, m1, n2, m2)))
 expect_equal(attr(d2, "contamination"), c(m1/(n1+m1), m2/(n2+m2)))
 expect_equal(attr(d2, "cut_edges"), NROW(attr(d2, "mst")))
+expect_equal(attr(d2, "cluster"), rep(c(1, NA, 2, NA), c(n1, m1, n2, m2)))

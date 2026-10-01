@@ -288,7 +288,7 @@ public:
                 left[c[v]] = false;
 
                 k = c[v];
-                mark_cluster(v);
+                mark_cluster(v);  // sets c[v] = c[v]; (no change)
                 changed_inliers = mark_inliers();
                 // DEADWOOD_PRINT("%d\n", changed_inliers);
                 if (changed_inliers > 0) {
@@ -296,9 +296,11 @@ public:
                     num_left++;
                     left[c[v]] = true;
                 }
+                else
+                    left[c[v]] = false;
 
                 k = orig_k;
-                mark_cluster(w);
+                mark_cluster(w);  // sets c[w] = orig_k;
                 changed_inliers = mark_inliers();
                 // DEADWOOD_PRINT("%d\n", changed_inliers);
                 if (changed_inliers > 0) {
@@ -306,6 +308,8 @@ public:
                     num_left++;
                     left[c[w]] = true;
                 }
+                else
+                    left[c[w]] = false;
 
                 // DEADWOOD_PRINT("%g %g %g\n", orig_weight_threshold, weight_thresholds[c[v]], weight_thresholds[c[w]]);
 

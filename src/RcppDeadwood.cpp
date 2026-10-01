@@ -116,6 +116,12 @@ LogicalVector dot_deadwood(
         else res[i] = FALSE;
     }
 
+    IntegerVector cluster(n);
+    for (Py_ssize_t i=0; i<n; ++i) {
+        cluster[i] = (is_outlier[i]>=0)?(int)is_outlier[i]+1:NA_INTEGER;
+    }
+    res.attr("cluster") = cluster;
+
     NumericVector contaminationr(_k);
     for (Py_ssize_t i=0; i<_k; ++i)
         contaminationr[i] = contamination[i];

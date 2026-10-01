@@ -43,7 +43,7 @@ pd.set_option("min_rows", 200)
 
 
 
-Example noisy dataset[^datasetsource]:
+An example noisy dataset[^datasetsource]:
 
 [^datasetsource]: The discussed dataset comes from
 G. Karypis, E.H. Han, V. Kumar,

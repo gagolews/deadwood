@@ -210,7 +210,7 @@
 <a class="sidebar-brand" href="../index.html">deadwood</a>
 </span>
 <div class="sidebar-brand">
-0.9.1
+0.9.2
 </div>
 <form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -316,9 +316,13 @@ from sources:</p>
 </section>
 <section id="basic-use">
 <h2>Basic Use<a class="headerlink" href="#basic-use" title="Link to this heading">¶</a></h2>
-<p>Example noisy dataset<a class="footnote-reference brackets" href="#datasetsource" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>:</p>
-<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">plot_scatter</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">labels</span><span class="o">=</span><span class="m">1</span><span class="p">)</span>
-<span class="w">    </span><span class="nf">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">asp</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">ann</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;#00000055&quot;</span><span class="p">,</span><span class="s">&quot;#aaaaaa33&quot;</span><span class="p">)[</span><span class="n">labels</span><span class="p">],</span><span class="w"> </span><span class="n">pch</span><span class="o">=</span><span class="m">16</span><span class="p">)</span>
+<p>An example noisy dataset<a class="footnote-reference brackets" href="#datasetsource" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">plot_scatter</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">labels</span><span class="o">=</span><span class="m">1L</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nf">is.logical</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">1L</span><span class="o">-</span><span class="n">labels</span>
+<span class="w">    </span><span class="n">labels</span><span class="p">[</span><span class="nf">is.na</span><span class="p">(</span><span class="n">labels</span><span class="p">)]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0L</span>
+<span class="w">    </span><span class="n">pal</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;#aaaaaa55&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">palette.colors</span><span class="p">(</span><span class="n">palette</span><span class="o">=</span><span class="s">&quot;R4&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="o">=</span><span class="m">0.3</span><span class="p">))</span>
+<span class="w">    </span><span class="nf">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">asp</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">ann</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="n">pal</span><span class="p">[</span><span class="n">labels</span><span class="m">+1L</span><span class="p">],</span><span class="w"> </span><span class="n">pch</span><span class="o">=</span><span class="m">16</span><span class="p">)</span>
+<span class="p">}</span>
 
 <span class="n">X1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.matrix</span><span class="p">(</span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;chameleon_t7_10k.data.gz&quot;</span><span class="p">))</span>
 <span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
@@ -333,7 +337,7 @@ from sources:</p>
 <p>Let us perform outlier detection with <em>Deadwood</em>.</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="s">&quot;deadwood&quot;</span><span class="p">)</span>
 <span class="n">is_outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span><span class="w"> </span><span class="n">max_k</span><span class="o">=</span><span class="m">1</span><span class="p">)</span>
-<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="m">+1</span><span class="p">)</span>
+<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" id="id3">
@@ -355,11 +359,11 @@ Here is an example featuring non-homogeneous subgroups.</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">X2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.matrix</span><span class="p">(</span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;chameleon_t8_8k.data.gz&quot;</span><span class="p">))</span>
 
 <span class="nf">par</span><span class="p">(</span><span class="n">mfrow</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2</span><span class="p">))</span>
-<span class="n">is_outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="n">max_k</span><span class="o">=</span><span class="m">1</span><span class="p">)</span>
-<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="m">+1</span><span class="p">)</span>
+<span class="n">is_outlier1</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="n">max_k</span><span class="o">=</span><span class="m">1</span><span class="p">)</span>
+<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier1</span><span class="p">)</span>
 
-<span class="n">is_outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
-<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="m">+1</span><span class="p">)</span>
+<span class="n">is_outlier2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
+<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier2</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default" id="id4">
@@ -368,8 +372,16 @@ Here is an example featuring non-homogeneous subgroups.</p>
 <p><span class="caption-number">Figure 10 </span><span class="caption-text">Outlier detection in the chameleon_t8_8k dataset, without and with automatic subcluster detection</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>In the right subfigure, Deadwood was able to identify three subclusters automatically.
-In each of them, the outlierness threshold is estimated independently.</p>
+<p>In the second case, Deadwood was able to identify three subclusters automatically. In each subcluster, the outlierness threshold was estimated independently.</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span><span class="w"> </span><span class="nf">attr</span><span class="p">(</span><span class="n">is_outlier2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;cluster&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<figure class="align-default" id="id5">
+<span id="fig-r-chameleon-t8-8k-dataset2"></span><img alt="../_images/r_chameleon_t8_8k_dataset2-1.png" src="../_images/r_chameleon_t8_8k_dataset2-1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 11 </span><span class="caption-text">Detected subclusters in chameleon_t8_8k dataset</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
 </section>
 <section id="clusters-of-highly-imbalanced-sizes">
 <h2>Clusters of Highly Imbalanced Sizes<a class="headerlink" href="#clusters-of-highly-imbalanced-sizes" title="Link to this heading">¶</a></h2>
@@ -378,25 +390,25 @@ In each of them, the outlierness threshold is estimated independently.</p>
 example where two small clusters on the right are treated as anomalous:</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">X3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.matrix</span><span class="p">(</span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;z2.data.gz&quot;</span><span class="p">))</span>
 <span class="n">is_outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X3</span><span class="p">)</span>
-<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="m">+1</span><span class="p">)</span>
+<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="p">)</span>
 </pre></div>
 </div>
-<figure class="align-default" id="id5">
+<figure class="align-default" id="id6">
 <span id="fig-r-z2-dataset"></span><img alt="../_images/r_z2_dataset-1.png" src="../_images/r_z2_dataset-1.png" />
 <figcaption>
-<p><span class="caption-number">Figure 11 </span><span class="caption-text">Outlier detection in the z2 dataset</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 12 </span><span class="caption-text">Outlier detection in the z2 dataset</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>To remedy this, we can decrease the appropriate size threshold
 (<code class="docutils literal notranslate"><span class="pre">max_debris_size</span></code>) parameter:</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">is_outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="n">max_debris_size</span><span class="o">=</span><span class="m">20</span><span class="p">)</span>
-<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="m">+1</span><span class="p">)</span>
+<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="p">)</span>
 </pre></div>
 </div>
-<figure class="align-default" id="id6">
+<figure class="align-default" id="id7">
 <span id="fig-r-z2-dataset2"></span><img alt="../_images/r_z2_dataset2-1.png" src="../_images/r_z2_dataset2-1.png" />
 <figcaption>
-<p><span class="caption-number">Figure 12 </span><span class="caption-text">Outlier detection in z2 with smaller max_debris_size</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 13 </span><span class="caption-text">Outlier detection in z2 with smaller max_debris_size</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Alternatively, we can first identify the clusters in the dataset
@@ -406,13 +418,13 @@ Then, we can perform outlier detection in each cluster separately:</p>
 <div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="s">&quot;lumbermark&quot;</span><span class="p">)</span>
 <span class="n">clusters</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">lumbermark</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="m">5</span><span class="p">)</span>
 <span class="n">is_outlier</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">deadwood</span><span class="p">(</span><span class="n">clusters</span><span class="p">)</span>
-<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="n">is_outlier</span><span class="m">+1</span><span class="p">)</span>
+<span class="nf">plot_scatter</span><span class="p">(</span><span class="n">X3</span><span class="p">,</span><span class="w"> </span><span class="nf">attr</span><span class="p">(</span><span class="n">is_outlier</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;cluster&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<figure class="align-default" id="id7">
+<figure class="align-default" id="id8">
 <span id="fig-r-z2-lumbermark"></span><img alt="../_images/r_z2_lumbermark-1.png" src="../_images/r_z2_lumbermark-1.png" />
 <figcaption>
-<p><span class="caption-number">Figure 13 </span><span class="caption-text">Detected clusters and outliers in z2</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
+<p><span class="caption-number">Figure 14 </span><span class="caption-text">Detected clusters and outliers in z2</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <div class="admonition note">
@@ -470,7 +482,7 @@ and is available for download from
               Some rights reserved. Licensed under <a href='https://creativecommons.org/licenses/by-nc-nd/4.0/'>CC BY-NC-ND 4.0</a>.
               Built with <a href="https://sphinx-doc.org/">Sphinx</a>
               and a customised <a href="https://github.com/pradyunsg/furo">Furo</a> theme.
-              Last updated on 2026-09-29T11:52:28+0200.
+              Last updated on 2026-10-01T10:22:32+0200.
               This site will never display any ads: it is a non-profit project.
               It does not collect any data.
             </div>
@@ -507,7 +519,7 @@ and is available for download from
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=9dc39874"></script>
+</div><script src="../_static/documentation_options.js?v=aa3b121e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
